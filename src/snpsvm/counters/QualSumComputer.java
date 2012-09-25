@@ -7,7 +7,7 @@ import snpsvm.bamreading.MappedRead;
 
 public class QualSumComputer extends VarCountComputer {
 	
-	final double maxScore = 1000.0; //Maximum value for any base
+	final double maxScore = 500.0; //Maximum value for any base
 	
 	@Override
 	public String getName() {

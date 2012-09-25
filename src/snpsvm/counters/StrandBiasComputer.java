@@ -5,27 +5,24 @@ import java.util.Iterator;
 import snpsvm.bamreading.AlignmentColumn;
 import snpsvm.bamreading.MappedRead;
 
-/**
- * Computes mean of mapping quality of reads with reference bases and non-reference bases
- * @author brendan
- *
- */
-public class MQComputer extends VarCountComputer {
+public class StrandBiasComputer implements ColumnComputer {
 
-	//final Double maxScore = 1000.0;
-	final Double[] counts = new Double[2];
+	final Double[] value = new Double[1];
+	final Double[] forward = new Double[2];
+	final Double[] reverse = new Double[2];
 	
 	@Override
 	public String getName() {
-		return "mapping.quality";
+		return "strand.bias";
 	}
 
 	@Override
 	public Double[] computeValue(char refBase, AlignmentColumn col) {
-		values[ref] = 0.0;
-		values[alt] = 0.0;
-		counts[0] = 0.0;
-		counts[1] = 0.0;
+		value[0] = 0.0;
+		forward[0] = 0.001; //prevents divide by zero errors
+		forward[1] = 0.001;
+		reverse[0] = 0.001;
+		reverse[1] = 0.001;
 		
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
@@ -40,20 +37,20 @@ public class MQComputer extends VarCountComputer {
 					int index = 0;
 					if ( b != refBase)
 						index = 1;
-					values[index] += q;
-					counts[index]++;
 					
+					if (read.getRecord().getFirstOfPairFlag())
+						forward[index]++;
+					else 
+						reverse[index]++;
 					
 				}
 			}
 		}
 		
-		if (counts[0] > 0)
-			values[0] /= counts[0];
-		if (counts[1] > 0) 
-			values[1] /= counts[1];
+		value[0] = (forward[1]/forward[0] - 0.5)*(forward[1]/forward[0] - 0.5) / 0.5;
+		value[0] += (reverse[1]/reverse[0] - 0.5)*(reverse[1]/reverse[0] - 0.5) / 0.5;
 		
-		return values;
+		return value;
 	}
 
 }

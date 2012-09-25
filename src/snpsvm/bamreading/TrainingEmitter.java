@@ -21,8 +21,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private final double NO_VARIANT_FRAC = 0.001; //Probability that any non-variant individual site will be included in the no-variant class
-	private final int MAX_NO_VARIANTS = 25000; //Dont ever include more than this number of non-variant sites
+	private final double NO_VARIANT_FRAC = 0.0001; //Probability that any non-variant individual site will be included in the no-variant class
+	private final int MAX_NO_VARIANTS = 10000; //Dont ever include more than this number of non-variant sites
 	private int nonVariantSitesIncluded = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
@@ -53,7 +53,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			
 			counted++;
 			String prefix = null;
-			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && alnCol.countDifferingBases( refReader.getCurrentBase()) > 3) {
+			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && alnCol.countDifferingBases( refReader.getCurrentBase()) > 2) {
 				prefix = "1";
 				trueSites++;
 			}
@@ -67,7 +67,6 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				double r = Math.random();
 				if (r < NO_VARIANT_FRAC) {
 					prefix = "-1";
-					falseSites++;
 					nonVariantSitesIncluded++;
 				}
 			}
@@ -103,7 +102,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
 		super.emitWindow(contig, start, end, out);
 		
-		System.out.println("Training set builder found \n" + trueSites + " true positive \n" + falseSites + " false positive\n" + counted + " total sites");
+		System.out.println("Training set builder found \n" + trueSites + " true positive \n" + falseSites + " false positive \n" + nonVariantSitesIncluded + " invariant \n"  + counted + " total sites");
 	}
 
 }

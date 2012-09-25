@@ -15,7 +15,7 @@ public class LIBSVMScale {
 	
 	public File scaleData(File rawData) {
 		
-		String pathToOutput = rawData.getAbsolutePath() + ("." + (int)(1000.0*Math.random())) + ".scaled";
+		String pathToOutput = rawData.getAbsolutePath() + ("." + (int)(10000.0*Math.random())) + ".scaled";
 
 		String command = defaultPath + scaleExecutable + " " + rawData.getAbsolutePath() + " > " + pathToOutput;
 		

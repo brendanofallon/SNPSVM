@@ -44,9 +44,9 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitLine(PrintStream out) {
-		if (alnCol.getDepth() > 2 && alnCol.hasDifferingBase(refReader.getCurrentBase())) {
+		if (alnCol.getDepth() > 2 && alnCol.countDifferingBases(refReader.getCurrentBase())>1) {
 			//out.print(refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
-			out.print("0"); //libsvm requires some label here but doesn't use it
+			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
 				Double[] values = counter.computeValue(refReader.getCurrentBase(), alnCol);

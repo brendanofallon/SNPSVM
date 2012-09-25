@@ -37,7 +37,7 @@ public class MappedRead {
 	 */
 	public int refPosToReadPos(int refPos) {
 		int dif = refPos - read.getAlignmentStart();
-		if (dif >= read.getReadBases().length) {
+		if (dif < 0 || dif >= read.getReadBases().length) {
 			//System.out.println("Hmm, asked for dif : " + dif + ", returning -1 instead");
 			return -1;
 		}

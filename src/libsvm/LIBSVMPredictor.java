@@ -45,6 +45,9 @@ public class LIBSVMPredictor {
 			e.printStackTrace();
 		}
 		
-		return new LIBSVMResult(new File(pathToOutput));
+		LIBSVMResult result = new LIBSVMResult(new File(pathToOutput));
+		result.setInputData(inputData);
+		
+		return result;
 	}
 }

@@ -38,6 +38,32 @@ public class FastaReader {
 	 */
 	private void buildContigMap() throws IOException {
 		contigSizes = new HashMap<String, Integer>();
+
+		//Search for .dict file in same directory as source file
+		String dictFilename = sourceFile.getName().replace(".fasta", "").replace(".fa", "") + ".dict";
+		File dictFile = new File(sourceFile.getParentFile() + System.getProperty("file.separator") + dictFilename);
+		if (dictFile.exists()) {
+			System.out.println("Found fasta dictionary in file: " + dictFile.getAbsolutePath());
+			BufferedReader dictReader = new BufferedReader(new FileReader(dictFile));
+			String line = dictReader.readLine();
+			while(line != null) {
+				if (line.startsWith("@SQ")) {
+					String[] toks = line.split("\t");
+					String name = toks[1].replace("SN:", "");
+					try {
+						Integer length = Integer.parseInt(toks[2].replace("LN:", ""));
+						contigSizes.put(name, length);
+					}
+						catch(NumberFormatException nfe) {
+							nfe.printStackTrace();
+						}
+
+					}
+				line = dictReader.readLine();
+			}
+			return;
+		}
+		
 		reader = new BufferedReader(new FileReader(sourceFile));
 		currentLine = reader.readLine();
 		
