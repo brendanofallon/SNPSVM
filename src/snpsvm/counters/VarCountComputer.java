@@ -3,6 +3,7 @@ package snpsvm.counters;
 import java.util.Iterator;
 
 import snpsvm.bamreading.AlignmentColumn;
+import snpsvm.bamreading.FastaWindow;
 import snpsvm.bamreading.MappedRead;
 
 /**
@@ -26,10 +27,10 @@ public class VarCountComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(char refBase, AlignmentColumn col) {
+	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
-		
+		final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {

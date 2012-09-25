@@ -2,6 +2,7 @@ package snpsvm.bamreading;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import util.ArrayCircularQueue;
 import util.ArrayCircularQueue.EmptyQueueException;
@@ -9,7 +10,7 @@ import util.ArrayCircularQueue.FullQueueException;
 
 public class FastaWindow {
 
-	private int windowSize = 20;
+	final int windowSize = 256;
 	private int leftEdge = -1;
 	private FastaReader reader;
 	final ArrayCircularQueue bases = new ArrayCircularQueue(windowSize);
@@ -20,6 +21,38 @@ public class FastaWindow {
 	
 	public FastaWindow(FastaReader reader) {
 		this.reader = reader;
+	}
+	
+	public Map<String, Integer> getContigSizes() {
+		return reader.getContigSizes();
+	}
+	
+	/**
+	 * Reference index of left (trailing) edge
+	 * @return
+	 */
+	public int indexOfLeftEdge() {
+		return leftEdge;
+	}
+	
+	/**
+	 * Reference index of right (leading) edge
+	 * @return
+	 */
+	public int indexOfRightEdge() {
+		return leftEdge+bases.size();
+	}
+	
+	/**
+	 * Current number of bases in window
+	 * @return
+	 */
+	public int getCurrentSize() {
+		return bases.size();
+	}
+	
+	public int getMaxSize() {
+		return windowSize;
 	}
 	
 	/**
@@ -106,7 +139,7 @@ public class FastaWindow {
 	public static void main(String[] args) throws IOException {
 		FastaWindow fw = new FastaWindow(new File("/home/brendan/resources/human_g1k_v37.fasta"));
 		
-		fw.resetTo("3", 1000000);
+		fw.resetTo("21", 1000000);
 		System.out.println( fw.allToString() );
 		
 		int count = 0;

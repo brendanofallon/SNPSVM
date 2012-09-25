@@ -3,6 +3,7 @@ package snpsvm.counters;
 import java.util.Iterator;
 
 import snpsvm.bamreading.AlignmentColumn;
+import snpsvm.bamreading.FastaWindow;
 import snpsvm.bamreading.MappedRead;
 
 public class NearbyQualComputer implements ColumnComputer {
@@ -17,7 +18,7 @@ public class NearbyQualComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(char refBase, AlignmentColumn col) {
+	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
 		for(int i=0; i<WINDOW_SIZE; i++) {
 			values[i] = 0.0;
 		}

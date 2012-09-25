@@ -3,6 +3,7 @@ package snpsvm.counters;
 import java.util.Iterator;
 
 import snpsvm.bamreading.AlignmentColumn;
+import snpsvm.bamreading.FastaWindow;
 import snpsvm.bamreading.MappedRead;
 
 public class DistroProbComputer implements ColumnComputer {
@@ -10,10 +11,11 @@ public class DistroProbComputer implements ColumnComputer {
 	Double[] value = new Double[1];
 	
 	@Override
-	public Double[] computeValue(char refBase, AlignmentColumn col) {
+	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
 		int refCount = 0;
 		int altCount = 0;
 		if (col.getDepth() > 0) {
+			final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {
 				MappedRead read = it.next();

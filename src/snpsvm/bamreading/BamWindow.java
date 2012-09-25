@@ -57,6 +57,9 @@ public class BamWindow {
 		return currentPos;
 	}
 	
+	public String getCurrentContig() {
+		return currentContig;
+	}
 	/**
 	 * Return total number of reads at the current position
 	 * @return
@@ -138,11 +141,6 @@ public class BamWindow {
 			shrinkTrailingEdge();
 		}
 		
-//		if (nextRecord != null) {
-//			if (! nextRecord.getReferenceName().equals(currentContig)) {
-//				System.out.println("Next record is now at contig : " + nextRecord.getReferenceName());
-//			}
-//		}
 	}
 	
 	/**

@@ -1,6 +1,7 @@
 package snpsvm.counters;
 
 import snpsvm.bamreading.AlignmentColumn;
+import snpsvm.bamreading.FastaWindow;
 
 public interface ColumnComputer {
 
@@ -15,6 +16,6 @@ public interface ColumnComputer {
 	 * @param col
 	 * @return
 	 */
-	public Double[] computeValue(char refBase, AlignmentColumn col);
+	public Double[] computeValue(FastaWindow window, AlignmentColumn col);
 	
 }

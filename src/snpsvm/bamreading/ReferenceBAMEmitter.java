@@ -12,7 +12,7 @@ import snpsvm.counters.ColumnComputer;
 
 public class ReferenceBAMEmitter {
 
-	final FastaReader refReader;
+	final FastaWindow refReader;
 	final AlignmentColumn alnCol;
 	private Map<String, Integer> contigMap;
 	List<ColumnComputer> counters;
@@ -20,7 +20,7 @@ public class ReferenceBAMEmitter {
 	protected BufferedWriter positionWriter = null;
 	
 	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException {
-		refReader = new FastaReader(reference);
+		refReader = new FastaWindow(reference);
 		contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(bamFile);
 		this.counters = counters;
@@ -44,12 +44,13 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitLine(PrintStream out) {
-		if (alnCol.getDepth() > 2 && alnCol.countDifferingBases(refReader.getCurrentBase())>1) {
+		char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
+		if (alnCol.getDepth() > 2 && alnCol.countDifferingBases(refBase)>1) {
 			//out.print(refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
-				Double[] values = counter.computeValue(refReader.getCurrentBase(), alnCol);
+				Double[] values = counter.computeValue(refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
 					out.print("\t" + index + ":" + values[i] );
 					index++;
@@ -59,7 +60,7 @@ public class ReferenceBAMEmitter {
 			
 			if (positionWriter != null) {
 				try {
-					positionWriter.write( refReader.getCurrentTrack() + ":" + alnCol.getCurrentPosition() + ":" + refReader.getCurrentBase() + ":" + alnCol.getBasesAsString() + "\n");
+					positionWriter.write( alnCol.getCurrentContig() + ":" + alnCol.getCurrentPosition() + ":" + refBase + ":" + alnCol.getBasesAsString() + "\n");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -100,22 +101,20 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
-		refReader.advanceToTrack(contig);
-		refReader.advance(start);
+		
+		refReader.resetTo(contig, start);
 		alnCol.advanceTo(contig, start+1);
 		
 		int curPos = start;
 		while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {
 			emitLine(out);
 			
-			refReader.advance(1);
+			if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2))
+				refReader.shift();
 			alnCol.advance(1);
 			curPos++;
 			
 			//Sanity check
-			if (refReader.getCurrentPos() != curPos) {
-				System.err.println("Yikes, reference reader position is not equal to current position");
-			}
 			if (alnCol.getCurrentPosition() != (curPos+1)) {
 				System.err.println("Yikes, bam reader position is not equal to current position");
 			}

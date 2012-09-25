@@ -24,6 +24,11 @@ public class AlignmentColumn {
 		bam = new BamWindow(bamFile);
 	}
 	
+	
+	public String getCurrentContig() {
+		return bam.getCurrentContig();
+	}
+	
 	public byte[] getBases() {
 		if (dirty) {
 			calculateBases();

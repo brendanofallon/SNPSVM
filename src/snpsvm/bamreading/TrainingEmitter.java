@@ -40,20 +40,21 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	public void emitLine(PrintStream out) {
 		if (alnCol.getDepth() > 2) {
 			try {
-				knownTrueSites.loadContig(refReader.getCurrentTrack());
-				knownFalseSites.loadContig(refReader.getCurrentTrack());
+				knownTrueSites.loadContig(alnCol.getCurrentContig());
+				knownFalseSites.loadContig(alnCol.getCurrentContig());
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-			if (refReader.getCurrentBase() == 'N') {
+			final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
+			if (refBase == 'N') {
 				return;
 			}
 			
 			counted++;
 			String prefix = null;
-			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && alnCol.countDifferingBases( refReader.getCurrentBase()) > 2) {
+			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && alnCol.countDifferingBases( refBase) > 2) {
 				prefix = "1";
 				trueSites++;
 			}
@@ -63,7 +64,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				falseSites++;
 			}
 
-			if (prefix == null && nonVariantSitesIncluded < MAX_NO_VARIANTS && alnCol.countDifferingBases(refReader.getCurrentBase()) < 3) {
+			if (prefix == null && nonVariantSitesIncluded < MAX_NO_VARIANTS && alnCol.countDifferingBases(refBase) < 3) {
 				double r = Math.random();
 				if (r < NO_VARIANT_FRAC) {
 					prefix = "-1";
@@ -77,7 +78,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				out.print(prefix);
 				//out.print(alnCol.getCurrentPosition() + "\t" + refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 				for(ColumnComputer counter : counters) {
-					Double[] values = counter.computeValue(refReader.getCurrentBase(), alnCol);
+					Double[] values = counter.computeValue(refReader, alnCol);
 					for(int i=0; i<values.length; i++) {
 						out.print("\t" + index + ":" + values[i] );
 						index++;
@@ -88,7 +89,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				
 				if (positionWriter != null) {
 					try {
-						positionWriter.write( refReader.getCurrentTrack() + ":" + alnCol.getCurrentPosition() + ":" + refReader.getCurrentBase() + ":" + alnCol.getBasesAsString() + "\n");
+						positionWriter.write( alnCol.getCurrentContig() + ":" + alnCol.getCurrentPosition() + ":" + refBase + ":" + alnCol.getBasesAsString() + "\n");
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

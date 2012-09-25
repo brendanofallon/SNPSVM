@@ -18,6 +18,7 @@ import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.DepthComputer;
 import snpsvm.counters.DistroProbComputer;
 import snpsvm.counters.MQComputer;
+import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
@@ -119,6 +120,22 @@ public class CommandLineApp {
 		
 	}
 	
+	public static void emitData(File bamFile, 
+			File ref, 
+			File outputFile,
+			List<ColumnComputer> counters) throws IOException {
+		
+		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, bamFile, counters);
+		File positionsFile = new File("/home/brendan/bamreading/chr5.pos");
+		emitter.setPositionsFile(positionsFile);
+		
+		//Read BAM file, write results to output file
+		PrintStream trainingStream = new PrintStream(new FileOutputStream(outputFile));
+		emitter.emitContig("5", trainingStream);
+		trainingStream.close();
+		
+	}
+	
 	public static void main(String[] args) throws IOException {
 		
 		Timer mainTimer = new Timer("main");
@@ -136,9 +153,14 @@ public class CommandLineApp {
 		counters.add( new DistroProbComputer());
 		counters.add( new NearbyQualComputer());
 		counters.add( new StrandBiasComputer());
-		
+		counters.add( new MismatchComputer());
 		
 		File inputBAM = new File("/home/brendan/oldhome/medtest/medtest.final.bam");
+//		File outputFile = new File("/home/brendan/bamreading/testoutput.csv");
+//		emitData(inputBAM, reference, outputFile, counters);
+//		
+//		System.exit(0);
+		
 		//LIBSVMModel model = new LIBSVMModel(new File("/home/brendan/bamreading/tc1-4.model"));
 		
 		//Create model

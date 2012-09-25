@@ -3,6 +3,7 @@ package snpsvm.counters;
 import java.util.Iterator;
 
 import snpsvm.bamreading.AlignmentColumn;
+import snpsvm.bamreading.FastaWindow;
 import snpsvm.bamreading.MappedRead;
 
 public class StrandBiasComputer implements ColumnComputer {
@@ -17,7 +18,7 @@ public class StrandBiasComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(char refBase, AlignmentColumn col) {
+	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
 		value[0] = 0.0;
 		forward[0] = 0.001; //prevents divide by zero errors
 		forward[1] = 0.001;
@@ -26,6 +27,8 @@ public class StrandBiasComputer implements ColumnComputer {
 		
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
+
+			final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
 			while(it.hasNext()) {
 				MappedRead read = it.next();
 				if (read.hasBaseAtReferencePos(col.getCurrentPosition())) {

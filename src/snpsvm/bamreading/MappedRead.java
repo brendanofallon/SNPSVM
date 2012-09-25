@@ -9,6 +9,8 @@ public class MappedRead {
 	SAMRecord read;
 	private boolean initialized = false;
 	int[] refToReadMap = null; //Map from reference position to read position
+	private int mismatchCount = -1; //Number of bases that align to reference but differ from it 
+	
 	
 	public MappedRead(SAMRecord rec) {
 		this.read = rec;
@@ -18,6 +20,55 @@ public class MappedRead {
 		return read;
 	}
 	
+	public int getMismatchCount(FastaWindow ref) {
+		if (mismatchCount == -1) {
+			mismatchCount = 0;
+
+			for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
+				if (hasBaseAtReferencePos(i)) {		
+					if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i+1)) {
+						mismatchCount++;
+					}
+				}
+			}
+			
+//			if (mismatchCount > 10) {
+//				System.out.println("Whoa! Lots of mismatches: "+ mismatchCount);
+//
+//				for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
+//					if (hasBaseAtReferencePos(i)) {
+//						System.out.print( ((char) getBaseAtReferencePos(i)) );
+//					}
+//
+//				}
+//				System.out.println();
+//
+//				for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
+//					if (hasBaseAtReferencePos(i)) {
+//						System.out.print( ref.getBaseAt(i+1));
+//					}
+//				}
+//
+//				System.out.println();
+//				for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
+//					if (hasBaseAtReferencePos(i)) {
+//						char b = (char)getBaseAtReferencePos(i);
+//						char c = ref.getBaseAt(i+1);
+//						if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i+1)) {
+//							System.out.print("*");
+//						}
+//						else {
+//							System.out.print(".");
+//						}
+//					}
+//
+//				}
+//				System.out.println();
+//			}
+		}
+		
+		return mismatchCount;
+	}
 	
 	/**
 	 * Returns true if there's exactly one base in this read that maps to 

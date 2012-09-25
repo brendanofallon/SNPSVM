@@ -1,6 +1,7 @@
 package snpsvm.counters;
 
 import snpsvm.bamreading.AlignmentColumn;
+import snpsvm.bamreading.FastaWindow;
 
 /**
  * Computes total read depth at the current position
@@ -17,7 +18,7 @@ public class DepthComputer implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(char refBase, AlignmentColumn col) {
+	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
 		value[0] = (double)col.getDepth();
 		return value;
 	}
