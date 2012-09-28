@@ -41,7 +41,7 @@ public class CommandLineApp {
 		//Read BAM file, write results to training file
 		File trainingFile = new File("/home/brendan/bamreading/tc16-22.profile.csv");
 		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
-		emitter.emitWindow("16", 1, 106000);
+		emitter.emitWindow("16", 1, 1000000);
 //		emitter.emitContig("16", trainingStream);
 //		emitter.emitContig("17", trainingStream);
 //		emitter.emitContig("18", trainingStream);

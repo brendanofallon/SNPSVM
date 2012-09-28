@@ -1,9 +1,9 @@
 package snpsvm.bamreading;
 
 import java.io.File;
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -32,7 +32,7 @@ public class BamWindow {
 	
 	private String currentContig = null;
 	private int currentPos = -1; //In reference coordinates
-	final ArrayDeque<MappedRead> records = new ArrayDeque<MappedRead>(1024);
+	final LinkedList<MappedRead> records = new LinkedList<MappedRead>();
 	private Map<String, Integer> contigMap = null;
 	private SAMSequenceDictionary sequenceDict = null;
 	
@@ -257,14 +257,27 @@ public class BamWindow {
 	/**
 	 * Remove from queue those reads whose right edge is less than the current pos
 	 */
-	private void shrinkTrailingEdge() {
-		MappedRead trailingRecord = getTrailingRecord();
-		
-		while(trailingRecord != null &&  trailingRecord.getRecord().getAlignmentEnd() < currentPos) {
-			MappedRead removed = records.pollLast();
-			System.out.println("Trimming record starting at : " + removed.getRecord().getAlignmentStart() + "-" + (removed.getRecord().getAlignmentEnd()));
-			trailingRecord = getTrailingRecord();
+	private void shrinkTrailingEdge() {		
+		Iterator<MappedRead> it = records.iterator();
+		try {
+			MappedRead read = it.next();
+			while(it.hasNext()) {
+				if (read.getRecord().getAlignmentEnd() < currentPos) {
+					it.remove();
+				}
+				
+				read = it.next();
+			}
+			
+			if (read.getRecord().getAlignmentEnd() < currentPos) {
+				it.remove();
+			}
 		}
+		catch(NoSuchElementException ex) {
+			//Expected behavior
+		}
+		
+
 	}
 	
 }
