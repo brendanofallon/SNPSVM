@@ -121,10 +121,17 @@ public class MappedRead {
 	}
 	
 	/**
-	 * Read this record and compute how each base maps to the reference
+	 * If this read has any indels then construct a map that relates reference position to read position so
+	 * we can quickly look up the read (or quality) that maps to a particular reference pos. If there are no
+	 * indels then abort immediately. 
 	 */
 	private void initialize() {
 		Cigar cig = read.getCigar();
+		if (cig.getCigarElements().size()==0) {
+			System.err.println("No cigar elements for read: " + read.toString() + ", skipping, mq is : " + read.getMappingQuality() );
+			initialized = true;
+			return;
+		}
 		CigarElement firstEl = cig.getCigarElement(0);
 		
 		//If no indels don't do anything

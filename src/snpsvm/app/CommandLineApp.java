@@ -14,15 +14,16 @@ import libsvm.LIBSVMTrain;
 import snpsvm.bamreading.ReferenceBAMEmitter;
 import snpsvm.bamreading.ResultEmitter;
 import snpsvm.bamreading.TrainingEmitter;
+import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.DepthComputer;
 import snpsvm.counters.DistroProbComputer;
 import snpsvm.counters.MQComputer;
+import snpsvm.counters.MeanQualityComputer;
 import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
-import snpsvm.counters.StrandBiasComputer;
 import util.Timer;
 
 public class CommandLineApp {
@@ -34,17 +35,20 @@ public class CommandLineApp {
 								List<ColumnComputer> counters) throws IOException {
 
 		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
-		File positionsFile = new File("/home/brendan/bamreading/chr56789.pos");
+		File positionsFile = new File("/home/brendan/bamreading/chr16-22.profile.pos");
 		emitter.setPositionsFile(positionsFile);
 		
 		//Read BAM file, write results to training file
-		File trainingFile = new File("/home/brendan/bamreading/tc5.csv");
+		File trainingFile = new File("/home/brendan/bamreading/tc16-22.profile.csv");
 		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
-		emitter.emitContig("5", trainingStream);
-//		emitter.emitContig("6", trainingStream);
-//		emitter.emitContig("7", trainingStream);
-//		emitter.emitContig("8", trainingStream);
-//		emitter.emitContig("9", trainingStream);
+		emitter.emitWindow("16", 1, 106000);
+//		emitter.emitContig("16", trainingStream);
+//		emitter.emitContig("17", trainingStream);
+//		emitter.emitContig("18", trainingStream);
+//		emitter.emitContig("19", trainingStream);
+//		emitter.emitContig("20", trainingStream);
+//		emitter.emitContig("21", trainingStream);
+//		emitter.emitContig("22", trainingStream);
 		trainingStream.close();
 		
 		LIBSVMPredictor predictor = new LIBSVMPredictor();
@@ -53,7 +57,7 @@ public class CommandLineApp {
 		
 		ResultEmitter resultWriter = new ResultEmitter();
 		
-		resultWriter.writeResults(result, new File("/home/brendan/bamreading/testresults.csv"));
+		resultWriter.writeResults(result, new File("/home/brendan/bamreading/chr16-22calls.csv"));
 
 	}
 
@@ -67,17 +71,19 @@ public class CommandLineApp {
 		
 		
 		TrainingEmitter emitter = new TrainingEmitter(trueTraining, falseTraining, ref, knownBAM, counters);
-		File positionsFile = new File("/home/brendan/bamreading/chr5.pos");
+		File positionsFile = new File("/home/brendan/bamreading/chr16-22.pos");
 		emitter.setPositionsFile(positionsFile);
 		
 		//Read BAM file, write results to training file
-		File trainingFile = new File("/home/brendan/bamreading/tc5.csv");
+		File trainingFile = new File("/home/brendan/bamreading/tc16-22.csv");
 		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
-		emitter.emitContig("5", trainingStream);
-//		emitter.emitContig("6", trainingStream);
-//		emitter.emitContig("7", trainingStream);
-//		emitter.emitContig("8", trainingStream);
-//		emitter.emitContig("9", trainingStream);
+		emitter.emitContig("16", trainingStream);
+		emitter.emitContig("17", trainingStream);
+		emitter.emitContig("18", trainingStream);
+		emitter.emitContig("19", trainingStream);
+		emitter.emitContig("20", trainingStream);
+		emitter.emitContig("21", trainingStream);
+		emitter.emitContig("22", trainingStream);
 		trainingStream.close();
 		
 		LIBSVMPredictor predictor = new LIBSVMPredictor();
@@ -86,7 +92,7 @@ public class CommandLineApp {
 		
 		ResultEmitter resultWriter = new ResultEmitter();
 		
-		resultWriter.writeResults(result, new File("/home/brendan/bamreading/testresults.csv"));
+		resultWriter.writeResults(result, new File("/home/brendan/bamreading/chr16-22.cv.csv"));
 
 		
 	}
@@ -102,22 +108,30 @@ public class CommandLineApp {
 		
 		
 		//Read BAM file, write results to training file
-		File trainingFile = new File("/home/brendan/bamreading/tc1-4.knowns.csv");
+		File trainingFile = new File("/home/brendan/bamreading/NA12878.chr1-15.training.csv");
 		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
 		emitter.emitContig("1", trainingStream);
 		emitter.emitContig("2", trainingStream);
 		emitter.emitContig("3", trainingStream);
 		emitter.emitContig("4", trainingStream);
-//		emitter.emitContig("5", trainingStream);
-//		emitter.emitContig("6", trainingStream);
-//		emitter.emitContig("7", trainingStream);
-//		emitter.emitContig("8", trainingStream);
-//		emitter.emitContig("9", trainingStream);
+		emitter.emitContig("5", trainingStream);
+		emitter.emitContig("6", trainingStream);
+		emitter.emitContig("7", trainingStream);
+		emitter.emitContig("9", trainingStream);
+		emitter.emitContig("10", trainingStream);
+		emitter.emitContig("11", trainingStream);
+		emitter.emitContig("12", trainingStream);
+		emitter.emitContig("13", trainingStream);
+		emitter.emitContig("14", trainingStream);
+		emitter.emitContig("15", trainingStream);
+		
+		
 		trainingStream.close();
 		
 		LIBSVMTrain trainer = new LIBSVMTrain();
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);
 		
+		emitter.emitTrainingCounts();
 	}
 	
 	public static void emitData(File bamFile, 
@@ -142,20 +156,22 @@ public class CommandLineApp {
 		mainTimer.start();
 		
 		File reference = new File("/home/brendan/resources/human_g1k_v37.fasta");
-		File trueTraining = new File("/home/brendan/resources/1000G_omni2.5.b37.sites.vcf");
+		File trueTraining = new File("/home/brendan/bamreading/NA12878_auto.q0.highqual.known.csv");
 		//File trueTraining = new File("/home/brendan/bamreading/medtest.knowns.csv");
-		File falseTraining = new File("/home/brendan/bamreading/medtest.chr1234.lowqual.csv");
+		File falseTraining = new File("/home/brendan/bamreading/NA12878_auto.q0.loqual.novel.csv");
 		List<ColumnComputer> counters = new ArrayList<ColumnComputer>();
 		counters.add( new DepthComputer());
+		counters.add( new BinomProbComputer());
 		counters.add( new QualSumComputer());
+		counters.add( new MeanQualityComputer());
 		counters.add( new PosDevComputer());
 		counters.add( new MQComputer());
 		counters.add( new DistroProbComputer());
 		counters.add( new NearbyQualComputer());
-		counters.add( new StrandBiasComputer());
+		//counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		
-		File inputBAM = new File("/home/brendan/oldhome/medtest/medtest.final.bam");
+		File inputBAM = new File("/home/brendan/bamreading/NA12878_auto.final.bam");
 //		File outputFile = new File("/home/brendan/bamreading/testoutput.csv");
 //		emitData(inputBAM, reference, outputFile, counters);
 //		
@@ -164,14 +180,16 @@ public class CommandLineApp {
 		//LIBSVMModel model = new LIBSVMModel(new File("/home/brendan/bamreading/tc1-4.model"));
 		
 		//Create model
-		File modelFile = new File("/home/brendan/bamreading/tc1-4.model");
-		generateModel(inputBAM, reference, trueTraining, falseTraining, modelFile, counters);
+		File modelFile = new File("/home/brendan/bamreading/NA12878_auto.chr1-15.model");
+		//generateModel(inputBAM, reference, trueTraining, falseTraining, modelFile, counters);
+		//System.err.println("Model gen time :  " + mainTimer.getTotalTimeSeconds() + " seconds");
 		
+		LIBSVMModel model = new LIBSVMModel(modelFile);
 		
 		//predictCV(inputBAM, reference, trueTraining, falseTraining, model, counters);
 		
 		
-		callSNPs(inputBAM, reference, new LIBSVMModel(modelFile), counters);		
+		callSNPs(inputBAM, reference, model, counters);	
 		
 		
 		mainTimer.stop();

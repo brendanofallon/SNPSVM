@@ -5,9 +5,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
+import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 
 public class ReferenceBAMEmitter {
@@ -18,6 +20,8 @@ public class ReferenceBAMEmitter {
 	List<ColumnComputer> counters;
 	protected File positionsFile = null;
 	protected BufferedWriter positionWriter = null;
+	protected DecimalFormat formatter = new DecimalFormat("0.0###");
+	protected BinomProbComputer binomComputer = new BinomProbComputer(); //Used for initial filtering 
 	
 	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException {
 		refReader = new FastaWindow(reference);
@@ -45,14 +49,17 @@ public class ReferenceBAMEmitter {
 	
 	public void emitLine(PrintStream out) {
 		char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
-		if (alnCol.getDepth() > 2 && alnCol.countDifferingBases(refBase)>1) {
+		if (alnCol.getDepth() > 1 && alnCol.countDifferingBases(refBase)>1) {
+			if (binomComputer.computeValue(refReader, alnCol)[0] < 1e-6) {
+				return;
+			}
 			//out.print(refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
 				Double[] values = counter.computeValue(refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
-					out.print("\t" + index + ":" + values[i] );
+					out.print("\t" + index + ":" + formatter.format(values[i]) );
 					index++;
 				}
 			}
@@ -93,7 +100,7 @@ public class ReferenceBAMEmitter {
 			throw new IllegalArgumentException("Reference does not have contig : " + contig);
 		}
 		Integer size = contigMap.get(contig);
-		emitWindow(contig, 10, size, out);
+		emitWindow(contig, 1, size, out);
 	}
 	
 	public void emitWindow(String contig, int start, int end) throws IOException {
@@ -104,6 +111,7 @@ public class ReferenceBAMEmitter {
 		
 		refReader.resetTo(contig, start);
 		alnCol.advanceTo(contig, start+1);
+		System.out.println("Done advancing to contig " + contig + ", now emitting data..");
 		
 		int curPos = start;
 		while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {

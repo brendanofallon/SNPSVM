@@ -13,20 +13,36 @@ import libsvm.LIBSVMResult;
 public class ResultEmitter {
 
 	public void writeResults(LIBSVMResult result, File destinationFile) throws IOException {
-		BufferedWriter writer = new BufferedWriter(new FileWriter(destinationFile));
+		
 		BufferedReader resultReader = new BufferedReader(new FileReader(result.getFilePath()));
 		BufferedReader posReader = new BufferedReader(new FileReader(result.getPositionsFile()));
 		
 		String resultLine = resultReader.readLine();
+		//Columns may be in any order, so parse the first result line to figure out which one's which
+		String[] toks = resultLine.split(" ");
+		if (toks.length < 3) {
+			resultReader.close();
+			posReader.close();
+			throw new IllegalArgumentException("Incorrect number of tokens in first result line, can't figure out what the columns are");
+		}
+		
+		BufferedWriter writer = new BufferedWriter(new FileWriter(destinationFile));
+		int varIndex = 1;
+		int noVarIndex = 2;
+		if (toks[2].equals("1")) {
+			varIndex = 2;
+			noVarIndex = 1;
+		}
 		resultLine = resultReader.readLine();
 		String posLine = posReader.readLine();
 		while(resultLine != null && posLine != null) {
 			
-			//double qScore = parseQuality(resultLine);
 			
-			if (resultLine.startsWith("1")) {
+			toks = resultLine.split(" ");
+			double qScore = parseQuality(toks[noVarIndex], toks[varIndex]);
+			if (qScore > 1) {
 				//writer.write(posLine.replace(":", "\t") + "\n");
-				toCSVLine(posLine, resultLine, writer);
+				toCSVLine(posLine, qScore, writer);
 			}
 				
 			resultLine = resultReader.readLine();
@@ -39,32 +55,29 @@ public class ResultEmitter {
 	}
 	
 	
-	private double parseQuality(String resultLine) {
-		String[] resToks = resultLine.split(" ");
-		Double p1 = Double.parseDouble(resToks[1]);
-		Double p2 = Double.parseDouble(resToks[2]);
+	private double parseQuality(String varProb, String noVarProb) {
+		Double p1 = Double.parseDouble(varProb);
+		Double p2 = Double.parseDouble(noVarProb);
 		double quality = computeQuality(p1, p2);
 		return quality;
 	}
 
 
-	public static void toCSVLine(String posLine, String resultLine, Writer output) throws IOException {
+	public static void toCSVLine(String posLine, double qScore, Writer output) throws IOException {
 		String[] posToks = posLine.split(":");
-		String[] resToks = resultLine.split(" ");
+		
 		
 		char ref = posToks[2].charAt(0);
 		String contig = posToks[0];
 		String pos = posToks[1];
+		int end = (Integer.parseInt(pos)+1);
 		String alt = computeAlt(ref, posToks[3]);
 		int depth = posToks[3].length();
-		
-		Double p1 = Double.parseDouble(resToks[1]);
-		Double p2 = Double.parseDouble(resToks[2]);
-		double quality = computeQuality(p1, p2);
+
 		
 		String zyg = "het";
 		
-		output.write(contig + "\t" + pos + "\t" + (pos+1) + "\t" + ref + "\t" + alt + "\t" + quality + "\t" + depth + "\t" + zyg + "\n");
+		output.write(contig + "\t" + pos + "\t" + (end) + "\t" + ref + "\t" + alt + "\t" + qScore + "\t" + depth + "\t" + zyg + "\n");
 	}
 
 	/**

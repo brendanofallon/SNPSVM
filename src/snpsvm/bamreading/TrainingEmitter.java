@@ -21,8 +21,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private final double NO_VARIANT_FRAC = 0.0001; //Probability that any non-variant individual site will be included in the no-variant class
-	private final int MAX_NO_VARIANTS = 10000; //Dont ever include more than this number of non-variant sites
+	private double invariantFrac = 0.0001; //Probability that any non-variant individual site will be included in the no-variant class
+	private int maxInvariants = 20000; //Dont ever include more than this number of non-variant sites
 	private int nonVariantSitesIncluded = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
@@ -36,6 +36,13 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 		this.knownFalseSites = new VariantList(knownFalseSites);
 	}
 	
+	/**
+	 * Set probability that a randomly selected invariant site will be included in the false training set
+	 * @param prob
+	 */
+	public void setInvariantProb(double prob) {
+		this.invariantFrac = prob;
+	}
 	
 	public void emitLine(PrintStream out) {
 		if (alnCol.getDepth() > 2) {
@@ -64,9 +71,9 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				falseSites++;
 			}
 
-			if (prefix == null && nonVariantSitesIncluded < MAX_NO_VARIANTS && alnCol.countDifferingBases(refBase) < 3) {
+			if (prefix == null && nonVariantSitesIncluded < maxInvariants && alnCol.countDifferingBases(refBase) < 2) {
 				double r = Math.random();
-				if (r < NO_VARIANT_FRAC) {
+				if (r < invariantFrac) {
 					prefix = "-1";
 					nonVariantSitesIncluded++;
 				}
@@ -80,7 +87,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				for(ColumnComputer counter : counters) {
 					Double[] values = counter.computeValue(refReader, alnCol);
 					for(int i=0; i<values.length; i++) {
-						out.print("\t" + index + ":" + values[i] );
+						out.print("\t" + index + ":" + formatter.format(values[i]) );
 						index++;
 					}
 				}
@@ -103,7 +110,11 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
 		super.emitWindow(contig, start, end, out);
 		
-		System.out.println("Training set builder found \n" + trueSites + " true positive \n" + falseSites + " false positive \n" + nonVariantSitesIncluded + " invariant \n"  + counted + " total sites");
+		System.out.println("Contig : " + contig + ", trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + nonVariantSitesIncluded + " invariant \t"  + counted + " total sites");
 	}
 
+	
+	public void emitTrainingCounts() {
+		System.out.println("Overall trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + nonVariantSitesIncluded + " invariant \t"  + counted + " total sites");
+	}
 }

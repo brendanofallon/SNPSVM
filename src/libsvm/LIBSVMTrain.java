@@ -8,6 +8,8 @@ public class LIBSVMTrain {
 	public static final String defaultPath = "/home/brendan/libsvm-3.12/";
 	public static final String trainingExecutable = "svm-train";
 	
+	private double defaultC = 10.0;
+	
 	public LIBSVMModel createModel(File trainingData) {
 		return createModel(trainingData, true);
 	}
@@ -39,10 +41,9 @@ public class LIBSVMTrain {
 		
 		String pathToModel = destinationModelFile.getAbsolutePath();
 		LIBSVMModel model = new LIBSVMModel(new File(pathToModel));
-		String command = defaultPath + trainingExecutable + " -t 2 -b 1 " + trainingData.getAbsolutePath() + " " + pathToModel;
+		String command = defaultPath + trainingExecutable + " -t 2 -b 1 -c " + defaultC + " " + trainingData.getAbsolutePath() + " " + pathToModel;
 		ProcessBuilder procBuilder = new ProcessBuilder("bash", "-c", command);
 		System.out.println("Executing command : " + command);
-		System.out.println("Running model, model file will be at : " + pathToModel);
 		try {
 			Process proc = procBuilder.start();
 			int exitVal = proc.waitFor();

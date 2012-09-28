@@ -53,6 +53,8 @@ public class StrandBiasComputer implements ColumnComputer {
 		value[0] = (forward[1]/forward[0] - 0.5)*(forward[1]/forward[0] - 0.5) / 0.5;
 		value[0] += (reverse[1]/reverse[0] - 0.5)*(reverse[1]/reverse[0] - 0.5) / 0.5;
 		
+		if (value[0] > 100.0)
+			value[0] = 100.0;
 		return value;
 	}
 

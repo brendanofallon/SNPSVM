@@ -55,6 +55,9 @@ public class DistroProbComputer implements ColumnComputer {
 		
 		double result = Math.log(errProb / (hetProb + homProb + errProb)); 
 		
+		if (result < -10)
+			result = -10;
+		
 		value[0] = result;
 		return value;
 	}

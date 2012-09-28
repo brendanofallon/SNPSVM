@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
@@ -22,7 +23,7 @@ import net.sf.samtools.SAMSequenceRecord;
  */
 public class BamWindow {
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	
 	final File bamFile;
 	final SAMFileReader samReader; 
@@ -100,6 +101,7 @@ public class BamWindow {
 				System.out.println("No more reads in contig : " + currentContig);
 			return;
 		}
+		
 		advanceTo(currentContig, newTarget);
 	}
 	
@@ -112,6 +114,31 @@ public class BamWindow {
 	}
 	
 	/**
+	 * A sanity check to ensure that all reads span the current position
+	 */
+	public void checkReads() {
+		if (records.size()>0) {
+			Iterator<MappedRead> it = getIterator();
+			MappedRead read = it.next();
+			while(read != null) {
+				if (read.getRecord().getAlignmentStart() <= currentPos && read.getRecord().getAlignmentEnd() >= currentPos) {
+					//cool
+				}
+				else {
+					System.out.println("Read start: " + read.getRecord().getAlignmentStart() + " end:" + read.getRecord().getAlignmentEnd());
+					throw new IllegalArgumentException("Uugh, read does not span current position of : " + currentPos);
+				}
+				try {
+					read = it.next();
+				}
+				catch(NoSuchElementException ex) {
+					read = null;
+				}
+			}	
+		}
+	}
+	
+	/**
 	 * Advance to given contig if necessary, then advance to given position
 	 * @param contig
 	 * @param pos
@@ -120,13 +147,16 @@ public class BamWindow {
 		//Advance to wholly new site
 		//Expand leading edge until the next record is beyond target pos
 		
+		if (pos == 76982) {
+			System.out.println("beak");
+		}
+		
 		advanceToContig(contig);
 		
 		if (pos > contigMap.get(contig)) {
 			throw new IllegalArgumentException("Contig " + contig + " has only " + contigMap.get(contig) + " bases, can't advance to " + pos);
 		}
 		
-		currentPos = pos;
 		
 		if (nextRecord != null) {
 			if (! nextRecord.getReferenceName().equals(currentContig)) {
@@ -134,13 +164,19 @@ public class BamWindow {
 			}
 		}
 		
+		//Must occur BEFORE we try to get new records...
+		currentPos = pos;
+		
 		while(nextRecord != null 
-				&& nextRecord.getAlignmentStart() <= pos 
+				&& nextRecord.getAlignmentStart() <= pos
 				&& nextRecord.getReferenceName().equals(currentContig)) {
 			expand();
 			shrinkTrailingEdge();
 		}
 		
+		shrinkTrailingEdge();
+	
+		checkReads();
 	}
 	
 	/**
@@ -159,12 +195,17 @@ public class BamWindow {
 		
 		if (DEBUG)
 			System.err.println("Advancing to contig : " + contig);
-		//Going to a new contig, clear current queue
+		
+		recordIt.close();
 		currentPos = 0;
 		records.clear();
-		while(nextRecord != null && (!nextRecord.getReferenceName().equals(contig))) {
-			nextRecord = recordIt.next();
-		}
+		
+		int length = contigMap.get(contig);
+		recordIt = samReader.queryOverlapping(contig, 1, length);
+		
+		//Going to a new contig, clear current queue
+		
+		nextRecord = recordIt.next();
 		
 		if (nextRecord != null)
 			currentContig = contig;
@@ -198,7 +239,13 @@ public class BamWindow {
 		records.push(new MappedRead(nextRecord));
 		
 		//Find next suitable record
-		nextRecord = recordIt.next();
+		try {
+			nextRecord = recordIt.next();
+		}
+		catch(NoSuchElementException ex) {
+			nextRecord = null;
+		}
+		
 		//Automagically skip unmapped reads and reads with unmapped mates
 		while(nextRecord != null && (nextRecord.getMappingQuality()==0 || nextRecord.getMateUnmappedFlag())) {
 			//System.out.println("Skipping record with mapping quality: " + nextRecord.getMappingQuality() + " mate mapping quality: " + nextRecord.getMateUnmappedFlag());
@@ -213,10 +260,9 @@ public class BamWindow {
 	private void shrinkTrailingEdge() {
 		MappedRead trailingRecord = getTrailingRecord();
 		
-		while(trailingRecord != null && 
-				(trailingRecord.getRecord().getAlignmentStart() + trailingRecord.getRecord().getReadLength() < currentPos)) {
+		while(trailingRecord != null &&  trailingRecord.getRecord().getAlignmentEnd() < currentPos) {
 			MappedRead removed = records.pollLast();
-			//System.out.println("Trimming record starting at : " + removed.getRecord().getAlignmentStart() + "-" + (removed.getRecord().getAlignmentStart()+removed.getRecord().getReadLength()));
+			System.out.println("Trimming record starting at : " + removed.getRecord().getAlignmentStart() + "-" + (removed.getRecord().getAlignmentEnd()));
 			trailingRecord = getTrailingRecord();
 		}
 	}
