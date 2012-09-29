@@ -1,5 +1,10 @@
 package snpsvm.app;
 
+import java.io.File;
+import java.io.IOException;
+
+import snpsvm.bamreading.IntervalList;
+
 public abstract class AbstractModule implements Module {
 
 	
@@ -11,6 +16,42 @@ public abstract class AbstractModule implements Module {
 			System.err.println(errorMessage);
 			return null;
 		}
+	}
+	
+	/**
+	 * Attempt to build a list of intervals from the -L argument. If the arg specifies a file, we assume it's
+	 * a .BED file and try to read the intervals from it. If not, we treat it as a string and try to parse
+	 * intervals of the form chrX:1-1000,chr5:1000-52134987 from it
+	 * @param args
+	 * @return An IntervalList containing the intervals described, or null if there are no specified intervals
+	 */
+	public IntervalList getIntervals(ArgParser args) {
+		String intervalsStr = getOptionalStringArg(args, "-L");
+		if (intervalsStr == null) {
+			return null;
+		}
+		IntervalList intervals = new IntervalList();
+		File testFile = new File(intervalsStr);
+		if (testFile.exists()) {
+			System.err.println("Building interval list from file " + testFile.getName());
+			try {
+				intervals.buildFromBEDFile(testFile);
+			} catch (IOException e) {
+				System.err.println("Error building interval list from BED file :  " + e.getMessage());
+			}
+		}
+		else {
+			try {
+				intervals.buildFromString(intervalsStr);
+			}
+			catch (Exception ex) {
+				System.err.println("Error parsing intervals from " + intervalsStr + " : " + ex.getMessage());
+				return null;
+			}
+		}
+		
+		return intervals;
+	}
 	}
 	
 	/**

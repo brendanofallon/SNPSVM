@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import libsvm.LIBSVMModel;
-import libsvm.LIBSVMTrain;
+import libsvm.LIBSVMPredictor;
+import libsvm.LIBSVMResult;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
-import snpsvm.bamreading.TrainingEmitter;
+import snpsvm.bamreading.ReferenceBAMEmitter;
+import snpsvm.bamreading.ResultEmitter;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.DepthComputer;
@@ -23,11 +25,11 @@ import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
 
-public class ModelBuilder extends AbstractModule {
+public class Predictor extends AbstractModule {
 
 	List<ColumnComputer> counters;
 	
-	public ModelBuilder() {
+	public Predictor() {
 		counters = new ArrayList<ColumnComputer>();
 		counters.add( new DepthComputer());
 		counters.add( new BinomProbComputer());
@@ -44,69 +46,45 @@ public class ModelBuilder extends AbstractModule {
 	
 	@Override
 	public boolean matchesModuleName(String name) {
-		return name.equalsIgnoreCase("buildmodel");
+		return name.equalsIgnoreCase("predict");
 	}
 
 	@Override
 	public void performOperation(String name, ArgParser args) {
 		String referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
-		String trueTrainingPath = getRequiredStringArg(args, "-T", "Missing required argument for true training sites file, use -T");
-		String falseTrainingPath = getRequiredStringArg(args, "-F", "Missing required argument for false training sites file, use -F");
 		String inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
-		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model destination file, use -M");
-		
+		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model file, use -M");
+		String vcfPath = getRequiredStringArg(args, "-V", "Missing required argument for destination file, use -V");
 		IntervalList intervals = getIntervals(args);
 		
-		File referenceFile = new File(referencePath);
-		File trueTraining = new File(trueTrainingPath);
-		File falseTraining = new File(falseTrainingPath);
 		File inputBAM = new File(inputBAMPath);
-		
-		File modelDestination = new File(modelPath);
-		
+		File reference = new File(referencePath);
+		File model = new File(modelPath);
+		File vcf = new File(vcfPath);
 		
 		try {
-			
-			generateModel(inputBAM, 
-					referenceFile, 
-					trueTraining, 
-					falseTraining, 
-					modelDestination,
-					intervals, 
-					counters);
-			
+			callSNPs(inputBAM, reference, model, vcf, intervals, counters);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
 	}
-
-	public static void generateModel(File knownBAM, 
-			File ref, 
-			File trueTraining, 
-			File falseTraining,
-			File modelFile,
-			List<ColumnComputer> counters) throws IOException {
-		
-		generateModel(knownBAM, ref, trueTraining, falseTraining, modelFile, null, counters);
-	}
-
-	public static void generateModel(File knownBAM, 
-			File ref, 
-			File trueTraining, 
-			File falseTraining,
-			File modelFile,
+	
+	public static void callSNPs(File knownBAM, 
+			File ref,
+			File model,
+			File destination,
 			IntervalList intervals,
 			List<ColumnComputer> counters) throws IOException {
-		
-		TrainingEmitter emitter = new TrainingEmitter(trueTraining, falseTraining, ref, knownBAM, counters);
-		
-		
+
+		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
+		File data = new File(destination.getName().replace(".vcf", "") + ".data");
+		File positionsFile = new File(destination.getName().replace(".vcf", "") + ".pos");
+		emitter.setPositionsFile(positionsFile);
+
 		//Read BAM file, write results to training file
-		File trainingFile = new File(knownBAM.getName().replace(".bam", "") + ".training.csv");
-		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
+		
+		PrintStream trainingStream = new PrintStream(new FileOutputStream(data));		
 		if (intervals == null) {
 			emitter.emitAll(trainingStream); 
 		}
@@ -120,9 +98,15 @@ public class ModelBuilder extends AbstractModule {
 			}
 		}
 		trainingStream.close();
-		
-		LIBSVMTrain trainer = new LIBSVMTrain();
-		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);
-		
+
+		LIBSVMPredictor predictor = new LIBSVMPredictor();
+		LIBSVMResult result = predictor.predictData(data, new LIBSVMModel(model));
+		result.setPositionsFile(positionsFile);
+
+		ResultEmitter resultWriter = new ResultEmitter();
+
+		resultWriter.writeResults(result, destination);
+
 	}
+
 }

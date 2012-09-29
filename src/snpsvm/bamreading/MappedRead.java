@@ -31,40 +31,6 @@ public class MappedRead {
 					}
 				}
 			}
-			
-//			if (mismatchCount > 10) {
-//				System.out.println("Whoa! Lots of mismatches: "+ mismatchCount);
-//
-//				for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
-//					if (hasBaseAtReferencePos(i)) {
-//						System.out.print( ((char) getBaseAtReferencePos(i)) );
-//					}
-//
-//				}
-//				System.out.println();
-//
-//				for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
-//					if (hasBaseAtReferencePos(i)) {
-//						System.out.print( ref.getBaseAt(i+1));
-//					}
-//				}
-//
-//				System.out.println();
-//				for(int i=read.getAlignmentStart(); i<read.getAlignmentEnd(); i++) {
-//					if (hasBaseAtReferencePos(i)) {
-//						char b = (char)getBaseAtReferencePos(i);
-//						char c = ref.getBaseAt(i+1);
-//						if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i+1)) {
-//							System.out.print("*");
-//						}
-//						else {
-//							System.out.print(".");
-//						}
-//					}
-//
-//				}
-//				System.out.println();
-//			}
 		}
 		
 		return mismatchCount;
