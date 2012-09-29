@@ -4,16 +4,44 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import libsvm.LIBSVMModel;
 import libsvm.LIBSVMTrain;
 import snpsvm.bamreading.IntervalList;
+import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.TrainingEmitter;
+import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
+import snpsvm.counters.DepthComputer;
+import snpsvm.counters.DistroProbComputer;
+import snpsvm.counters.MQComputer;
+import snpsvm.counters.MeanQualityComputer;
+import snpsvm.counters.MismatchComputer;
+import snpsvm.counters.NearbyQualComputer;
+import snpsvm.counters.PosDevComputer;
+import snpsvm.counters.QualSumComputer;
 
 public class ModelBuilder extends AbstractModule {
 
+	List<ColumnComputer> counters;
+	
+	public ModelBuilder() {
+		counters = new ArrayList<ColumnComputer>();
+		counters.add( new DepthComputer());
+		counters.add( new BinomProbComputer());
+		counters.add( new QualSumComputer());
+		counters.add( new MeanQualityComputer());
+		counters.add( new PosDevComputer());
+		counters.add( new MQComputer());
+		counters.add( new DistroProbComputer());
+		counters.add( new NearbyQualComputer());
+		//counters.add( new StrandBiasComputer());
+		counters.add( new MismatchComputer());
+		
+	}
+	
 	@Override
 	public boolean matchesModuleName(String name) {
 		return name.equalsIgnoreCase("buildmodel");
@@ -28,21 +56,28 @@ public class ModelBuilder extends AbstractModule {
 		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model destination file, use -M");
 		
 		String intervalsStr = getOptionalStringArg(args, "-L");
-		IntervalList intervals = new IntervalList();
+		IntervalList intervals = null;
 		
 		//Determine if intervalsStr points to a file
-		File testFile = new File(intervalsStr);
-		if (testFile.exists()) {
-			System.err.println("Building interval list from file " + testFile.getName());
-			intervals.buildFromBEDFile(testFile);
-		}
-		else {
-			try {
-				intervals.buildFromString(intervalsStr);
+		if (intervalsStr != null) {
+			intervals = new IntervalList();
+			File testFile = new File(intervalsStr);
+			if (testFile.exists()) {
+				System.err.println("Building interval list from file " + testFile.getName());
+				try {
+					intervals.buildFromBEDFile(testFile);
+				} catch (IOException e) {
+					System.err.println("Error building interval list from BED file :  " + e.getMessage());
+				}
 			}
-			catch (Exception ex) {
-				System.err.println("Error parsing intervals from " + intervalsStr);
-				return;
+			else {
+				try {
+					intervals.buildFromString(intervalsStr);
+				}
+				catch (Exception ex) {
+					System.err.println("Error parsing intervals from " + intervalsStr + " : " + ex.getMessage());
+					return;
+				}
 			}
 		}
 		
@@ -54,11 +89,33 @@ public class ModelBuilder extends AbstractModule {
 		File modelDestination = new File(modelPath);
 		
 		
-		generateModel(inputBAM, referenceFile, trueTraining, falseTraining, modelDestination, intervals);
+		try {
+			
+			generateModel(inputBAM, 
+					referenceFile, 
+					trueTraining, 
+					falseTraining, 
+					modelDestination,
+					intervals, 
+					counters);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 	}
 
+	public static void generateModel(File knownBAM, 
+			File ref, 
+			File trueTraining, 
+			File falseTraining,
+			File modelFile,
+			List<ColumnComputer> counters) throws IOException {
+		
+		generateModel(knownBAM, ref, trueTraining, falseTraining, modelFile, null, counters);
+	}
 
 	public static void generateModel(File knownBAM, 
 			File ref, 
@@ -74,10 +131,18 @@ public class ModelBuilder extends AbstractModule {
 		//Read BAM file, write results to training file
 		File trainingFile = new File(knownBAM.getName().replace(".bam", "") + ".training.csv");
 		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
-		
+		if (intervals == null) {
+			emitter.emitAll(trainingStream); 
+		}
+		for(String contig : intervals.getContigs()) {
+			for(Interval interval : intervals.getIntervalsInContig(contig)) {
+				emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
+			}
+		}
+		trainingStream.close();
 		
 		LIBSVMTrain trainer = new LIBSVMTrain();
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);
-		trainingStream.close();
+		
 	}
 }

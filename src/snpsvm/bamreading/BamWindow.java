@@ -147,10 +147,6 @@ public class BamWindow {
 		//Advance to wholly new site
 		//Expand leading edge until the next record is beyond target pos
 		
-		if (pos == 76982) {
-			System.out.println("beak");
-		}
-		
 		advanceToContig(contig);
 		
 		if (pos > contigMap.get(contig)) {
@@ -171,12 +167,12 @@ public class BamWindow {
 				&& nextRecord.getAlignmentStart() <= pos
 				&& nextRecord.getReferenceName().equals(currentContig)) {
 			expand();
-			shrinkTrailingEdge();
 		}
 		
 		shrinkTrailingEdge();
 	
-		checkReads();
+		//Nice sanity check...
+		//checkReads();
 	}
 	
 	/**
@@ -249,7 +245,12 @@ public class BamWindow {
 		//Automagically skip unmapped reads and reads with unmapped mates
 		while(nextRecord != null && (nextRecord.getMappingQuality()==0 || nextRecord.getMateUnmappedFlag())) {
 			//System.out.println("Skipping record with mapping quality: " + nextRecord.getMappingQuality() + " mate mapping quality: " + nextRecord.getMateUnmappedFlag());
-			nextRecord = recordIt.next();
+			try {
+				nextRecord = recordIt.next();
+			}
+			catch (NoSuchElementException ex) {
+				nextRecord = null;
+			}
 		}
 	}
 

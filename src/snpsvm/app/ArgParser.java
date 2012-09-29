@@ -27,7 +27,9 @@ public class ArgParser {
 					}
 				}
 				args.put(arg, val);
+
 			}
+			index++;
 		}
 	}
 

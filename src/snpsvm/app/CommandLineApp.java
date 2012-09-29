@@ -35,20 +35,19 @@ public class CommandLineApp {
 								List<ColumnComputer> counters) throws IOException {
 
 		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
-		File positionsFile = new File("/home/brendan/bamreading/chr16-22.profile.pos");
+		File positionsFile = new File("/home/brendan/bamreading/chr16-22.pos");
 		emitter.setPositionsFile(positionsFile);
 		
 		//Read BAM file, write results to training file
-		File trainingFile = new File("/home/brendan/bamreading/tc16-22.profile.csv");
-		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
-		emitter.emitWindow("16", 1, 1000000);
-//		emitter.emitContig("16", trainingStream);
-//		emitter.emitContig("17", trainingStream);
-//		emitter.emitContig("18", trainingStream);
-//		emitter.emitContig("19", trainingStream);
-//		emitter.emitContig("20", trainingStream);
-//		emitter.emitContig("21", trainingStream);
-//		emitter.emitContig("22", trainingStream);
+		File trainingFile = new File("/home/brendan/bamreading/tc16-22.csv");
+		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));		
+		emitter.emitContig("16", trainingStream);
+		emitter.emitContig("17", trainingStream);
+		emitter.emitContig("18", trainingStream);
+		emitter.emitContig("19", trainingStream);
+		emitter.emitContig("20", trainingStream);
+		emitter.emitContig("21", trainingStream);
+		emitter.emitContig("22", trainingStream);
 		trainingStream.close();
 		
 		LIBSVMPredictor predictor = new LIBSVMPredictor();
@@ -151,9 +150,32 @@ public class CommandLineApp {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		
+
 		Timer mainTimer = new Timer("main");
 		mainTimer.start();
+		
+		if (args.length > 0) {
+			ModuleList modules = new ModuleList();
+			Module mod = modules.getModuleForName(args[0]);
+			if (mod == null) {
+				System.err.println("Could not find a module with name: " + args[0]);
+				return;
+			}
+			System.err.println("Loading module " + mod.getClass().toString().replace(".class", ""));
+			
+			ArgParser argParser = new ArgParser(args);
+			mod.performOperation(args[0], argParser);
+			
+			mainTimer.stop();
+			System.err.println("Elapsed time :  " + mainTimer.getTotalTimeSeconds() + " seconds");
+			
+			return;
+		}
+		
+		
+
+		
+		
 		
 		File reference = new File("/home/brendan/resources/human_g1k_v37.fasta");
 		File trueTraining = new File("/home/brendan/bamreading/NA12878_auto.q0.highqual.known.csv");
@@ -181,8 +203,8 @@ public class CommandLineApp {
 		
 		//Create model
 		File modelFile = new File("/home/brendan/bamreading/NA12878_auto.chr1-15.model");
-		//generateModel(inputBAM, reference, trueTraining, falseTraining, modelFile, counters);
-		//System.err.println("Model gen time :  " + mainTimer.getTotalTimeSeconds() + " seconds");
+		generateModel(inputBAM, reference, trueTraining, falseTraining, modelFile, counters);
+		System.err.println("Model gen time :  " + mainTimer.getTotalTimeSeconds() + " seconds");
 		
 		LIBSVMModel model = new LIBSVMModel(modelFile);
 		

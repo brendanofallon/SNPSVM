@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ public class IntervalList {
 	 * @param inputStr
 	 */
 	public void buildFromString(String inputStr) {
+		intervals = new HashMap<String, List<Interval>>();
 		String[] toks = inputStr.split(",");
 		for(int i=0; i<toks.length; i++) {
 			String tok = toks[i].trim();
@@ -53,7 +55,8 @@ public class IntervalList {
 				}
 			}
 			else {
-				addInterval(tok, new Interval(0, Integer.MAX_VALUE));
+				Interval interval = new Interval(1, Integer.MAX_VALUE); 
+				addInterval(tok, interval);
 			}
 		}
 	}
@@ -126,13 +129,31 @@ public class IntervalList {
 			return 0;
 		}
 		
-		for(String contig : intervals.keySet()) {
-			List<Interval> intList = intervals.get(contig);
+		for(String contig : getContigs()) {
+			List<Interval> intList = getIntervalsInContig(contig);
 			for(Interval interval : intList) {
 				size += interval.getSize();
 			}
 		}
 		return size;
+	}
+	
+	/**
+	 * Obtain a collection containing the names of all contigs (aka chromosomes, aka sequences)
+	 * in this set of intervals
+	 * @return
+	 */
+	public Collection<String> getContigs() {
+		return intervals.keySet();
+	}
+	
+	/**
+	 * Obtain a list of all intervals in the given contig
+	 * @param contig
+	 * @return
+	 */
+	public List<Interval> getIntervalsInContig(String contig) {
+		return intervals.get(contig);
 	}
 	
 	/**
@@ -182,4 +203,6 @@ public class IntervalList {
 			return 0;
 		}
 	}
+
+	
 }
