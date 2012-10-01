@@ -75,7 +75,7 @@ public class IntervalList {
 		while(line != null) {
 			if (line.trim().length() > 1) {
 				String[] toks = line.split("\t");
-				if (toks.length > 3) {
+				if (toks.length > 2) {
 					String contig = toks[0];
 					try {
 						int first = Integer.parseInt(toks[1]);

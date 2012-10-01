@@ -154,7 +154,7 @@ public class FastaReader {
 		return currentLine.charAt(lineOffset);
 	}
 	
-	private void advanceToPos(int pos) throws IOException {
+	public void advanceToPos(int pos) throws IOException {
 		int toAdvance = pos - currentPos; //Total number of bases to advance
 		advance(toAdvance);
 	}
@@ -210,7 +210,6 @@ public class FastaReader {
 			if (! getCurrentTrack().equals( startTrack)) {
 				throw new IllegalArgumentException("Advanced past end of track " + startTrack);
 			}
-			//out.write((1+currentPos) + "\t" + nextPos() + "\n");
 			out.write( nextPos() );
 		}
 	}

@@ -62,24 +62,42 @@ public class FastaWindow {
 	 * @throws IOException
 	 */
 	public void resetTo(String contig, int leftEdgePos) throws IOException {
-		bases.clear();
-		reader.advanceToTrack(contig);
-		leftEdgePos--;
 		
-		reader.advance(leftEdgePos);
-		leftEdge = leftEdgePos+1;
-		int contigSize = reader.getContigSizes().get(contig);
-		
-		for(int i=leftEdgePos; i<Math.min(leftEdgePos+windowSize, contigSize); i++) {
-			Character b = reader.nextPos();
-			try {
-				bases.add(b);
-			} catch (FullQueueException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				break;
-			}
+		if (! reader.getCurrentTrack().equals(contig)) {
+			bases.clear();
+			this.leftEdge = 1;
+			reader.advanceToTrack(contig);			
 		}
+		else {
+			if (leftEdgePos < indexOfRightEdge()) {
+				//Advance by amount less than current window size, so just shift and don't clear any bases
+				while(leftEdge < leftEdgePos) {
+					shift();
+				}
+				return;
+			}
+
+		}
+		
+		bases.clear();
+		//Left edge may be at default value of -1
+		if (leftEdge < 0)
+			leftEdge = 1;
+
+		reader.advanceToPos(leftEdgePos-1); //reader actually keeps things 0-indexed, so subtract 1
+		leftEdge = leftEdgePos;
+		int contigSize = reader.getContigSizes().get(contig);
+
+		try {
+			for(int i=leftEdgePos; i<Math.min(leftEdgePos+windowSize, contigSize); i++) {
+				Character b = reader.nextPos();
+				bases.add(b);
+			}
+		} catch (FullQueueException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 	
 	/**
@@ -94,6 +112,7 @@ public class FastaWindow {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			try {
 				bases.add( reader.nextPos() );
 			} catch (FullQueueException e) {
@@ -118,12 +137,12 @@ public class FastaWindow {
 	 * @return
 	 */
 	public char getBaseAt(int refPos) {
-		if (refPos <= leftEdge)
+		if (refPos < leftEdge)
 			throw new IllegalArgumentException("Can't access position before left edge: position: " + refPos + " but left edge is: " + leftEdge);
 		if (refPos > leftEdge+bases.size()) {
 			throw new IllegalArgumentException("Can't access position after right edge: position: " + refPos + " but right edge is: " + (leftEdge+bases.size()));
 		}
-		int index = refPos - leftEdge-1;
+		int index = refPos - leftEdge;
 		return bases.get(index);
 	}
 	
@@ -139,14 +158,36 @@ public class FastaWindow {
 	public static void main(String[] args) throws IOException {
 		FastaWindow fw = new FastaWindow(new File("/home/brendan/resources/human_g1k_v37.fasta"));
 		
-		fw.resetTo("21", 1000000);
-		System.out.println( fw.allToString() );
+		fw.resetTo("1", 861200);
 		
-		int count = 0;
-		while(true) {
-			fw.shift(100);
-			System.out.println( fw.allToString() );
-			count++;
+		
+		for(int i=0; i<10; i++) {
+			int pos = 861200 + i;
+			System.out.println(pos + " : " + fw.getBaseAt(pos));
 		}
+		
+		System.out.println("\n\n");
+		fw.resetTo("1", 861500);
+		for(int i=0; i<10; i++) {
+			int pos = 861500 + i;
+			System.out.println(pos + " : " + fw.getBaseAt(pos));
+		}
+		
+		System.out.println("\n\n");
+		fw.resetTo("1", 863140);
+		for(int i=0; i<10; i++) {
+			int pos = 863140 + i;
+			System.out.println(pos + " : " + fw.getBaseAt(pos));
+		}
+		
+		
+		System.out.println("\n\n");
+		fw.resetTo("5", 863142);
+		for(int i=0; i<10; i++) {
+			int pos = 863142 + i;
+			System.out.println(pos + " : " + fw.getBaseAt(pos));
+		}
+		
+		
 	}
 }

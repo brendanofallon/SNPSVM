@@ -48,7 +48,7 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitLine(PrintStream out) {
-		char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
+		char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
 		if (alnCol.getDepth() > 1 && alnCol.countDifferingBases(refBase)>1) {
 			if (binomComputer.computeValue(refReader, alnCol)[0] < 1e-6) {
 				return;
@@ -109,9 +109,8 @@ public class ReferenceBAMEmitter {
 	
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
 		
-		refReader.resetTo(contig, start);
-		alnCol.advanceTo(contig, start+1);
-		System.out.println("Done advancing to contig " + contig + ", now emitting data..");
+		refReader.resetTo(contig, start-1);
+		alnCol.advanceTo(contig, start);
 		
 		int curPos = start;
 		while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {
@@ -123,7 +122,7 @@ public class ReferenceBAMEmitter {
 			curPos++;
 			
 			//Sanity check
-			if (alnCol.getCurrentPosition() != (curPos+1)) {
+			if (alnCol.getCurrentPosition() != (curPos)) {
 				System.err.println("Yikes, bam reader position is not equal to current position");
 			}
 		}

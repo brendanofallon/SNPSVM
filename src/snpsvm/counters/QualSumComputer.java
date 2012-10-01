@@ -23,7 +23,7 @@ public class QualSumComputer extends VarCountComputer {
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
 
-			final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
+			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			while(it.hasNext()) {
 				MappedRead read = it.next();
 				if (read.hasBaseAtReferencePos(col.getCurrentPosition())) {

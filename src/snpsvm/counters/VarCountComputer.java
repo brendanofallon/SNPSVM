@@ -30,7 +30,7 @@ public class VarCountComputer implements ColumnComputer {
 	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
-		final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
+		final char refBase = window.getBaseAt(col.getCurrentPosition());
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {

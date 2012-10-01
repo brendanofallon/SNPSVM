@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,11 +90,21 @@ public class Predictor extends AbstractModule {
 			emitter.emitAll(trainingStream); 
 		}
 		else {
+			
+			DecimalFormat formatter = new DecimalFormat("#0.0##");
+			double ex = intervals.getExtent();
+			double counted = 0;
+			int index =0 ;
 			for(String contig : intervals.getContigs()) {
-				System.err.println("Emitting contig : " + contig);
+				//System.err.println("Emitting contig : " + contig);
 				for(Interval interval : intervals.getIntervalsInContig(contig)) {
-					System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
+					//System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
 					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
+					counted += interval.getLastPos() - interval.getFirstPos();
+					index++;
+					if (index % 10 ==0) {
+						System.err.println("Examined base " + formatter.format(100* counted / ex));
+					}
 				}
 			}
 		}

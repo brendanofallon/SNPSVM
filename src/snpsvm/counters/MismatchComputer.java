@@ -22,7 +22,7 @@ public class MismatchComputer extends VarCountComputer {
 		double altReads = 0;
 		
 		if (col.getDepth() > 0) {
-			final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
+			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {
 				MappedRead read = it.next();

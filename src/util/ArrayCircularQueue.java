@@ -2,8 +2,8 @@ package util;
 
 /**
  * A simple array-based circular queue implementation, with constant-time random access to elements.
- * This is only used in FastaWindow and has is char-based for performance reasons
- * Chars are added to the right and removed from the left 
+ * This is only used in FastaWindow and is strictly char-based for performance reasons
+ * Chars are added to the right edge and removed from the left edge 
  *   
  * @author brendan
  *
@@ -33,12 +33,12 @@ public class ArrayCircularQueue {
 	 */
 	public void add(char c) throws FullQueueException {
 		int temp =rightIndex;
-		rightIndex = (rightIndex + 1) %queue.length;
-		if (leftIndex==rightIndex ) {
+		if (leftIndex== (rightIndex+1)% queue.length ) {
 			rightIndex = temp;
 			throw new FullQueueException();
 		}
 		queue[rightIndex ] = c;
+		rightIndex = (rightIndex + 1) %queue.length;
 	}
 
 	public int size() {
@@ -51,7 +51,7 @@ public class ArrayCircularQueue {
 	public char get(int which) {
 		if (which >= size())
 			throw new IllegalArgumentException("Only " + size() + " objects in queue, cannot retrieve " + which);
-		return queue[ (leftIndex+which+1)%queue.length ];
+		return queue[ (leftIndex+which)%queue.length ];
 	}
 	
 	

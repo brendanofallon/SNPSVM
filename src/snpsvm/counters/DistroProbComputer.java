@@ -15,7 +15,7 @@ public class DistroProbComputer implements ColumnComputer {
 		int refCount = 0;
 		int altCount = 0;
 		if (col.getDepth() > 0) {
-			final char refBase = window.getBaseAt(col.getCurrentPosition()+1);
+			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {
 				MappedRead read = it.next();
