@@ -52,7 +52,6 @@ public abstract class AbstractModule implements Module {
 		
 		return intervals;
 	}
-	}
 	
 	/**
 	 * Return the given argument if it was given, otherwise return null and emit no message

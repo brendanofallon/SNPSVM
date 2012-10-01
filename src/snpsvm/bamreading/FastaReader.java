@@ -281,6 +281,10 @@ public class FastaReader {
 				advanceLine();
 			}
 			
+			if (currentLine == null) {
+				break;
+			}
+			
 			String chrStr = currentLine.trim().replace(">", "").replace("chr", "");
 			int endPos = chrStr.indexOf(" ");
 			if (endPos > 0) {
@@ -299,6 +303,11 @@ public class FastaReader {
 		}
 		
 		
+		
+		if (currentLine == null) {
+			initialize();
+			advanceToTrack(track);
+		}
 		
 		if (currentLine == null) {
 			System.err.println("Oops, somehow missed contig " + track + " maybe contigs are not in order?");
