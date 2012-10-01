@@ -171,11 +171,7 @@ public class CommandLineApp {
 			
 			return;
 		}
-		
-		
 
-		
-		
 		
 		File reference = new File("/home/brendan/resources/human_g1k_v37.fasta");
 		File trueTraining = new File("/home/brendan/bamreading/NA12878_auto.q0.highqual.known.csv");
