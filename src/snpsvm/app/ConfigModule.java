@@ -2,6 +2,7 @@ package snpsvm.app;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -69,11 +70,12 @@ public class ConfigModule implements Module {
 	 * Read properties from file into map
 	 */
 	private void loadProperties() {
+		properties = new HashMap<String, String>();
+		
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(configFilePath));
 			String line = reader.readLine();
-			properties = new HashMap<String, String>();
-			
+				
 			while(line != null) {
 				if (line.length()>0 && (! line.startsWith("#"))) {
 					String[] toks=  line.split("=");
@@ -102,6 +104,12 @@ public class ConfigModule implements Module {
 		}
 		
 		try {
+			File configFile = new File(configFilePath); 
+			if (! configFile.exists()) {
+				System.err.println("No configuration file found, creating new one at : " + configFile.getAbsolutePath());
+				configFile.createNewFile();
+			}
+			
 			BufferedWriter writer = new BufferedWriter(new FileWriter(configFilePath));
 			for(String key : properties.keySet()) {
 				writer.write(key + "=" + properties.get(key) + "\n");

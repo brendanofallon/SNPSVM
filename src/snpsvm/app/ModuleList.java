@@ -33,6 +33,7 @@ public class ModuleList {
 		modules = new ArrayList<Module>();
 		modules.add(new ModelBuilder());
 		modules.add(new Predictor());
+		modules.add(new ConfigModule());
 		
 	}
 	
