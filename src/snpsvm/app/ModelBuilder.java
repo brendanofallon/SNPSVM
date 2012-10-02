@@ -125,4 +125,14 @@ public class ModelBuilder extends AbstractModule {
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);
 		
 	}
+
+	@Override
+	public void emitUsage() {
+		System.out.println("Model Builder : Create a new SNP calling model from a .BAM file and VCF files specifying sites at which known true and false positive variant calls exist");
+		System.out.println("  -R reference file (fasta-formatted)");
+		System.out.println("  -T true variant sites VCF file");
+		System.out.println("  -F false / invariant sites VCF file");
+		System.out.println("  -B input BAM file");
+		System.out.println("  -M name of output .model file");
+	}
 }

@@ -121,4 +121,12 @@ public class ConfigModule implements Module {
 		}
 		
 	}
+
+	@Override
+	public void emitUsage() {
+		System.out.println("Configuration module : Add, remove, or list key=value pairs from a persistent file");
+		System.out.println(" -add key=value : Add the given key/val pair to the storage file, overwriting old values if present");
+		System.out.println(" -remove key : Remove the pair with the given key from storage");
+		System.out.println(" -list : list all key/value pairs");
+	}
 }
