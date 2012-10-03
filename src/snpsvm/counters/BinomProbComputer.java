@@ -17,11 +17,10 @@ public class BinomProbComputer implements ColumnComputer {
 	Double[] value = new Double[1];
 	
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		int refCount = 0;
 		int altCount = 0;
 		if (col.getDepth() > 0) {
-			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {
 				MappedRead read = it.next();

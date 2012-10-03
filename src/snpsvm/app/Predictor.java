@@ -25,6 +25,7 @@ import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
+import snpsvm.counters.StrandBiasComputer;
 
 public class Predictor extends AbstractModule {
 
@@ -40,7 +41,7 @@ public class Predictor extends AbstractModule {
 		counters.add( new MQComputer());
 		counters.add( new DistroProbComputer());
 		counters.add( new NearbyQualComputer());
-		//counters.add( new StrandBiasComputer());
+		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		
 	}
@@ -91,7 +92,7 @@ public class Predictor extends AbstractModule {
 		}
 		else {
 			
-			DecimalFormat formatter = new DecimalFormat("#0.0##");
+			DecimalFormat formatter = new DecimalFormat("#0.00");
 			double ex = intervals.getExtent();
 			double counted = 0;
 			int index =0 ;
@@ -103,7 +104,7 @@ public class Predictor extends AbstractModule {
 					counted += interval.getLastPos() - interval.getFirstPos();
 					index++;
 					if (index % 10 ==0) {
-						System.err.println("Examined base " + formatter.format(100* counted / ex));
+						System.err.println("Completed " + formatter.format(100* counted / ex) + "%");
 					}
 				}
 			}

@@ -18,7 +18,7 @@ public class NearbyQualComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		for(int i=0; i<WINDOW_SIZE; i++) {
 			values[i] = 0.0;
 		}

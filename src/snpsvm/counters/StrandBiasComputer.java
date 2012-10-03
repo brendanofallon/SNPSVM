@@ -18,17 +18,15 @@ public class StrandBiasComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		value[0] = 0.0;
-		forward[0] = 0.001; //prevents divide by zero errors
-		forward[1] = 0.001;
-		reverse[0] = 0.001;
-		reverse[1] = 0.001;
+		forward[0] = 1.0; //prevents divide by zero errors
+		forward[1] = 1.0;
+		reverse[0] = 1.0;
+		reverse[1] = 1.0;
 		
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
-
-			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			while(it.hasNext()) {
 				MappedRead read = it.next();
 				if (read.hasBaseAtReferencePos(col.getCurrentPosition())) {
@@ -36,7 +34,6 @@ public class StrandBiasComputer implements ColumnComputer {
 					if (b == 'N') 
 						continue;
 					
-					int q = read.getRecord().getMappingQuality();
 					int index = 0;
 					if ( b != refBase)
 						index = 1;
@@ -50,8 +47,8 @@ public class StrandBiasComputer implements ColumnComputer {
 			}
 		}
 		
-		value[0] = (forward[1]/forward[0] - 0.5)*(forward[1]/forward[0] - 0.5) / 0.5;
-		value[0] += (reverse[1]/reverse[0] - 0.5)*(reverse[1]/reverse[0] - 0.5) / 0.5;
+		value[0] = (forward[1]/reverse[1] - 0.5)*(forward[1]/reverse[1] - 0.5) / 0.5;
+		value[0] += (forward[0]/reverse[0] - 0.5)*(forward[0]/reverse[0] - 0.5) / 0.5;
 		
 		if (value[0] > 100.0)
 			value[0] = 100.0;

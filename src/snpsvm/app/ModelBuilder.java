@@ -22,6 +22,7 @@ import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
+import snpsvm.counters.StrandBiasComputer;
 
 public class ModelBuilder extends AbstractModule {
 
@@ -37,7 +38,7 @@ public class ModelBuilder extends AbstractModule {
 		counters.add( new MQComputer());
 		counters.add( new DistroProbComputer());
 		counters.add( new NearbyQualComputer());
-		//counters.add( new StrandBiasComputer());
+		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		
 	}

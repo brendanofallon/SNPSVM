@@ -85,7 +85,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				out.print(prefix);
 				//out.print(alnCol.getCurrentPosition() + "\t" + refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 				for(ColumnComputer counter : counters) {
-					Double[] values = counter.computeValue(refReader, alnCol);
+					Double[] values = counter.computeValue(refBase, refReader, alnCol);
 					for(int i=0; i<values.length; i++) {
 						out.print("\t" + index + ":" + formatter.format(values[i]) );
 						index++;

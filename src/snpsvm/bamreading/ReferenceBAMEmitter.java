@@ -48,16 +48,20 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitLine(PrintStream out) {
-		char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
-		if (alnCol.getDepth() > 1 && alnCol.countDifferingBases(refBase)>1) {
-			if (binomComputer.computeValue(refReader, alnCol)[0] < 1e-6) {
+		
+		if (alnCol.getDepth() > 1) {
+            final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
+            final double varBases = (double)alnCol.countDifferingBases(refBase);    
+                    
+			if (varBases < 2 || ( varBases / alnCol.getDepth()<0.05) ) {
 				return;
 			}
+                        
 			//out.print(refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
-				Double[] values = counter.computeValue(refReader, alnCol);
+				Double[] values = counter.computeValue(refBase, refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
 					out.print("\t" + index + ":" + formatter.format(values[i]) );
 					index++;
@@ -109,7 +113,7 @@ public class ReferenceBAMEmitter {
 	
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
 		
-		refReader.resetTo(contig, start-1);
+		refReader.resetTo(contig, Math.max(1, start-refReader.windowSize/2)); //Left edge of window, centers window on start position
 		alnCol.advanceTo(contig, start);
 		
 		int curPos = start;

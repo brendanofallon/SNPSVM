@@ -27,10 +27,9 @@ public class VarCountComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
-		final char refBase = window.getBaseAt(col.getCurrentPosition());
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {

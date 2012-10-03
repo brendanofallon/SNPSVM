@@ -1,5 +1,8 @@
 package snpsvm.bamreading;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.sf.samtools.Cigar;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMRecord;
@@ -10,7 +13,7 @@ public class MappedRead {
 	private boolean initialized = false;
 	int[] refToReadMap = null; //Map from reference position to read position
 	private int mismatchCount = -1; //Number of bases that align to reference but differ from it 
-	
+	final Set<Integer> mismatches = new HashSet<Integer>(); //Stores list of all reference positions at which mismatches occur. This is a big performance boost compared to looking it up every time
 	
 	public MappedRead(SAMRecord rec) {
 		this.read = rec;
@@ -26,13 +29,14 @@ public class MappedRead {
 
 			for(int i=Math.max(read.getAlignmentStart(), ref.indexOfLeftEdge()+1); i<Math.min(ref.indexOfRightEdge(), read.getAlignmentEnd()); i++) {
 				if (hasBaseAtReferencePos(i)) {		
-					if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i+1)) {
+					if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i)) {
 						mismatchCount++;
+						mismatches.add(i);
 					}
 				}
 			}
 		}
-		
+
 		return mismatchCount;
 	}
 	
@@ -53,17 +57,14 @@ public class MappedRead {
 	 * @return
 	 */
 	public int refPosToReadPos(int refPos) {
+            
 		int dif = refPos - read.getAlignmentStart();
-		if (dif < 0 || dif >= read.getReadBases().length) {
+                if (dif < 0 || dif >= read.getReadBases().length) {
 			//System.out.println("Hmm, asked for dif : " + dif + ", returning -1 instead");
 			return -1;
 		}
-		
-		if (refToReadMap == null)
-			return dif;
-		else {
-			return refToReadMap[dif];
-		}
+                return refToReadMap == null ? dif : refToReadMap[dif];
+                
 	}
 	
 	public byte getBaseAtReferencePos(int refPos) {

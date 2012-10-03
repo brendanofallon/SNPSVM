@@ -14,7 +14,7 @@ public class MismatchComputer extends VarCountComputer {
 	}
 
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
 
@@ -22,7 +22,6 @@ public class MismatchComputer extends VarCountComputer {
 		double altReads = 0;
 		
 		if (col.getDepth() > 0) {
-			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			Iterator<MappedRead> it = col.getIterator();
 			while(it.hasNext()) {
 				MappedRead read = it.next();

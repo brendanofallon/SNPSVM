@@ -16,14 +16,12 @@ public class QualSumComputer extends VarCountComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
 		
 		if (col.getDepth() > 0) {
 			Iterator<MappedRead> it = col.getIterator();
-
-			final char refBase = window.getBaseAt(col.getCurrentPosition());
 			while(it.hasNext()) {
 				MappedRead read = it.next();
 				if (read.hasBaseAtReferencePos(col.getCurrentPosition())) {

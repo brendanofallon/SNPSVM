@@ -18,7 +18,7 @@ public class DepthComputer implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(FastaWindow window, AlignmentColumn col) {
+	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		value[0] = (double)col.getDepth();
 		return value;
 	}
