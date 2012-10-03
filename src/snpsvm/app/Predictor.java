@@ -121,4 +121,13 @@ public class Predictor extends AbstractModule {
 
 	}
 
+	@Override
+	public void emitUsage() {
+		System.out.println("Predictor (SNP caller) module");
+		System.out.println(" -R reference file");
+		System.out.println(" -B input BAM file");
+		System.out.println(" -V output variant file");
+		System.out.println(" -M model file produced by buildmodel");
+	}
+
 }
