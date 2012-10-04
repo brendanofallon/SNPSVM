@@ -21,8 +21,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private double invariantFrac = 0.0001; //Probability that any non-variant individual site will be included in the no-variant class
-	private int maxInvariants = 20000; //Dont ever include more than this number of non-variant sites
+	private double invariantFrac = 0.00025; //Probability that any non-variant individual site will be included in the no-variant class
+	private int maxInvariants = 40000; //Dont ever include more than this number of non-variant sites
 	private int nonVariantSitesIncluded = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
@@ -30,7 +30,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			File reference, 
 			File bamFile,
 			List<ColumnComputer> counters) throws IOException {
-		super(reference, bamFile, counters);
+		super(reference, bamFile, counters); 
 		
 		this.knownTrueSites = new VariantList(knownVarSites);
 		this.knownFalseSites = new VariantList(knownFalseSites);
@@ -105,16 +105,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			}
 		}		
 	}
-	
-	
-	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
-		super.emitWindow(contig, start, end, out);
-		
-		System.out.println("Contig : " + contig + ", trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + nonVariantSitesIncluded + " invariant \t"  + counted + " total sites");
-	}
 
-	
 	public void emitTrainingCounts() {
-		System.out.println("Overall trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + nonVariantSitesIncluded + " invariant \t"  + counted + " total sites");
+		System.out.println("Trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + nonVariantSitesIncluded + " invariant \t"  + counted + " total sites");
 	}
 }

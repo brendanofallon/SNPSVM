@@ -25,6 +25,7 @@ import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
+import snpsvm.counters.ReadPosCounter;
 import snpsvm.counters.StrandBiasComputer;
 
 public class Predictor extends AbstractModule {
@@ -43,7 +44,7 @@ public class Predictor extends AbstractModule {
 		counters.add( new NearbyQualComputer());
 		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
-		
+		counters.add( new ReadPosCounter());
 	}
 	
 	@Override
@@ -103,7 +104,7 @@ public class Predictor extends AbstractModule {
 					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
 					counted += interval.getLastPos() - interval.getFirstPos();
 					index++;
-					if (index % 10 ==0) {
+					if (index % 100 ==0) {
 						System.err.println("Completed " + formatter.format(100* counted / ex) + "%");
 					}
 				}

@@ -84,7 +84,12 @@ public class MappedRead {
 		if (!initialized)
 			initialize();
 		
-		return read.getBaseQualities()[ refPosToReadPos(refPos) ];
+		int pos = refPosToReadPos(refPos);
+		if (pos < 0 || pos >= read.getReadLength()) {
+			System.out.println("Uugh, no read base quality at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
+			return 0;
+		}
+		return read.getBaseQualities()[ pos ];
 	}
 	
 	/**

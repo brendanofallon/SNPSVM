@@ -22,6 +22,7 @@ import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
+import snpsvm.counters.ReadPosCounter;
 import snpsvm.counters.StrandBiasComputer;
 
 public class ModelBuilder extends AbstractModule {
@@ -40,6 +41,7 @@ public class ModelBuilder extends AbstractModule {
 		counters.add( new NearbyQualComputer());
 		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
+		counters.add( new ReadPosCounter());
 		
 	}
 	
@@ -115,9 +117,9 @@ public class ModelBuilder extends AbstractModule {
 			for(String contig : intervals.getContigs()) {
 				System.err.println("Emitting contig : " + contig);
 				for(Interval interval : intervals.getIntervalsInContig(contig)) {
-					System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
 					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
 				}
+				emitter.emitTrainingCounts();
 			}
 		}
 		trainingStream.close();
