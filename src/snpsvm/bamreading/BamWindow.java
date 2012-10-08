@@ -201,7 +201,12 @@ public class BamWindow {
 		
 		//Going to a new contig, clear current queue
 		
-		nextRecord = recordIt.next();
+		try {
+			nextRecord = recordIt.next();
+		}
+		catch (NoSuchElementException ex) {
+			nextRecord = null;
+		}
 		
 		if (nextRecord != null)
 			currentContig = contig;

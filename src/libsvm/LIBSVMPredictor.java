@@ -3,23 +3,28 @@ package libsvm;
 import java.io.File;
 import java.io.IOException;
 
+import snpsvm.app.CommandLineApp;
+
 /**
  * Run libsvm-predict given a model and some input data. Results are wrapped in a LIBSVMResult object.
  * Execution  blocks until the operation is complete.
  * @author brendan
  *
  */
-public class LIBSVMPredictor {
+public class LIBSVMPredictor extends LIBSVMTool {
 	
-	public static final String defaultPath = "/home/brendan/libsvm-3.12/";
+	
 	public static final String predictionExecutable = "svm-predict";
+	private boolean initialized = false;
 	
 	public LIBSVMResult predictData(File inputData, LIBSVMModel model) {
 		return predictData(inputData, model, true);
 	}
 	
 	public LIBSVMResult predictData(File inputData, LIBSVMModel model, boolean scaleDataFirst) {
-		
+		if (! initialized) {
+			initialize();
+		}
 		
 		if (scaleDataFirst) {
 			LIBSVMScale scaler = new LIBSVMScale();
@@ -29,21 +34,9 @@ public class LIBSVMPredictor {
 		
 		String pathToOutput = inputData.getAbsolutePath() + ("." + (int)(1000.0*Math.random())) + ".output";
 
-		String command = defaultPath + predictionExecutable + " -b 1 " + inputData.getAbsolutePath() + " " + model.getModelPath() + " " + pathToOutput ;
+		String command = libsvmPath + predictionExecutable + " -b 1 " + inputData.getAbsolutePath() + " " + model.getModelPath() + " " + pathToOutput ;
 		
-		ProcessBuilder procBuilder = new ProcessBuilder("bash", "-c", command);
-		System.out.println("Executing command : " + command);
-		
-		try {
-			Process proc = procBuilder.start();
-			int exitVal = proc.waitFor();
-		}
-		catch (InterruptedException ex) {
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		executeCommand(command);
 		
 		LIBSVMResult result = new LIBSVMResult(new File(pathToOutput));
 		result.setInputData(inputData);

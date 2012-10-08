@@ -47,7 +47,12 @@ public class CommandLineApp {
 			System.err.println("Loading module " + mod.getClass().toString().replace(".class", ""));
 			
 			ArgParser argParser = new ArgParser(args);
-			mod.performOperation(args[0], argParser);
+			if (args.length==1 || (args.length==2 && args[1].equals("help"))) {
+				mod.emitUsage();
+			}
+			else {
+				mod.performOperation(args[0], argParser);	
+			}
 			
 			mainTimer.stop();
 			System.err.println("Elapsed time :  " + mainTimer.getTotalTimeSeconds() + " seconds");

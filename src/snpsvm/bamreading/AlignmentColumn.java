@@ -12,7 +12,7 @@ import java.util.Iterator;
  */
 public class AlignmentColumn {
 
-	final int MAX_DEPTH = 1024; //never consider more than this many reads
+	final int MAX_DEPTH = 256; //never consider more than this many reads
 	
 	final BamWindow bam;
 	
@@ -115,11 +115,14 @@ public class AlignmentColumn {
 		Iterator<MappedRead> it = bam.getIterator();
 		MappedRead rec = null;
 		currentDepth = 0;
+        
+		final int pos = getCurrentPosition();
+		
 		while(it.hasNext() && currentDepth < MAX_DEPTH) {
 			rec = it.next(); 
-			
-			if (rec.hasBaseAtReferencePos(getCurrentPosition())) {
-				bases[currentDepth] = rec.getBaseAtReferencePos(getCurrentPosition());
+			int readPos = rec.refPosToReadPos(pos);
+			if (readPos > -1) {
+				bases[currentDepth] = rec.getBaseAtReadPos(readPos);
 				currentDepth++;
 			}
 			

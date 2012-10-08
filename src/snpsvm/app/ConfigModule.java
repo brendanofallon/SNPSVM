@@ -25,6 +25,14 @@ public class ConfigModule implements Module {
 	public boolean matchesModuleName(String name) {
 		return name.equals("config");
 	}
+	
+	public String getProperty(String key) {
+		loadProperties();
+		if (properties != null)
+			return properties.get(key);
+		else
+			return null;
+	}
 
 	@Override
 	public void performOperation(String name, ArgParser args) {

@@ -50,6 +50,10 @@ public class MappedRead {
 		int readPos = refPosToReadPos(refPos); 
 		return  readPos > -1;
 	}
+        
+        public byte getBaseAtReadPos(int readPos) {
+            return read.getReadBases()[readPos];
+        }
 	
 	/**
 	 * Return index of base in this read that maps to the given reference position

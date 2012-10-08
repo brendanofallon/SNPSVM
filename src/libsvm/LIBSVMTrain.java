@@ -3,9 +3,8 @@ package libsvm;
 import java.io.File;
 import java.io.IOException;
 
-public class LIBSVMTrain {
+public class LIBSVMTrain extends LIBSVMTool {
 
-	public static final String defaultPath = "/home/brendan/libsvm-3.12/";
 	public static final String trainingExecutable = "svm-train";
 	
 	private double defaultC = 10.0;
@@ -31,7 +30,9 @@ public class LIBSVMTrain {
 	 * @return
 	 */
 	public LIBSVMModel createModel(File trainingData, File destinationModelFile, boolean scaleDataFirst) {
-		
+		if (! initialized) {
+			initialize();
+		}
 
 		if (scaleDataFirst) {
 			LIBSVMScale scaler = new LIBSVMScale();
@@ -41,20 +42,8 @@ public class LIBSVMTrain {
 		
 		String pathToModel = destinationModelFile.getAbsolutePath();
 		LIBSVMModel model = new LIBSVMModel(new File(pathToModel));
-		String command = defaultPath + trainingExecutable + " -t 2 -b 1 -c " + defaultC + " " + trainingData.getAbsolutePath() + " " + pathToModel;
-		ProcessBuilder procBuilder = new ProcessBuilder("bash", "-c", command);
-		System.out.println("Executing command : " + command);
-		try {
-			Process proc = procBuilder.start();
-			int exitVal = proc.waitFor();
-		}
-		catch (InterruptedException ex) {
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		String command = libsvmPath + trainingExecutable + " -t 2 -b 1 -c " + defaultC + " " + trainingData.getAbsolutePath() + " " + pathToModel;
+		executeCommand(command);
 		return model;
 	}
 	
