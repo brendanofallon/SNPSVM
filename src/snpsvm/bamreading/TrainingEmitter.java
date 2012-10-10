@@ -21,7 +21,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private double invariantFrac = 0.00025; //Probability that any non-variant individual site will be included in the no-variant class
+	private double invariantFrac = 0.005; //Probability that any non-variant individual site will be included in the no-variant class
 	private int maxInvariants = 40000; //Dont ever include more than this number of non-variant sites
 	private int nonVariantSitesIncluded = 0; //Number of non-variant sites included so far
 	

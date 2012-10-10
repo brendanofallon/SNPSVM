@@ -1,10 +1,7 @@
 package snpsvm.app;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +9,6 @@ import libsvm.LIBSVMModel;
 import libsvm.LIBSVMPredictor;
 import libsvm.LIBSVMResult;
 import snpsvm.bamreading.IntervalList;
-import snpsvm.bamreading.IntervalList.Interval;
-import snpsvm.bamreading.ReferenceBAMEmitter;
 import snpsvm.bamreading.ResultEmitter;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
@@ -80,13 +75,13 @@ public class Predictor extends AbstractModule {
 			IntervalList intervals,
 			List<ColumnComputer> counters) throws IOException {
 
-	//	ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
+//		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
 		File data = new File(destination.getName().replace(".vcf", "") + ".data");
 		File positionsFile = new File(destination.getName().replace(".vcf", "") + ".pos");
-	//	emitter.setPositionsFile(positionsFile);
-
-		//Read BAM file, write results to training file
-		
+//		emitter.setPositionsFile(positionsFile);
+//
+//		//Read BAM file, write results to training file
+//		
 //		PrintStream trainingStream = new PrintStream(new FileOutputStream(data));		
 //		if (intervals == null) {
 //			emitter.emitAll(trainingStream); 

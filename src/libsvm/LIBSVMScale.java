@@ -1,7 +1,6 @@
 package libsvm;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Simple utility to scale data to fit in (-1..1), which is apparently better from libsvm's standpoint
