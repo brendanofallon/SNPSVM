@@ -7,11 +7,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DecimalFormat;
 
 import libsvm.LIBSVMResult;
 
 public class ResultEmitter {
 
+	
+	private static DecimalFormat formatter = new DecimalFormat("0.0##");
+	
 	public void writeResults(LIBSVMResult result, File destinationFile) throws IOException {
 		
 		BufferedReader resultReader = new BufferedReader(new FileReader(result.getFilePath()));
@@ -98,6 +102,8 @@ public class ResultEmitter {
 		//Compute homo-reference prob
 		double homRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.005);
 		
+		double tot = hetProb + homNonRefProb + homRefProb;
+		
 		double varProb = 1.0 - homRefProb / (homRefProb + hetProb + homNonRefProb);
 		
 		String zyg = "het";
@@ -105,7 +111,7 @@ public class ResultEmitter {
 			zyg = "hom";
 		}
 		
-		output.write(contig + "\t" + pos + "\t" + (end) + "\t" + ref + "\t" + alt + "\t" + qScore + "\t" + depth + "\t" + zyg + "\t" + homRefProb + "\t" + hetProb + "\t" + homNonRefProb + "\n");
+		output.write(contig + "\t" + pos + "\t" + (end) + "\t" + ref + "\t" + alt + "\t" + formatter.format(qScore) + "\t" + depth + "\t" + zyg + "\t" + formatter.format(homRefProb/tot) + "\t" + formatter.format(hetProb/tot) + "\t" + formatter.format(homNonRefProb/tot) + "\n");
 	}
 
 	/**

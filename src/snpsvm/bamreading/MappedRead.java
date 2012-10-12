@@ -1,22 +1,37 @@
 package snpsvm.bamreading;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import net.sf.samtools.Cigar;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMRecord;
 
 public class MappedRead {
 
+        public static final int[] defaultMap = new int[1024];
+        private static boolean mapInitialized = false;
+        
 	SAMRecord read;
 	private boolean initialized = false;
-	int[] refToReadMap = null; //Map from reference position to read position
+        
+	int[] refToReadMap = defaultMap; //Map from reference position to read position
 	private int mismatchCount = -1; //Number of bases that align to reference but differ from it 
-	final Set<Integer> mismatches = new HashSet<Integer>(); //Stores list of all reference positions at which mismatches occur. This is a big performance boost compared to looking it up every time
 	
+	
+	final int readBasesCount;	//instant storage for number of bases in read 
+	final int readAlignmentStart; //instant storage for start of alignment of read
+	final byte[] readBases;		//instant storage for actual bases in read
+
 	public MappedRead(SAMRecord rec) {
+		if (! mapInitialized) {
+			for(int i=0; i<defaultMap.length; i++) {
+				defaultMap[i] = i;
+			}
+			mapInitialized = true;
+		}
+
 		this.read = rec;
+		readBasesCount = read.getReadLength();
+		readAlignmentStart = read.getAlignmentStart();
+		readBases = read.getReadBases();
 	}
 	
 	public SAMRecord getRecord() {
@@ -31,7 +46,6 @@ public class MappedRead {
 				if (hasBaseAtReferencePos(i)) {		
 					if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i)) {
 						mismatchCount++;
-						mismatches.add(i);
 					}
 				}
 			}
@@ -47,41 +61,37 @@ public class MappedRead {
 	 * @return
 	 */
 	public boolean hasBaseAtReferencePos(int refPos) {
-		int readPos = refPosToReadPos(refPos); 
-		return  readPos > -1;
+		return refPosToReadPos(refPos) != -1;
 	}
-        
-        public byte getBaseAtReadPos(int readPos) {
-            return read.getReadBases()[readPos];
-        }
-	
+
+	public byte getBaseAtReadPos(int readPos) {
+		return readBases[readPos];
+	}
+
 	/**
 	 * Return index of base in this read that maps to the given reference position
 	 * @param refPos
 	 * @return
 	 */
 	public int refPosToReadPos(int refPos) {
-            
-		int dif = refPos - read.getAlignmentStart();
-                if (dif < 0 || dif >= read.getReadBases().length) {
-			//System.out.println("Hmm, asked for dif : " + dif + ", returning -1 instead");
+
+		int dif = refPos - readAlignmentStart;
+		if (dif < 0 || dif >= readBasesCount) {
 			return -1;
 		}
-                return refToReadMap == null ? dif : refToReadMap[dif];
-                
+		return refToReadMap[dif];
+
 	}
-	
+
 	public byte getBaseAtReferencePos(int refPos) {
 		if (!initialized)
 			initialize();
 		
 		int pos = refPosToReadPos(refPos);
 		if (pos < 0 || pos >= read.getReadLength()) {
-			System.out.println("Uugh, no read base at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
-			//int pos2 = refPosToReadPos(refPos);
 			return -1;
 		}
-		return read.getReadBases()[ pos ];
+		return readBases[ pos ];
 	}
 	
 	public byte getQualityAtReferencePos(int refPos) {
@@ -90,7 +100,7 @@ public class MappedRead {
 		
 		int pos = refPosToReadPos(refPos);
 		if (pos < 0 || pos >= read.getReadLength()) {
-			System.out.println("Uugh, no read base quality at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
+			//System.out.println("Uugh, no read base quality at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
 			return 0;
 		}
 		return read.getBaseQualities()[ pos ];
@@ -113,6 +123,7 @@ public class MappedRead {
 		//If no indels don't do anything
 		if (firstEl.getLength() == cig.getReferenceLength()) {
 			initialized = true;
+            refToReadMap = defaultMap;
 			return;
 		}
 		

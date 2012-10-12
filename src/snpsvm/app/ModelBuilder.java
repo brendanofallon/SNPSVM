@@ -14,6 +14,7 @@ import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.TrainingEmitter;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
+import snpsvm.counters.ContextComputer;
 import snpsvm.counters.DepthComputer;
 import snpsvm.counters.DistroProbComputer;
 import snpsvm.counters.MQComputer;
@@ -42,7 +43,7 @@ public class ModelBuilder extends AbstractModule {
 		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		counters.add( new ReadPosCounter());
-		
+		counters.add( new ContextComputer());
 	}
 	
 	@Override

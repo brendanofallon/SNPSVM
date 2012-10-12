@@ -21,8 +21,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private double invariantFrac = 0.005; //Probability that any non-variant individual site will be included in the no-variant class
-	private int maxInvariants = 40000; //Dont ever include more than this number of non-variant sites
+	private double invariantFrac = 0.0005; //Probability that any non-variant individual site will be included in the no-variant class
+	private int maxInvariants = 400000; //Dont ever include more than this number of non-variant sites
 	private int nonVariantSitesIncluded = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
@@ -54,7 +54,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				e.printStackTrace();
 			}
 
-			final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
+			final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
+			//final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
 			if (refBase == 'N') {
 				return;
 			}
@@ -87,7 +88,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				for(ColumnComputer counter : counters) {
 					Double[] values = counter.computeValue(refBase, refReader, alnCol);
 					for(int i=0; i<values.length; i++) {
-						out.print("\t" + index + ":" + formatter.format(values[i]) );
+						if (values[i] != 0)
+							out.print("\t" + index + ":" + formatter.format(values[i]) );
 						index++;
 					}
 				}

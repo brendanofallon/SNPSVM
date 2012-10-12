@@ -51,19 +51,23 @@ public class ReferenceBAMEmitter {
 		
 		if (alnCol.getDepth() > 1) {
             final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
-            final double varBases = (double)alnCol.countDifferingBases(refBase);    
+            boolean hasTwoDifferringBases = alnCol.hasTwoDifferingBases(refBase);
+           // final double varBases = (double)alnCol.countDifferingBases(refBase);    
                     
-			if (varBases < 2 || ( varBases / alnCol.getDepth()<0.05) ) {
-				return;
-			}
-                        
+//			if (varBases < 2 || ( varBases / alnCol.getDepth()<0.05) ) {
+//				return;
+//			}
+                        if (! hasTwoDifferringBases) {
+                            return;
+                        }
 			//out.print(refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
 				Double[] values = counter.computeValue(refBase, refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
-					out.print("\t" + index + ":" + formatter.format(values[i]) );
+					if (values[i] != 0)
+						out.print("\t" + index + ":" + formatter.format(values[i]) );
 					index++;
 				}
 			}

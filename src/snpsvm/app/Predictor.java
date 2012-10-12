@@ -1,7 +1,10 @@
 package snpsvm.app;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,9 +12,12 @@ import libsvm.LIBSVMModel;
 import libsvm.LIBSVMPredictor;
 import libsvm.LIBSVMResult;
 import snpsvm.bamreading.IntervalList;
+import snpsvm.bamreading.IntervalList.Interval;
+import snpsvm.bamreading.ReferenceBAMEmitter;
 import snpsvm.bamreading.ResultEmitter;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
+import snpsvm.counters.ContextComputer;
 import snpsvm.counters.DepthComputer;
 import snpsvm.counters.DistroProbComputer;
 import snpsvm.counters.MQComputer;
@@ -40,6 +46,7 @@ public class Predictor extends AbstractModule {
 		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		counters.add( new ReadPosCounter());
+		counters.add( new ContextComputer());
 	}
 	
 	@Override
@@ -75,37 +82,43 @@ public class Predictor extends AbstractModule {
 			IntervalList intervals,
 			List<ColumnComputer> counters) throws IOException {
 
-//		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
+		ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
 		File data = new File(destination.getName().replace(".vcf", "") + ".data");
 		File positionsFile = new File(destination.getName().replace(".vcf", "") + ".pos");
-//		emitter.setPositionsFile(positionsFile);
+		emitter.setPositionsFile(positionsFile);
 //
 //		//Read BAM file, write results to training file
 //		
-//		PrintStream trainingStream = new PrintStream(new FileOutputStream(data));		
-//		if (intervals == null) {
-//			emitter.emitAll(trainingStream); 
-//		}
-//		else {
-//			
-//			DecimalFormat formatter = new DecimalFormat("#0.00");
-//			double ex = intervals.getExtent();
-//			double counted = 0;
-//			int index =0 ;
-//			for(String contig : intervals.getContigs()) {
-//				//System.err.println("Emitting contig : " + contig);
-//				for(Interval interval : intervals.getIntervalsInContig(contig)) {
-//					//System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
-//					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
-//					counted += interval.getLastPos() - interval.getFirstPos();
-//					index++;
-//					if (index % 100 ==0) {
-//						System.err.println("Completed " + formatter.format(100* counted / ex) + "%");
-//					}
-//				}
-//			}
-//		}
-//		trainingStream.close();
+		PrintStream trainingStream = new PrintStream(new FileOutputStream(data));		
+		if (intervals == null) {
+			emitter.emitAll(trainingStream); 
+		}
+		else {
+			
+			DecimalFormat formatter = new DecimalFormat("#0.00");
+			double ex = intervals.getExtent();
+			double counted = 0;
+			int index =0 ;
+			int prevLength = 0;
+			for(String contig : intervals.getContigs()) {
+				//System.err.println("Emitting contig : " + contig);
+				for(Interval interval : intervals.getIntervalsInContig(contig)) {
+					//System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
+					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
+					counted += interval.getLastPos() - interval.getFirstPos();
+					index++;
+					if (index % 200 ==0) {
+						for(int i=0; i<prevLength; i++) {
+							System.err.print('\b');
+						}
+						String msg = "Completed " + ("" + counted).replace(".0", "") + " bases, " + formatter.format(100* counted / ex) + "%";
+						prevLength = msg.length();
+						System.err.print(msg);
+					}
+				}
+			}
+		}
+		trainingStream.close();
 
 		LIBSVMPredictor predictor = new LIBSVMPredictor();
 		LIBSVMResult result = predictor.predictData(data, new LIBSVMModel(model));
