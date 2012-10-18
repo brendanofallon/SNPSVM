@@ -31,7 +31,7 @@ SNPSVM can do two things:
 
 		java -Xmx1g -jar snpsvm.jar predict -R reference.fasta -B input.bam -M input.model -V output.vcf
 
-	Optionally, you can use -L to specify the range of sites you'd like to examine in several ways:
+	Optionally, you can use -L to specify the range of sites you'd like to examine in several ways
 
 		-L chrX                   
 	Only call variants on chromosome X
