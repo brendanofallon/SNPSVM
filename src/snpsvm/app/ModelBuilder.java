@@ -14,13 +14,15 @@ import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.TrainingEmitter;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
-import snpsvm.counters.ContextComputer;
 import snpsvm.counters.DepthComputer;
+import snpsvm.counters.DinucRepeatCounter;
 import snpsvm.counters.DistroProbComputer;
+import snpsvm.counters.HomopolymerRunCounter;
 import snpsvm.counters.MQComputer;
 import snpsvm.counters.MeanQualityComputer;
 import snpsvm.counters.MismatchComputer;
 import snpsvm.counters.NearbyQualComputer;
+import snpsvm.counters.NucDiversityCounter;
 import snpsvm.counters.PosDevComputer;
 import snpsvm.counters.QualSumComputer;
 import snpsvm.counters.ReadPosCounter;
@@ -43,7 +45,10 @@ public class ModelBuilder extends AbstractModule {
 		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		counters.add( new ReadPosCounter());
-		counters.add( new ContextComputer());
+		counters.add( new HomopolymerRunCounter());
+		counters.add( new DinucRepeatCounter());
+		counters.add( new NucDiversityCounter());
+//		counters.add( new ContextComputer());
 	}
 	
 	@Override
@@ -116,14 +121,14 @@ public class ModelBuilder extends AbstractModule {
 		}
 		else {
 			for(String contig : intervals.getContigs()) {
-				System.err.println("Emitting contig : " + contig);
 				for(Interval interval : intervals.getIntervalsInContig(contig)) {
 					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
 				}
-				emitter.emitTrainingCounts();
 			}
 		}
 		trainingStream.close();
+		
+		emitter.emitTrainingCounts();
 		
 		LIBSVMTrain trainer = new LIBSVMTrain();
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);

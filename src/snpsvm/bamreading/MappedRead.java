@@ -65,6 +65,9 @@ public class MappedRead {
 	}
 
 	public byte getBaseAtReadPos(int readPos) {
+		if (!initialized)
+			initialize();
+		
 		return readBases[readPos];
 	}
 
@@ -100,7 +103,6 @@ public class MappedRead {
 		
 		int pos = refPosToReadPos(refPos);
 		if (pos < 0 || pos >= read.getReadLength()) {
-			//System.out.println("Uugh, no read base quality at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
 			return 0;
 		}
 		return read.getBaseQualities()[ pos ];
@@ -112,6 +114,10 @@ public class MappedRead {
 	 * indels then abort immediately. 
 	 */
 	private void initialize() {
+		if (read.getAlignmentStart() == 136735) {
+			System.out.println("break");
+		}
+		
 		Cigar cig = read.getCigar();
 		if (cig.getCigarElements().size()==0) {
 			System.err.println("No cigar elements for read: " + read.toString() + ", skipping, mq is : " + read.getMappingQuality() );
@@ -152,9 +158,6 @@ public class MappedRead {
 					refToReadMap[refPos] = index;
 					refPos++;
 					
-					if (index >= 101) {
-						System.out.println("Hmm, we seem to be adding read positions past 101.." + index);
-					}
 				}
 				
 				

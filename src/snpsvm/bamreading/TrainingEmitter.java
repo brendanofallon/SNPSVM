@@ -3,6 +3,7 @@ package snpsvm.bamreading;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.DecimalFormat;
 import java.util.List;
 
 import snpsvm.counters.ColumnComputer;
@@ -21,9 +22,9 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private double invariantFrac = 0.0005; //Probability that any non-variant individual site will be included in the no-variant class
+	private double invariantFrac = 0.00005; //Probability that any non-variant individual site will be included in the no-variant class
 	private int maxInvariants = 400000; //Dont ever include more than this number of non-variant sites
-	private int nonVariantSitesIncluded = 0; //Number of non-variant sites included so far
+	private int invariantSites = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
 			File knownFalseSites,
@@ -45,7 +46,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	}
 	
 	public void emitLine(PrintStream out) {
-		if (alnCol.getDepth() > 2) {
+		if (alnCol.getApproxDepth()>1) {
 			try {
 				knownTrueSites.loadContig(alnCol.getCurrentContig());
 				knownFalseSites.loadContig(alnCol.getCurrentContig());
@@ -55,14 +56,14 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			}
 
 			final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
-			//final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition()+1);
 			if (refBase == 'N') {
 				return;
 			}
 			
+			boolean hasTwoDiffering = alnCol.hasTwoDifferingBases(refBase);
 			counted++;
 			String prefix = null;
-			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && alnCol.countDifferingBases( refBase) > 2) {
+			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && hasTwoDiffering) {
 				prefix = "1";
 				trueSites++;
 			}
@@ -72,11 +73,11 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				falseSites++;
 			}
 
-			if (prefix == null && nonVariantSitesIncluded < maxInvariants && alnCol.countDifferingBases(refBase) < 2) {
+			if (prefix == null && invariantSites < maxInvariants && (! hasTwoDiffering)) {
 				double r = Math.random();
 				if (r < invariantFrac) {
 					prefix = "-1";
-					nonVariantSitesIncluded++;
+					invariantSites++;
 				}
 			}
 
@@ -109,6 +110,16 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	}
 
 	public void emitTrainingCounts() {
-		System.out.println("Trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + nonVariantSitesIncluded + " invariant \t"  + counted + " total sites");
+		DecimalFormat formatter = new DecimalFormat("0.00");
+		int tot = trueSites + falseSites + invariantSites;
+		double trueFrac = (double)trueSites / (double)tot;
+		double falseFrac = (double)falseSites / (double)tot;
+		double invarFrac = (double)invariantSites / (double)tot;
+		
+		System.out.println("   Trainer total sites examined: " + tot);
+		System.out.println("     True positive sites found : " + trueSites + "\t" + formatter.format(trueFrac));
+		System.out.println("    False positive sites found : " + falseSites + "\t" + formatter.format(falseFrac));
+		System.out.println("Invariant positive sites found : " + invariantSites + "\t" + formatter.format(invarFrac));
+		//System.out.println("Trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + invariantSites + " invariant \t"  + counted + " total sites");
 	}
 }

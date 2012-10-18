@@ -68,4 +68,19 @@ public abstract class AbstractModule implements Module {
 		}
 	}
 	
+	/**
+	 * Return true if the user has supplied the given arg
+	 * @param args
+	 * @param arg
+	 * @return
+	 */
+	public boolean hasArg(ArgParser args, String arg) {
+		if (args.hasOption(arg)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
 }

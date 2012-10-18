@@ -49,18 +49,15 @@ public class ReferenceBAMEmitter {
 	
 	public void emitLine(PrintStream out) {
 		
-		if (alnCol.getDepth() > 1) {
+		if (alnCol.getApproxDepth() > 1) {
             final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
             boolean hasTwoDifferringBases = alnCol.hasTwoDifferingBases(refBase);
-           // final double varBases = (double)alnCol.countDifferingBases(refBase);    
-                    
-//			if (varBases < 2 || ( varBases / alnCol.getDepth()<0.05) ) {
-//				return;
-//			}
-                        if (! hasTwoDifferringBases) {
-                            return;
-                        }
-			//out.print(refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
+
+            if (! hasTwoDifferringBases) {
+               return;
+            }
+
+			//System.out.println(alnCol.getCurrentPosition() + "\t" + refBase + " : " + alnCol.getBasesAsString());
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {

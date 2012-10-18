@@ -24,6 +24,14 @@ public class AlignmentColumn {
 		bam = new BamWindow(bamFile);
 	}
 	
+	/**
+	 * Returns an upper bound on depth that does not reflect the fact that some reads may have insertions / deletions that prevent 
+	 * exact mapping at the current site. The true depth may be less than this depth, but it will never be greater
+	 * @return
+	 */
+	public int getApproxDepth() {
+		return bam.size();
+	}
 	
 	public String getCurrentContig() {
 		return bam.getCurrentContig();
@@ -78,7 +86,7 @@ public class AlignmentColumn {
 		for(int i=0; i<getDepth(); i++) {
 			if (refBase != (char)bases[i])
 				count++;
-			if (count > 2)
+			if (count > 1)
 				return true;
 		}
 		return false;
@@ -146,7 +154,7 @@ public class AlignmentColumn {
 			}
 			
 		}
-		
+		dirty = false;
 	}
 
 	public static String dataString(Double[] data) {
