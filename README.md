@@ -20,9 +20,11 @@ Installation:
 Usage:
 
 SNPSVM can do two things:
+
 1. Build a support vector machine model that knows how to call snps
 
 		java -Xmx1g -jar snpsvm.jar buildmodel -R reference.fasta -T some.true.sites.vcf -F some.false.sites.vcf -B input.bam -M output.model
+
 
 	All arguments are required
 
