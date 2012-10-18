@@ -13,6 +13,7 @@ SNPSVM uses libsvm (http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy l
 2. Download and snpsvm.jar 
 
 3. Tell SNPSVM where libsvm is, like this:
+
     java -jar snpsvm.jar config -add libsvm=/path/to/libsvm
 
 ------
@@ -20,13 +21,15 @@ Usage:
 
 SNPSVM can do two things:
 1. Build a support vector machine model that knows how to call snps
-    java -Xmx1g -jar snpsvm.jar buildmodel -R reference.fasta -T some.true.sites.vcf -F some.false.sites.vcf -B input.bam -M output.model
+
+java -Xmx1g -jar snpsvm.jar buildmodel -R reference.fasta -T some.true.sites.vcf -F some.false.sites.vcf -B input.bam -M output.model
 
 All arguments are required
 
 
 2. Use an already-constructed model to call snps on a new .BAM file:
-    java -Xmx1g -jar snpsvm.jar predict -R reference.fasta -B input.bam -M input.model -V output.vcf
+
+java -Xmx1g -jar snpsvm.jar predict -R reference.fasta -B input.bam -M input.model -V output.vcf
 
 Optionally, you can use -L to specify the range of sites you'd like to examine in several ways:
 
