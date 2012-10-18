@@ -13,8 +13,7 @@ SNPSVM uses libsvm (http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy l
 2. Download and snpsvm.jar 
 
 3. Tell SNPSVM where libsvm is, like this:
-
-    java -jar snpsvm.jar config -add libsvm=/path/to/libsvm
+     java -jar snpsvm.jar config -add libsvm=/path/to/libsvm
 
 ------
 Usage:
