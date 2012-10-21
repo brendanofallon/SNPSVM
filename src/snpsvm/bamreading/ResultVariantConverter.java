@@ -64,13 +64,32 @@ public class ResultVariantConverter {
 		String contig = posToks[0];
 		int pos = Integer.parseInt(posToks[1]);
 		//int end = pos + 1;
-		char alt = computeAlt(ref, posToks[3]);
+		String pileUp = posToks[3];
+		char alt = computeAlt(ref, pileUp);
 		//int depth = posToks[3].length();
 
+		int T = pileUp.length();
+		int X = count(alt, pileUp);
+		
+		if (T > 250) {
+			X = (250 * X)/T;
+			T = 250;
+		}
+		
+		
+		//Compute het prob
+		//Each read has 50% chance of coming from source with a non-reference base
+		double hetProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.5);
+		
+		
+		//Compute homo non-reference prob
+		double homNonRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.99);
+		
+		//Compute homo-reference prob
+		double homRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.005);
+		
 
-		//String zyg = "het";
-
-		Variant var = new Variant(contig, pos, ref, alt, qScore, 0.0);
+		Variant var = new Variant(contig, pos, ref, alt, qScore, hetProb/(hetProb + homRefProb + homNonRefProb));
 		return var;
 	}
 
@@ -81,6 +100,22 @@ public class ResultVariantConverter {
 		return quality;
 	}
 
+	
+	/**
+	 * Return number of occurrences of c in str
+	 * @param c
+	 * @param str
+	 * @return
+	 */
+	private static int count(char c, String str) {
+		int count = 0;
+		for(int i=0; i<str.length(); i++) {
+			if (str.charAt(i) == c) 
+				count++;
+		}
+		return count;
+	}
+	
 	/**
 	 * Clumsy procedure to figure out alt allele....
 	 * @param ref

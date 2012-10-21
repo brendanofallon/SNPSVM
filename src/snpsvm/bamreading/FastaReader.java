@@ -61,8 +61,13 @@ public class FastaReader {
 					}
 				line = dictReader.readLine();
 			}
+			
+
+			dictReader.close();
 			return;
 		}
+		
+		
 		
 		reader = new BufferedReader(new FileReader(sourceFile));
 		currentLine = reader.readLine();

@@ -18,7 +18,21 @@ import java.util.Map;
  */
 public class IntervalList {
 
-	protected Map<String, List<Interval>> intervals = null;
+	protected Map<String, List<Interval>> intervals = new HashMap<String, List<Interval>>();
+	
+	/**
+	 * Create a single new list that contains all intervals
+	 * @return
+	 */
+	public List<Interval> asList() {
+		List<Interval> list = new ArrayList<Interval>();
+		for(String contig : getContigs() ) {
+			for(Interval interval : getIntervalsInContig(contig)) {
+				list.add(interval);
+			}
+		}
+		return list;
+	}
 	
 	/**
 	 * Parse the given string to look for intervals, we currently use the form...
@@ -112,13 +126,28 @@ public class IntervalList {
 	 * @param contig
 	 * @param interval
 	 */
-	protected void addInterval(String contig, Interval interval) {
+	public void addInterval(String contig, Interval interval) {
 		List<Interval> cInts = intervals.get(contig);
 		if (cInts == null) {
 			cInts = new ArrayList<Interval>(256);
 			intervals.put(contig, cInts);
 		}
 		cInts.add(interval);
+	}
+	
+	/**
+	 * Add a new interval spanning the given region to the list
+	 * @param contig
+	 * @param start
+	 * @param end
+	 */
+	public void addInterval(String contig, int start, int end) {
+		List<Interval> cInts = intervals.get(contig);
+		if (cInts == null) {
+			cInts = new ArrayList<Interval>(256);
+			intervals.put(contig, cInts);
+		}
+		cInts.add(new Interval(start, end));
 	}
 	
 	/**
@@ -176,7 +205,7 @@ public class IntervalList {
 		return size;
 	}
 	
-	public class Interval implements Comparable {
+	public class Interval implements Comparable<Interval> {
 		final int firstPos;
 		final int lastPos;
 		
@@ -197,12 +226,8 @@ public class IntervalList {
 			return lastPos - firstPos + 1;
 		}
 		
-		public int compareTo(Object o) {
-			if (o instanceof Interval) {
-				Interval inter = (Interval)o;
-				return this.firstPos - inter.firstPos;
-			}
-			return 0;
+		public int compareTo(Interval inter) {
+			return this.firstPos - inter.firstPos;
 		}
 	}
 

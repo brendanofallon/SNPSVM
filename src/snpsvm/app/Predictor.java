@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import snpsvm.bamreading.IntervalList;
+import snpsvm.bamreading.SplitSNPAndCall;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
@@ -87,30 +88,19 @@ public class Predictor extends AbstractModule {
 		
 		//Somehow logically divide work into rational number of workers
 		//No clue what the optimum will be here
-		SNPCallerWorker snpCaller = new SNPCallerWorker(ref, inputBAM, model, intervals, counters);
-		
-		int numThreads = 4;
+		int numThreads = 2;
 		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
-		threadPool.execute(snpCaller);
 		
-		//Wait until all jobs are done
-		threadPool.shutdown();
+		//SNPCaller snpCaller = new SNPCaller(ref, inputBAM, model, intervals, counters);
 		
-		try {
-			threadPool.awaitTermination(100, TimeUnit.DAYS);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		SplitSNPAndCall caller = new SplitSNPAndCall(ref, inputBAM, model, counters, threadPool);
 		
-		System.out.println("Threadpool has terminated");
-		if (snpCaller.isVariantListCreated()) {
-			List<Variant> variants = snpCaller.getVariantList();
-			for(Variant var : variants) {
-				System.out.println(var);
-			}
-		}
-		else {
-			System.err.println("Hmm, no variant list yet created");
+		caller.submitAll(intervals);
+		
+		List<Variant> allVars = caller.getAllVariants();
+		
+		for(Variant var : allVars) {
+			System.out.println(var);
 		}
 	
 	}
