@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.text.DecimalFormat;
 
 import libsvm.LIBSVMResult;
 
@@ -18,6 +19,9 @@ import libsvm.LIBSVMResult;
  */
 public class ResultEmitter {
 
+	
+	private static DecimalFormat formatter = new DecimalFormat("0.0##");
+	
 	public void writeResults(LIBSVMResult result, File destinationFile) throws IOException {
 		
 		BufferedReader resultReader = new BufferedReader(new FileReader(result.getFilePath()));
@@ -39,11 +43,13 @@ public class ResultEmitter {
 			varIndex = 2;
 			noVarIndex = 1;
 		}
+		
+		
+		writer.write("#contig\t start\t end\t ref\t alt\t quality\t depth\t zyg\t homRefProb\t hetProb\t homNonRefProb\n");
+		
 		resultLine = resultReader.readLine();
 		String posLine = posReader.readLine();
-		while(resultLine != null && posLine != null) {
-			
-			
+		while(resultLine != null && posLine != null) {	
 			toks = resultLine.split(" ");
 			double qScore = parseQuality(toks[noVarIndex], toks[varIndex]);
 			if (qScore > 1) {
@@ -76,23 +82,66 @@ public class ResultEmitter {
 		char ref = posToks[2].charAt(0);
 		String contig = posToks[0];
 		String pos = posToks[1];
+		String pileUp = posToks[3];
 		int end = (Integer.parseInt(pos)+1);
-		String alt = computeAlt(ref, posToks[3]);
+		char alt = computeAlt(ref, pileUp);
 		int depth = posToks[3].length();
+		
 
+		int T = pileUp.length();
+		int X = count(alt, pileUp);
+		
+		if (T > 250) {
+			X = (250 * X)/T;
+			T = 250;
+		}
+		
+		
+		//Compute het prob
+		//Each read has 50% chance of coming from source with a non-reference base
+		double hetProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.5);
+		
+		
+		//Compute homo non-reference prob
+		double homNonRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.99);
+		
+		//Compute homo-reference prob
+		double homRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.005);
+		
+		double tot = hetProb + homNonRefProb + homRefProb;
+		
+		double varProb = 1.0 - homRefProb / (homRefProb + hetProb + homNonRefProb);
 		
 		String zyg = "het";
+		if (homNonRefProb > hetProb) {
+			zyg = "hom";
+		}
 		
-		output.write(contig + "\t" + pos + "\t" + (end) + "\t" + ref + "\t" + alt + "\t" + qScore + "\t" + depth + "\t" + zyg + "\n");
+		output.write(contig + "\t" + pos + "\t" + (end) + "\t" + ref + "\t" + alt + "\t" + formatter.format(qScore) + "\t" + depth + "\t" + zyg + "\t" + formatter.format(homRefProb/tot) + "\t" + formatter.format(hetProb/tot) + "\t" + formatter.format(homNonRefProb/tot) + "\n");
 	}
 
+	/**
+	 * Return number of occurrences of c in str
+	 * @param c
+	 * @param str
+	 * @return
+	 */
+	private static int count(char c, String str) {
+		int count = 0;
+		for(int i=0; i<str.length(); i++) {
+			if (str.charAt(i) == c) 
+				count++;
+		}
+		return count;
+	}
+	
 	/**
 	 * Clumsy procedure to figure out alt allele....
 	 * @param ref
 	 * @param string
 	 * @return
 	 */
-	private static String computeAlt(char ref, String pileup) {
+	private static char computeAlt(char ref, String pileup) {
 		int A = 0;
 		int C = 0;
 		int G = 0;
@@ -111,21 +160,21 @@ public class ResultEmitter {
 		}
 		
 		//Find max of all...
-		if (A >= C && A>=G && A>=T) {
-			return "A";
+		if (ref != 'A' && A >= C && A>=G && A>=T) {
+			return 'A';
 		}
-		if (C >= A && C>=G && C>=T) {
-			return "C";
+		if (ref != 'C' && C >= A && C>=G && C>=T) {
+			return 'C';
 		}
-		if (G >= A && G>=C && G>=T) {
-			return "G";
+		if (ref != 'G' && G >= A && G>=C && G>=T) {
+			return 'G';
 		}
-		if (T >= A && T>=C && T>=G) {
-			return "T";
+		if (ref != 'T' && T >= A && T>=C && T>=G) {
+			return 'T';
 		}
 		
 		
-		return "?";
+		return '?';
 	}
 
 

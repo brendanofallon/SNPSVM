@@ -50,14 +50,14 @@ public class BinomProbComputer implements ColumnComputer {
 		
 		//Compute het prob
 		//Each read has 50% chance of coming from source with a non-reference base
-		double hetProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.5);
+		double hetProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.5);
 		
 		
 		//Compute homo non-reference prob
-		double homNonRefProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.99);
+		double homNonRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.99);
 		
 		//Compute homo-reference prob
-		double homRefProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.005);
+		double homRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.005);
 		
 		double result =  1.0 - homRefProb / (hetProb + homNonRefProb + homRefProb); 
 		
@@ -77,17 +77,6 @@ public class BinomProbComputer implements ColumnComputer {
 		return value;
 	}
 	
-	public static double binomPDF(int k, int n, double p) {		
-		return nChooseK(n, k) * Math.pow(p, k) * Math.pow(1.0-p, n-k);
-	}
-	
-	public static double nChooseK(int n, int k) {
-		double prod = 1.0;
-		for(double i=1; i<=k; i++) {
-			prod *= (double)(n-k+i)/i;
-		}
-		return prod;
-	}
 
 	@Override
 	public String getName() {

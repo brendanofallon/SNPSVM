@@ -1,9 +1,6 @@
 package libsvm;
 
 import java.io.File;
-import java.io.IOException;
-
-import snpsvm.app.CommandLineApp;
 
 /**
  * Run libsvm-predict given a model and some input data. Results are wrapped in a LIBSVMResult object.

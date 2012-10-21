@@ -24,6 +24,14 @@ public class AlignmentColumn {
 		bam = new BamWindow(bamFile);
 	}
 	
+	/**
+	 * Returns an upper bound on depth that does not reflect the fact that some reads may have insertions / deletions that prevent 
+	 * exact mapping at the current site. The true depth may be less than this depth, but it will never be greater
+	 * @return
+	 */
+	public int getApproxDepth() {
+		return bam.size();
+	}
 	
 	public String getCurrentContig() {
 		return bam.getCurrentContig();
@@ -66,6 +74,25 @@ public class AlignmentColumn {
 		}
 		return count;
 	}
+        
+        /**
+	 * Counts the number of bases that differ from the given base at the current position
+	 * @param c
+	 * @return
+	 */
+	public boolean hasTwoDifferingBases(char refBase) {
+		byte[] bases = getBases();
+		int count = 0;
+		for(int i=0; i<getDepth(); i++) {
+			if (refBase != (char)bases[i])
+				count++;
+			if (count > 1)
+				return true;
+		}
+		return false;
+	}
+        
+        
 	
 	/**
 	 * Obtain a string representation of the bases at the current position
@@ -113,13 +140,13 @@ public class AlignmentColumn {
 	
 	private void calculateBases() {
 		Iterator<MappedRead> it = bam.getIterator();
-		MappedRead rec = null;
+
 		currentDepth = 0;
         
 		final int pos = getCurrentPosition();
 		
 		while(it.hasNext() && currentDepth < MAX_DEPTH) {
-			rec = it.next(); 
+			MappedRead rec = it.next(); 
 			int readPos = rec.refPosToReadPos(pos);
 			if (readPos > -1) {
 				bases[currentDepth] = rec.getBaseAtReadPos(readPos);
@@ -127,7 +154,7 @@ public class AlignmentColumn {
 			}
 			
 		}
-		
+		dirty = false;
 	}
 
 	public static String dataString(Double[] data) {

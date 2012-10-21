@@ -1,23 +1,14 @@
 package snpsvm.app;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import libsvm.LIBSVMModel;
-import libsvm.LIBSVMPredictor;
-import libsvm.LIBSVMResult;
 import snpsvm.bamreading.IntervalList;
-import snpsvm.bamreading.IntervalList.Interval;
-import snpsvm.bamreading.ReferenceBAMEmitter;
-import snpsvm.bamreading.ResultEmitter;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
@@ -38,6 +29,7 @@ public class Predictor extends AbstractModule {
 	
 	public Predictor() {
 		counters = new ArrayList<ColumnComputer>();
+		
 		counters.add( new DepthComputer());
 		counters.add( new BinomProbComputer());
 		counters.add( new QualSumComputer());
@@ -49,6 +41,10 @@ public class Predictor extends AbstractModule {
 		counters.add( new StrandBiasComputer());
 		counters.add( new MismatchComputer());
 		counters.add( new ReadPosCounter());
+//		counters.add( new HomopolymerRunCounter());
+//		counters.add( new DinucRepeatCounter());
+//		counters.add( new NucDiversityCounter());
+//		counters.add( new ContextComputer());
 	}
 	
 	@Override
@@ -61,8 +57,13 @@ public class Predictor extends AbstractModule {
 		String referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
 		String inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
 		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model file, use -M");
-		String vcfPath = getRequiredStringArg(args, "-V", "Missing required argument for destination file, use -V");
+		String vcfPath = getRequiredStringArg(args, "-V", "Missing required argument for destination vcf file, use -V");
+		boolean writeData = ! args.hasOption("-X");
 		IntervalList intervals = getIntervals(args);
+		
+		if (!writeData) {
+			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
+		}
 		
 		File inputBAM = new File(inputBAMPath);
 		File reference = new File(referencePath);
@@ -111,9 +112,7 @@ public class Predictor extends AbstractModule {
 		else {
 			System.err.println("Hmm, no variant list yet created");
 		}
-		
-		
-		
+	
 	}
 
 	@Override
