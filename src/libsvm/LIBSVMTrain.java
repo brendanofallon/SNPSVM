@@ -7,7 +7,7 @@ public class LIBSVMTrain extends LIBSVMTool {
 
 	public static final String trainingExecutable = "svm-train";
 	
-	private double defaultC = 10.0;
+	private double defaultC = 1.0;
 	
 	public LIBSVMModel createModel(File trainingData) {
 		return createModel(trainingData, true);

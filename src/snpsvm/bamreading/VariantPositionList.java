@@ -13,13 +13,13 @@ import java.util.Set;
  * @author brendan
  *
  */
-public class VariantList {
+public class VariantPositionList {
 
 	private Set<Integer> knownSites = null;
 	private File sourceFile = null;
 	private String currentContig = null;
 	
-	public VariantList(File vcfFile) {
+	public VariantPositionList(File vcfFile) {
 		sourceFile = vcfFile;
 	}
 	

@@ -7,6 +7,9 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import libsvm.LIBSVMModel;
 import libsvm.LIBSVMPredictor;
@@ -15,6 +18,7 @@ import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.ReferenceBAMEmitter;
 import snpsvm.bamreading.ResultEmitter;
+import snpsvm.bamreading.Variant;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.DepthComputer;
@@ -73,53 +77,43 @@ public class Predictor extends AbstractModule {
 		}
 	}
 	
-	public static void callSNPs(File knownBAM, 
+	public static void callSNPs(File inputBAM, 
 			File ref,
 			File model,
 			File destination,
 			IntervalList intervals,
 			List<ColumnComputer> counters) throws IOException {
-
-	//	ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
-		File data = new File(destination.getName().replace(".vcf", "") + ".data");
-		File positionsFile = new File(destination.getName().replace(".vcf", "") + ".pos");
-	//	emitter.setPositionsFile(positionsFile);
-
-		//Read BAM file, write results to training file
 		
-//		PrintStream trainingStream = new PrintStream(new FileOutputStream(data));		
-//		if (intervals == null) {
-//			emitter.emitAll(trainingStream); 
-//		}
-//		else {
-//			
-//			DecimalFormat formatter = new DecimalFormat("#0.00");
-//			double ex = intervals.getExtent();
-//			double counted = 0;
-//			int index =0 ;
-//			for(String contig : intervals.getContigs()) {
-//				//System.err.println("Emitting contig : " + contig);
-//				for(Interval interval : intervals.getIntervalsInContig(contig)) {
-//					//System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
-//					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
-//					counted += interval.getLastPos() - interval.getFirstPos();
-//					index++;
-//					if (index % 100 ==0) {
-//						System.err.println("Completed " + formatter.format(100* counted / ex) + "%");
-//					}
-//				}
-//			}
-//		}
-//		trainingStream.close();
-
-		LIBSVMPredictor predictor = new LIBSVMPredictor();
-		LIBSVMResult result = predictor.predictData(data, new LIBSVMModel(model));
-		result.setPositionsFile(positionsFile);
-
-		ResultEmitter resultWriter = new ResultEmitter();
-
-		resultWriter.writeResults(result, destination);
-
+		//Somehow logically divide work into rational number of workers
+		//No clue what the optimum will be here
+		SNPCallerWorker snpCaller = new SNPCallerWorker(ref, inputBAM, model, intervals, counters);
+		
+		int numThreads = 4;
+		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
+		threadPool.execute(snpCaller);
+		
+		//Wait until all jobs are done
+		threadPool.shutdown();
+		
+		try {
+			threadPool.awaitTermination(100, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Threadpool has terminated");
+		if (snpCaller.isVariantListCreated()) {
+			List<Variant> variants = snpCaller.getVariantList();
+			for(Variant var : variants) {
+				System.out.println(var);
+			}
+		}
+		else {
+			System.err.println("Hmm, no variant list yet created");
+		}
+		
+		
+		
 	}
 
 	@Override

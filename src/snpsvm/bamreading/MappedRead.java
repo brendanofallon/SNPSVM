@@ -77,7 +77,7 @@ public class MappedRead {
 		
 		int pos = refPosToReadPos(refPos);
 		if (pos < 0 || pos >= read.getReadLength()) {
-			System.out.println("Uugh, no read base at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
+			//System.out.println("Uugh, no read base at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
 			//int pos2 = refPosToReadPos(refPos);
 			return -1;
 		}
@@ -90,7 +90,7 @@ public class MappedRead {
 		
 		int pos = refPosToReadPos(refPos);
 		if (pos < 0 || pos >= read.getReadLength()) {
-			System.out.println("Uugh, no read base quality at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
+			//System.out.println("Uugh, no read base quality at ref pos: "+ refPos + ", which maps to read position: " + pos + " CIGAR : " + read.getCigarString());
 			return 0;
 		}
 		return read.getBaseQualities()[ pos ];

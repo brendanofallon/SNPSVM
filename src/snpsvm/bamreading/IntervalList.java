@@ -37,7 +37,7 @@ public class IntervalList {
 					try {
 						Integer startPos = Integer.parseInt(posStr.substring(0, posStr.indexOf("-")));
 						Integer endPos = Integer.parseInt(posStr.substring(posStr.indexOf("-")+1, posStr.length()));
-						System.out.println("Adding interval contig : " +  tok + " positions: " + startPos + "-" + endPos);
+						System.out.println("Adding interval contig : " +  chr + " positions: " + startPos + "-" + endPos);
 						addInterval(chr, new Interval(startPos, endPos));
 					}
 					catch(NumberFormatException nfe){ 
