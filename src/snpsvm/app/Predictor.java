@@ -142,7 +142,7 @@ public class Predictor extends AbstractModule {
 		}
 		
 		for(Variant var : allVars) {
-			System.out.println(var);
+		//	System.out.println(var);
 		}
 	}
 

@@ -42,7 +42,7 @@ public class SNPCaller implements Runnable {
 	protected BAMWindowStore bamWindows;
 	
 	private boolean removeTmpFiles = true; //Erase 'data' and 'positions' files after use 
-	
+	private int basesComputed = 0;
 	
 	public SNPCaller(File referenceFile, File modelFile, IntervalList intervals, List<ColumnComputer> counters, BAMWindowStore bamWindows) {
 		this.referenceFile = referenceFile;
@@ -74,6 +74,7 @@ public class SNPCaller implements Runnable {
 
 				for(Interval interval : intervals.getIntervalsInContig(contig)) {
 					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), dataStream);
+					basesComputed = interval.getSize();
 				}
 			}
 			
@@ -102,6 +103,14 @@ public class SNPCaller implements Runnable {
 		
 	}
 
+	/**
+	 * Obtain the approximate number of bases so far called by this caller 
+	 * @return
+	 */
+	public int getBasesComputed() {
+		return basesComputed;
+	}
+	
 	/**
 	 * A reference to a list containing all called variants in the
 	 * @return

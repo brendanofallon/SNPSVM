@@ -21,7 +21,7 @@ public class SplitSNPAndCall {
 	
 	//Interval sets smaller than this size will be computed forthwith, otherwise
 	//they'll be split into approximate halves and each side will be processed separately
-	int thresholdExtent = 1000000; //1M bases
+	int thresholdExtent = 10000000; //1M bases
 	
 	protected File reference;
 	protected File inputBam;
@@ -45,20 +45,19 @@ public class SplitSNPAndCall {
 		}
 	}
 
-	
-	
+	/**
+	 * Recursive function that will call all snps in the interval list. If the interval list is
+	 * small enough then the snps just be submitted to the thread pool, if not the intervals will be split
+	 * in half and each half will be submitted 
+	 * @param intervals
+	 */
 	public void submitAll(IntervalList intervals) {
 			
 		if (intervals.getExtent() < thresholdExtent) {
 			//Intervals size is pretty small, just call 'em
-			System.out.println("Calling snps on interval of size : " + intervals.getExtent());
-			
-			
 			SNPCaller caller = new SNPCaller(reference, model, intervals, counters, bamWindows);
 			callers.add(caller);
-			pool.submit(caller);
-			System.out.println("Active jobs :" + pool.getActiveCount() + " task count: " + pool.getTaskCount());
-			
+			pool.submit(caller);			
 		}
 		else {	
 			//Intervals cover a lot of ground, so split them in half and submit each half
@@ -68,6 +67,12 @@ public class SplitSNPAndCall {
 		}
 	}
 
+	public int getBasesCalled() {
+		for(SNPCaller caller : callers) {
+			
+		}
+		return 0;
+	}
 	/**
 	 * Shut down the variant pool and wait until all jobs are done. Then get all variants
 	 * and return them. 
