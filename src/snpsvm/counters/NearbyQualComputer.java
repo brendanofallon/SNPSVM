@@ -10,7 +10,8 @@ public class NearbyQualComputer implements ColumnComputer {
 
 	public final int WINDOW_SIZE = 5; //Window spans the focus position, so 7 means three in either direction
 	Double[] values = new Double[WINDOW_SIZE];
-	public final double defaultVal = 50;
+	Double[] counts = new Double[WINDOW_SIZE];
+	public final double defaultVal = 20;
 	
 	@Override
 	public String getName() {
@@ -18,9 +19,21 @@ public class NearbyQualComputer implements ColumnComputer {
 	}
 
 	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "Mean quality of sites aligning nearby";
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		for(int i=0; i<WINDOW_SIZE; i++) {
 			values[i] = 0.0;
+			counts[i] = 0.0;
 		}
 		
 		int offset = WINDOW_SIZE/2;
@@ -34,12 +47,19 @@ public class NearbyQualComputer implements ColumnComputer {
 					if (read.hasBaseAtReferencePos(refPos)) {
 						byte q = read.getQualityAtReferencePos(refPos);
 						values[i] += q;
+						counts[i]++;
 					}
 					else {
 						values[i] += defaultVal;
+						counts[i]++;
 					}
 				}
 			}
+		}
+		
+		for(int i=0; i<WINDOW_SIZE; i++) {
+			if (counts[i] > 0)
+				values[i] /= counts[i];
 		}
 		
 		return values;

@@ -12,6 +12,19 @@ public interface ColumnComputer {
 	public String getName();
 	
 	/**
+	 * The number of statistics or 'columns' produced by this computer
+	 * @return
+	 */
+	public int getColumnCount();
+	
+	
+	/**
+	 * User-friendly description of the exact column computed by this computer
+	 * @return
+	 */
+	public String getColumnDesc(int which);
+	
+	/**
 	 * Compute the values for this position
 	 * @param col
 	 * @return

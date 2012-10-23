@@ -47,5 +47,15 @@ public class ContextComputer implements ColumnComputer {
 		throw new IllegalArgumentException("Unknown base : " + c);
 	}
 	
+	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "Presence of base at site";
+	}
 	
 }

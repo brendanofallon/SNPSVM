@@ -11,6 +11,17 @@ public class DistroProbComputer implements ColumnComputer {
 	Double[] value = new Double[1];
 	
 	@Override
+	public int getColumnCount() {
+		return value.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "Probability base was not sampled from binomial distribution with p=0.2";
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		int refCount = 0;
 		int altCount = 0;

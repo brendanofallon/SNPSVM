@@ -22,6 +22,20 @@ public class MQComputer extends VarCountComputer {
 	}
 
 	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Mean mapping quality of reads with reference base";
+		else
+			return "Mean mapping quality of reads with non-reference base";
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;

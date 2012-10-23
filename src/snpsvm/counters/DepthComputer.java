@@ -23,4 +23,14 @@ public class DepthComputer implements ColumnComputer {
 		return value;
 	}
 
+	@Override
+	public int getColumnCount() {
+		return value.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "Total read depth at site";
+	}
 }

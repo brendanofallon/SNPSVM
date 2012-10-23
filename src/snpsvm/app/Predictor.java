@@ -57,11 +57,27 @@ public class Predictor extends AbstractModule {
 	
 	@Override
 	public boolean matchesModuleName(String name) {
-		return name.equalsIgnoreCase("predict");
+		return name.equalsIgnoreCase("predict") || name.equals("emit");
+	}
+	
+	public void emitColumnNames() {
+		int index = 1;
+		for(ColumnComputer counter : counters) {
+			for(int i=0; i<counter.getColumnCount(); i++) {
+				System.out.println(index + "\t" + counter.getColumnDesc(i));
+				index++;
+			}
+		}
 	}
 
 	@Override
 	public void performOperation(String name, ArgParser args) {
+		if (name.equals("emit")) {
+			emitColumnNames();
+			return;
+		}
+		
+		
 		String referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
 		String inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
 		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model file, use -M");

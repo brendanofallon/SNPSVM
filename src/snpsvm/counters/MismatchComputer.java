@@ -12,6 +12,20 @@ public class MismatchComputer extends VarCountComputer {
 	public String getName() {
 		return "mismatch.counts";
 	}
+	
+	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Mean number of mismatching bases on reference reads";
+		else
+			return "Mean number of mismatching bases on non-reference reads";
+	}
 
 	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {

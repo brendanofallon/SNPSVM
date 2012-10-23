@@ -13,6 +13,20 @@ final Double[] values = new Double[2];
 	public String getName() {
 		return "dinuc.counter";
 	}
+	
+	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == 0)
+			return "Number of Dinucleotide repeats to left of site";
+		else
+			return "Number of Dinucleotide repeats to right of site";
+	}
 
 	@Override
 	public Double[] computeValue(char refBase, FastaWindow window,

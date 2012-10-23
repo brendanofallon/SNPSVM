@@ -16,6 +16,21 @@ public class QualSumComputer extends VarCountComputer {
 	}
 	
 	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Sum of quality scores of reference bases";
+		else
+			return "Sum of quality scores of non-reference bases";
+			
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;

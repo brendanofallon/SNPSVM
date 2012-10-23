@@ -20,6 +20,20 @@ public class HomopolymerRunCounter implements ColumnComputer {
 	}
 
 	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == 0)
+			return "Length of homopolymer run to left of site";
+		else
+			return "Length of homopolymer run to right of site";
+	}
+	
+	@Override
 	public Double[] computeValue(char refBase, FastaWindow window,
 			AlignmentColumn col) {
 		

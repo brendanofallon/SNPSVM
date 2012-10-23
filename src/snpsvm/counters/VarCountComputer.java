@@ -19,7 +19,20 @@ public class VarCountComputer implements ColumnComputer {
 	static final int alt = 1;
 
 	
-	
+	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Number of reference bases";
+		else
+			return "Number of non-reference bases";
+			
+	}
 	
 	@Override
 	public String getName() {

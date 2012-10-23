@@ -18,6 +18,17 @@ public class StrandBiasComputer implements ColumnComputer {
 	}
 
 	@Override
+	public int getColumnCount() {
+		return 1;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "Strand bias score";		
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		value[0] = 0.0;
 		forward[0] = 1.0; //prevents divide by zero errors
@@ -46,6 +57,7 @@ public class StrandBiasComputer implements ColumnComputer {
 				}
 			}
 		}
+		
 		
 		value[0] = (forward[1]/reverse[1] - 0.5)*(forward[1]/reverse[1] - 0.5) / 0.5;
 		value[0] += (forward[0]/reverse[0] - 0.5)*(forward[0]/reverse[0] - 0.5) / 0.5;

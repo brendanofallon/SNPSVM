@@ -21,10 +21,25 @@ public class ReadPosCounter extends VarCountComputer {
 	}
 
 	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Mean read position of reference bases";
+		else
+			return "Mean read position of non-reference bases";
+			
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
-		counts[ref] = 0.0;
+		counts[ref] = 0.0; 
 		counts[alt] = 0.0;
 		
 		if (col.getDepth() > 0) {
@@ -49,8 +64,10 @@ public class ReadPosCounter extends VarCountComputer {
 			}
 		}
 		
-		values[ref] /= counts[ref];
-		values[alt] /= counts[alt];
+		if (counts[ref] > 0)
+			values[ref] /= counts[ref];
+		if (counts[alt] > 0)
+			values[alt] /= counts[alt];
 		return values;
 	}
 

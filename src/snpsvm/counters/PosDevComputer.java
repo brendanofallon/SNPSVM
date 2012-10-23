@@ -23,6 +23,22 @@ public class PosDevComputer extends VarCountComputer {
 		return "pos.dev";
 	}
 
+
+	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Stdev of read position of reference bases";
+		else
+			return "Stdev of read position of non-reference bases";
+			
+	}
+	
 	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;

@@ -82,4 +82,16 @@ public class BinomProbComputer implements ColumnComputer {
 	public String getName() {
 		return "distro.prob";
 	}
+
+
+	@Override
+	public int getColumnCount() {
+		return value.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "probability of non-reference base at site";
+	}
 }

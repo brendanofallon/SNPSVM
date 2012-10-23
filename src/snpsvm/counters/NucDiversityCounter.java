@@ -29,6 +29,17 @@ public class NucDiversityCounter implements ColumnComputer {
 	}
 
 	@Override
+	public int getColumnCount() {
+		return val.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		return "Diversity of reference in window surrounding site";
+	}
+	
+	@Override
 	public Double[] computeValue(char refBase, FastaWindow window,
 			AlignmentColumn col) {
 
@@ -49,12 +60,14 @@ public class NucDiversityCounter implements ColumnComputer {
 			}
 		}
 		
-		double tot = counts[0] + counts[1] + counts[2] + counts[3];
-		counts[0] /= tot;
-		counts[1] /= tot;
-		counts[2] /= tot;
-		counts[3] /= tot;
 		
+		double tot = counts[0] + counts[1] + counts[2] + counts[3];
+		if (tot > 0) {
+			counts[0] /= tot;
+			counts[1] /= tot;
+			counts[2] /= tot;
+			counts[3] /= tot;
+		}
 		val[0] = (counts[0]-expA)*(counts[0]-expA)
 					+ (counts[1]-expC)*(counts[1]-expC)
 					+ (counts[2]-expT)*(counts[2]-expT)

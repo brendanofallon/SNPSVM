@@ -14,6 +14,20 @@ public class MeanQualityComputer extends VarCountComputer {
 	}
 	
 	@Override
+	public int getColumnCount() {
+		return values.length;
+	}
+
+
+	@Override
+	public String getColumnDesc(int which) {
+		if (which == ref)
+			return "Mean quality of reference bases";
+		else
+			return "Mean quality of non-reference bases";
+	}
+	
+	@Override
 	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
