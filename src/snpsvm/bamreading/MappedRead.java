@@ -114,9 +114,6 @@ public class MappedRead {
 	 * indels then abort immediately. 
 	 */
 	private void initialize() {
-		if (read.getAlignmentStart() == 136735) {
-			System.out.println("break");
-		}
 		
 		Cigar cig = read.getCigar();
 		if (cig.getCigarElements().size()==0) {

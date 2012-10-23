@@ -15,13 +15,21 @@ import snpsvm.counters.ColumnComputer;
 public class ReferenceBAMEmitter {
 
 	final FastaWindow refReader;
-	final AlignmentColumn alnCol;
+	protected AlignmentColumn alnCol;
 	private Map<String, Integer> contigMap;
 	List<ColumnComputer> counters;
 	protected File positionsFile = null;
 	protected BufferedWriter positionWriter = null;
 	protected DecimalFormat formatter = new DecimalFormat("0.0###");
 	protected BinomProbComputer binomComputer = new BinomProbComputer(); //Used for initial filtering 
+	
+	
+	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window) throws IOException {
+		refReader = new FastaWindow(reference);
+		contigMap = refReader.getContigSizes();
+		alnCol = new AlignmentColumn(window);
+		this.counters = counters;
+	}
 	
 	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException {
 		refReader = new FastaWindow(reference);
@@ -137,5 +145,4 @@ public class ReferenceBAMEmitter {
 		
 	}
 	
-
 }

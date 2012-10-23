@@ -17,6 +17,7 @@ import java.util.Map;
  */
 public class ConfigModule implements Module {
 
+	public final int defaultThreads = 4;
 	public static final String configFilePath = System.getProperty("user.home") + "/.snpsvm.config";
 	
 	private Map<String, String> properties = null;
@@ -38,7 +39,6 @@ public class ConfigModule implements Module {
 	public void performOperation(String name, ArgParser args) {
 		//We support only three args, add, remove, and list
 		loadProperties();
-		
 		
 		if (args.hasOption("-add")) {
 			String prop = args.getStringArg("-add");
@@ -72,6 +72,22 @@ public class ConfigModule implements Module {
 		
 		
 		writeProperties();
+	}
+	
+	public int getThreadCount() {
+		String threadStr = getProperty("threads");
+		if (threadStr == null) {
+			return defaultThreads;
+		}
+		
+		try {
+			int threads = Integer.parseInt(threadStr);
+			return threads;
+		} catch (NumberFormatException nfe) {
+			System.err.println("Warning, could not parse an integer for thread number, found : " + threadStr);
+			System.err.println("Using " + defaultThreads + " threads");
+			return defaultThreads;
+		}
 	}
 	
 	/**

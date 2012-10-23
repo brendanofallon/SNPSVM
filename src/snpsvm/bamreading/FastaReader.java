@@ -16,6 +16,10 @@ public class FastaReader {
 	BufferedReader reader;
 	final File sourceFile;
 	
+	//Don't rebuild the contig size map for the same file multiple times, attempt to look
+	//it up in here
+	protected static Map<String, Map<String, Integer>> staticMapStore = null;
+	
 	private Map<String, Integer> contigSizes;
 	
 	public FastaReader(File file) throws IOException {
@@ -37,13 +41,22 @@ public class FastaReader {
 	 * @throws IOException 
 	 */
 	private void buildContigMap() throws IOException {
+		
+		//Check to see if there's already an entry in the static map store, if so 
+		//we're ok
+		if (staticMapStore != null) {
+			contigSizes = staticMapStore.get(sourceFile.getAbsolutePath());
+			if (contigSizes != null)
+				return;
+		}
+		
 		contigSizes = new HashMap<String, Integer>();
 
 		//Search for .dict file in same directory as source file
 		String dictFilename = sourceFile.getName().replace(".fasta", "").replace(".fa", "") + ".dict";
 		File dictFile = new File(sourceFile.getParentFile() + System.getProperty("file.separator") + dictFilename);
 		if (dictFile.exists()) {
-			System.out.println("Found fasta dictionary in file: " + dictFile.getAbsolutePath());
+			System.err.println("Found fasta dictionary in file: " + dictFile.getAbsolutePath());
 			BufferedReader dictReader = new BufferedReader(new FileReader(dictFile));
 			String line = dictReader.readLine();
 			while(line != null) {
@@ -64,10 +77,13 @@ public class FastaReader {
 			
 
 			dictReader.close();
+			
+			if (staticMapStore == null) {
+				staticMapStore = new HashMap<String, Map<String, Integer>>();
+				staticMapStore.put(sourceFile.getAbsolutePath(), contigSizes);
+			}
 			return;
 		}
-		
-		
 		
 		reader = new BufferedReader(new FileReader(sourceFile));
 		currentLine = reader.readLine();
@@ -98,7 +114,11 @@ public class FastaReader {
 			currentLine = reader.readLine();
 		}
 		
-		System.err.println(".done, scanned " + contigSizes.size() + " contigs ");
+		if (staticMapStore == null) {
+			staticMapStore = new HashMap<String, Map<String, Integer>>();
+			staticMapStore.put(sourceFile.getAbsolutePath(), contigSizes);
+		}
+		System.err.println(".done, found " + contigSizes.size() + " contigs ");
 	}
 	
 	

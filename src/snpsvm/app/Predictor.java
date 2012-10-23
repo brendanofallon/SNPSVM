@@ -8,9 +8,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import snpsvm.bamreading.BAMWindowStore;
+import snpsvm.bamreading.FastaReader;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.SplitSNPAndCall;
 import snpsvm.bamreading.Variant;
+import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.DepthComputer;
@@ -79,6 +82,32 @@ public class Predictor extends AbstractModule {
 		}
 	}
 	
+	/**
+	 * Create a new interval list with no intervals extending beyond the range given
+	 * in the refernece file
+	 * @param reference
+	 * @param intervals
+	 * @return
+	 * @throws IOException 
+	 */
+	protected static IntervalList validateIntervals(File reference, IntervalList intervals) throws IOException {
+		FastaReader refReader = new FastaReader(reference);
+		IntervalList newIntervals = new IntervalList();
+		for(String contig : intervals.getContigs()) {
+			Integer maxLength = refReader.getContigSizes().get(contig);
+			if (maxLength == null) {
+				throw new IllegalArgumentException("Could not find contig " + contig + " in reference");
+			}
+			for(Interval interval : intervals.getIntervalsInContig(contig)) {
+				int newPos = Math.min(maxLength, interval.getLastPos());
+				newIntervals.addInterval(contig, interval.getFirstPos(), newPos);
+			}
+		}
+		
+		
+		return newIntervals;
+	}
+	
 	public static void callSNPs(File inputBAM, 
 			File ref,
 			File model,
@@ -86,23 +115,35 @@ public class Predictor extends AbstractModule {
 			IntervalList intervals,
 			List<ColumnComputer> counters) throws IOException {
 		
+		intervals = validateIntervals(ref, intervals);
+		
+		//Initialize BAMWindow store
+		BAMWindowStore bamWindows = new BAMWindowStore(inputBAM, 8);
+		
 		//Somehow logically divide work into rational number of workers
 		//No clue what the optimum will be here
-		int numThreads = 2;
-		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(numThreads);
 		
-		//SNPCaller snpCaller = new SNPCaller(ref, inputBAM, model, intervals, counters);
-		
-		SplitSNPAndCall caller = new SplitSNPAndCall(ref, inputBAM, model, counters, threadPool);
-		
-		caller.submitAll(intervals);
-		
-		List<Variant> allVars = caller.getAllVariants();
+		List<Variant> allVars; 
+		int threads= CommandLineApp.configModule.getThreadCount();
+		if (threads > 1) {
+			ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
+
+			SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, counters, threadPool);
+
+			caller.submitAll(intervals);
+
+			allVars = caller.getAllVariants();
+
+		}
+		else {
+			SNPCaller caller = new SNPCaller(ref, model, intervals, counters, bamWindows);
+			caller.run();
+			allVars = caller.getVariantList();
+		}
 		
 		for(Variant var : allVars) {
 			System.out.println(var);
 		}
-	
 	}
 
 	@Override

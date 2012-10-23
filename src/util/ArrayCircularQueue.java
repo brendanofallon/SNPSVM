@@ -10,12 +10,14 @@ package util;
  */
 public class ArrayCircularQueue {
 	
+	private static int count = 0;
 	private int leftIndex = 0;
 	private int rightIndex = 0;
 	private char[] queue;
 	
 	public ArrayCircularQueue (int maxElements) {
 		queue=new char[maxElements+1];
+		count++;
 	}
 	
 	/**
