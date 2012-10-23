@@ -1,20 +1,28 @@
 package snpsvm.app;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-import libsvm.LIBSVMModel;
-import libsvm.LIBSVMPredictor;
-import libsvm.LIBSVMResult;
+import javax.swing.Timer;
+
+import snpsvm.bamreading.BAMWindowStore;
+import snpsvm.bamreading.FastaReader;
+import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
-import snpsvm.bamreading.ReferenceBAMEmitter;
-import snpsvm.bamreading.ResultEmitter;
+import snpsvm.bamreading.SplitSNPAndCall;
+import snpsvm.bamreading.Variant;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.DepthComputer;
@@ -34,6 +42,7 @@ import snpsvm.counters.StrandBiasComputer;
 public class Predictor extends AbstractModule {
 
 	List<ColumnComputer> counters;
+	boolean emitProgress = true;
 	
 	public Predictor() {
 		counters = new ArrayList<ColumnComputer>();
@@ -95,71 +104,174 @@ public class Predictor extends AbstractModule {
 		File vcf = new File(vcfPath);
 		
 		try {
-			callSNPs(inputBAM, reference, model, vcf, intervals, counters, writeData);
+			callSNPs(inputBAM, reference, model, vcf, intervals, counters);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public static void callSNPs(File knownBAM, 
+	/**
+	 * Create a new interval list with no intervals extending beyond the range given
+	 * in the refernece file
+	 * @param reference
+	 * @param intervals
+	 * @return
+	 * @throws IOException 
+	 */
+	protected static IntervalList validateIntervals(File reference, IntervalList intervals) throws IOException {
+		FastaReader refReader = new FastaReader(reference);
+		IntervalList newIntervals = new IntervalList();
+		for(String contig : intervals.getContigs()) {
+			Integer maxLength = refReader.getContigSizes().get(contig);
+			if (maxLength == null) {
+				throw new IllegalArgumentException("Could not find contig " + contig + " in reference");
+			}
+			for(Interval interval : intervals.getIntervalsInContig(contig)) {
+				int newPos = Math.min(maxLength, interval.getLastPos());
+				newIntervals.addInterval(contig, interval.getFirstPos(), newPos);
+			}
+		}
+		
+		
+		return newIntervals;
+	}
+	
+	public void callSNPs(File inputBAM, 
 			File ref,
 			File model,
 			File destination,
 			IntervalList intervals,
-			List<ColumnComputer> counters,
-			boolean writeData) throws IOException {
+			List<ColumnComputer> counters) throws IOException {
 		
-		File data = new File(destination.getName().replace(".vcf", "") + ".data");
-		File positionsFile = new File(destination.getName().replace(".vcf", "") + ".pos");
+		intervals = validateIntervals(ref, intervals);
 		
-		if (writeData) {
+		int threads= CommandLineApp.configModule.getThreadCount();
+		//Initialize BAMWindow store
+		BAMWindowStore bamWindows = new BAMWindowStore(inputBAM, threads);
+		
+		//Somehow logically divide work into rational number of workers
+		Timer progressTimer = null;
+		final int intervalExtent = intervals.getExtent();
+		
+		List<Variant> allVars; 
+		if (threads > 1) {
+			ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-			ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(ref, knownBAM, counters);
-			emitter.setPositionsFile(positionsFile);
+			final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, counters, threadPool);
 			
-			PrintStream trainingStream = new PrintStream(new FileOutputStream(data));		
-			if (intervals == null) {
-				emitter.emitAll(trainingStream); 
-			}
-			else {
+			
+			//Submit multiple jobs to thread pool, returns immediately
+			caller.submitAll(intervals);
+			
+			
+			if (emitProgress) {
+				System.out.println("Calling SNPs over " + intervals.getExtent() + " bases with " + threads + " threads in " + caller.getCallerCount() + " chunks");
+				
+				progressTimer = new javax.swing.Timer(100, new ActionListener() {
 
-				DecimalFormat formatter = new DecimalFormat("#0.00");
-				double ex = intervals.getExtent();
-				double counted = 0;
-				int index =0 ;
-				int prevLength = 0;
-				for(String contig : intervals.getContigs()) {
-					//System.err.println("Emitting contig : " + contig);
-					for(Interval interval : intervals.getIntervalsInContig(contig)) {
-						//System.err.println("\t interval : " + interval.getFirstPos() + " - " + interval.getLastPos());
-						emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
-						counted += interval.getLastPos() - interval.getFirstPos();
-						index++;
-						if (index % 200 ==0) {
-							for(int i=0; i<prevLength; i++) {
-								System.err.print('\b');
-							}
-							String msg = "Completed " + ("" + counted).replace(".0", "") + " bases, " + formatter.format(100* counted / ex) + "%";
-							prevLength = msg.length();
-							System.err.print(msg);
-						}
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						emitProgressString(caller, intervalExtent);
 					}
-				}
+				});
+				progressTimer.setDelay(500);
+				progressTimer.start();
 			}
-			trainingStream.close();
 
+			//Blocks until all variants are called
+			allVars = caller.getAllVariants();
+			
+			//Emit one more progress message
+			if (emitProgress) {
+				emitProgressString(caller, intervalExtent);
+			}
 		}
-		LIBSVMPredictor predictor = new LIBSVMPredictor();
-		LIBSVMResult result = predictor.predictData(data, new LIBSVMModel(model));
-		result.setPositionsFile(positionsFile);
+		else {
+			final SNPCaller caller = new SNPCaller(ref, model, intervals, counters, bamWindows);
+			
+			if (emitProgress) {
+				System.out.println("Calling SNPs over " + intervals.getExtent() + " bases with " + threads + " threads in 1 chunk");
+				
+				progressTimer = new javax.swing.Timer(100, new ActionListener() {
 
-		ResultEmitter resultWriter = new ResultEmitter();
-
-		resultWriter.writeResults(result, destination);
-
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						emitProgressString(caller, intervalExtent);
+					}
+				});
+				progressTimer.setDelay(500);
+				progressTimer.start();
+			}
+			
+			caller.run();
+			allVars = caller.getVariantList();
+		}
+		
+		if (progressTimer != null)
+			progressTimer.stop();
+		
+		Collections.sort(allVars);
+		
+		//Write the variants to a file
+		PrintWriter writer = new PrintWriter(new PrintStream(new FileOutputStream(destination)));
+		
+		for(Variant var : allVars) {
+			writer.println(var);
+		}
+		
+		writer.close();
 	}
 
+	protected void emitProgressString(HasBaseProgress caller, int intervalExtent) {
+		double basesCalled = (double)caller.getBasesCalled();
+		double frac = basesCalled / intervalExtent;
+		if (startTime == null) {
+			startTime = System.currentTimeMillis();
+			System.out.println("   Elapsed       Bases      Bases / sec   % Complete");
+		}
+		long elapsedTimeMS = System.currentTimeMillis() - startTime;
+		double elapsedSecs = elapsedTimeMS / 1000.0;
+		double basesPerSec = basesCalled / (double)elapsedSecs;
+		DecimalFormat formatter = new DecimalFormat("#0.00");
+		DecimalFormat intFormatter = new DecimalFormat("0");
+		for(int i=0; i<prevLength; i++) {
+			System.out.print('\b');
+		}
+		char cm = markers[charIndex % markers.length];
+		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "%";
+		System.out.print(msg);
+		prevLength = msg.length();
+		charIndex++;
+	}
+
+	protected String toUserTime(double secs) {
+		int minutes = (int)Math.floor(secs / 60.0);
+		int hours = (int)Math.floor(minutes / 60.0);
+		secs = secs % 60;
+		DecimalFormat formatter = new DecimalFormat("#0.00");
+		if (hours < 1) {
+			if (secs < 10)
+				return minutes + ":0" + formatter.format(secs);
+			else
+				return minutes + ":" + formatter.format(secs);
+			
+		}
+		else {
+			if (secs < 10)
+				return hours + ":" + minutes + ":0" + formatter.format(secs);
+			else 
+				return hours + ":" + minutes + ":" + formatter.format(secs);
+		}
+		
+	}
+	
+	private static String padTo(String str, int len) {
+		while(str.length() < len) {
+			str = " " + str;
+		}
+		return str;
+	}
 	@Override
 	public void emitUsage() {
 		System.out.println("Predictor (SNP caller) module");
@@ -169,4 +281,8 @@ public class Predictor extends AbstractModule {
 		System.out.println(" -M model file produced by buildmodel");
 	}
 
+	private Long startTime = null;
+	private int prevLength = 0;
+	private int charIndex = 0;
+	private static final char[] markers = {'|', '/', '-', '\\', '|', '/', '-', '\\'};
 }

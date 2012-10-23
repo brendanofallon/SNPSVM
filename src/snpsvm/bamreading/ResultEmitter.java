@@ -11,6 +11,12 @@ import java.text.DecimalFormat;
 
 import libsvm.LIBSVMResult;
 
+/**
+ * Takes the result of a libsvm prediction run (along with a positions file that stores additional
+ * data about the position in question) and writes a csv file with the predicted variants
+ * @author brendanofallon
+ *
+ */
 public class ResultEmitter {
 
 	

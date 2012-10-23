@@ -20,8 +20,20 @@ public class AlignmentColumn {
 	private int currentDepth = 0;
 	private boolean dirty = true; //Flag is set when we advance to indicate that current info in bases[] is wrong
 	
+	public AlignmentColumn(BamWindow bamWindow) {
+		bam = bamWindow;
+	}
+	
 	public AlignmentColumn(File bamFile) {
 		bam = new BamWindow(bamFile);
+	}
+	
+	/**
+	 * A reference to the BamWindow that stores bam information
+	 * @return
+	 */
+	public BamWindow getBamWindow() {
+		return bam;
 	}
 	
 	/**

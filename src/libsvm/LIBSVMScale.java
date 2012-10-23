@@ -21,7 +21,7 @@ public class LIBSVMScale extends LIBSVMTool {
 
 		String command = libsvmPath + scaleExecutable + " " + rawData.getAbsolutePath() + " > " + pathToOutput;
 		
-		System.out.println("Executing command : " + command);
+		//System.out.println("Executing command : " + command);
 		
 		executeCommand(command);
 		

@@ -23,7 +23,7 @@ import net.sf.samtools.SAMSequenceRecord;
  */
 public class BamWindow {
 
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	
 	final File bamFile;
 	final SAMFileReader samReader; 
@@ -249,7 +249,6 @@ public class BamWindow {
 		
 		//Automagically skip unmapped reads and reads with unmapped mates
 		while(nextRecord != null && (nextRecord.getMappingQuality()==0 || nextRecord.getMateUnmappedFlag())) {
-			//System.out.println("Skipping record with mapping quality: " + nextRecord.getMappingQuality() + " mate mapping quality: " + nextRecord.getMateUnmappedFlag());
 			try {
 				nextRecord = recordIt.next();
 			}

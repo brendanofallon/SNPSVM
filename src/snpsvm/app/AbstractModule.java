@@ -33,7 +33,6 @@ public abstract class AbstractModule implements Module {
 		IntervalList intervals = new IntervalList();
 		File testFile = new File(intervalsStr);
 		if (testFile.exists()) {
-			System.err.println("Building interval list from file " + testFile.getName());
 			try {
 				intervals.buildFromBEDFile(testFile);
 			} catch (IOException e) {

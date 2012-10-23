@@ -47,7 +47,7 @@ public class MismatchComputer extends VarCountComputer {
 					int q = read.getMismatchCount(window);
 					int index = 0;
 					if ( b != refBase) {
-						index = 1;
+						index = alt;
 						altReads++;
 					}
 					else {

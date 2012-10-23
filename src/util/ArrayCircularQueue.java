@@ -10,12 +10,14 @@ package util;
  */
 public class ArrayCircularQueue {
 	
+	private static int count = 0;
 	private int leftIndex = 0;
 	private int rightIndex = 0;
 	private char[] queue;
 	
 	public ArrayCircularQueue (int maxElements) {
 		queue=new char[maxElements+1];
+		count++;
 	}
 	
 	/**
@@ -42,7 +44,7 @@ public class ArrayCircularQueue {
 	}
 
 	public int size() {
-		if (rightIndex > leftIndex)
+		if (rightIndex >= leftIndex)
 			return rightIndex - leftIndex;
 		else
 			return rightIndex - leftIndex + queue.length;
@@ -80,11 +82,45 @@ public class ArrayCircularQueue {
 	
 	public String toString() {
 		StringBuilder strB = new StringBuilder();
-		strB.append("Size:" + size() +"\t");
+		strB.append("Size:" + size() +"\t empty: " + isEmpty() + " full:" + isFull() + "\t");
 		for(int i=0; i<size(); i++) {
 			strB.append( get(i) + ", ");
 		}
 		return strB.toString();
+	}
+	
+	public static void main(String[] args) {
+		
+		ArrayCircularQueue q = new ArrayCircularQueue(6);
+		try {
+			System.out.println(q);
+			q.add('A');
+			System.out.println(q);
+			q.add('B');
+			System.out.println(q);
+			q.add('C');
+			System.out.println(q);
+			q.add('D');
+			System.out.println(q);
+			q.add('E');
+			System.out.println(q);
+			q.add('F');
+			System.out.println(q);
+			q.remove();
+			q.remove();
+			q.remove();
+			q.remove();
+			q.remove();
+			q.remove();
+			System.out.println(q);
+		} catch (FullQueueException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (EmptyQueueException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 }

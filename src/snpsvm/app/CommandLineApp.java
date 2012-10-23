@@ -1,29 +1,7 @@
 package snpsvm.app;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import libsvm.LIBSVMModel;
-import libsvm.LIBSVMPredictor;
-import libsvm.LIBSVMResult;
-import libsvm.LIBSVMTrain;
-import snpsvm.bamreading.ReferenceBAMEmitter;
-import snpsvm.bamreading.ResultEmitter;
-import snpsvm.bamreading.TrainingEmitter;
-import snpsvm.counters.BinomProbComputer;
-import snpsvm.counters.ColumnComputer;
-import snpsvm.counters.DepthComputer;
-import snpsvm.counters.DistroProbComputer;
-import snpsvm.counters.MQComputer;
-import snpsvm.counters.MeanQualityComputer;
-import snpsvm.counters.MismatchComputer;
-import snpsvm.counters.NearbyQualComputer;
-import snpsvm.counters.PosDevComputer;
-import snpsvm.counters.QualSumComputer;
 import util.Timer;
 
 public class CommandLineApp {
@@ -55,7 +33,7 @@ public class CommandLineApp {
 			}
 			
 			mainTimer.stop();
-			System.err.println("Elapsed time :  " + mainTimer.getTotalTimeSeconds() + " seconds");
+			System.err.println("\n Elapsed time :  " + mainTimer.getTotalTimeSeconds() + " seconds");
 			
 			return;
 		}

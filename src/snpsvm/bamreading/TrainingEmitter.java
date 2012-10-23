@@ -16,14 +16,14 @@ import snpsvm.counters.ColumnComputer;
  */
 public class TrainingEmitter extends ReferenceBAMEmitter {
 
-	private VariantList knownTrueSites = null;
-	private VariantList knownFalseSites = null;
+	private VariantPositionList knownTrueSites = null;
+	private VariantPositionList knownFalseSites = null;
 	private int counted = 0;
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private double invariantFrac = 0.00005; //Probability that any non-variant individual site will be included in the no-variant class
-	private int maxInvariants = 400000; //Dont ever include more than this number of non-variant sites
+	private double invariantFrac = 0.0004; //Probability that any non-variant individual site will be included in the no-variant class
+	private int maxInvariants = 40000; //Dont ever include more than this number of non-variant sites
 	private int invariantSites = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
@@ -33,8 +33,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			List<ColumnComputer> counters) throws IOException {
 		super(reference, bamFile, counters); 
 		
-		this.knownTrueSites = new VariantList(knownVarSites);
-		this.knownFalseSites = new VariantList(knownFalseSites);
+		this.knownTrueSites = new VariantPositionList(knownVarSites);
+		this.knownFalseSites = new VariantPositionList(knownFalseSites);
 	}
 	
 	/**
