@@ -10,7 +10,7 @@ Installation:
 
 	SNPSVM uses libsvm (http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy lifting. You must download and install libsvm to use SNPSVM
 
-2. Download and snpsvm.jar 
+2. Download snpsvm.jar 
 
 3. Tell SNPSVM where libsvm is, like this:
 
