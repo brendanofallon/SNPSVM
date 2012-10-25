@@ -82,7 +82,7 @@ public class FastaIndex {
 	 * @return
 	 */
 	private File findIndex(File fastaFile) {
-		String presumedPath = fastaFile.getAbsolutePath() + ".faidx";
+		String presumedPath = fastaFile.getAbsolutePath() + ".fai";
 		File index = new File(presumedPath);
 		return index;
 	}

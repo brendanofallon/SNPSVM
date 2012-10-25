@@ -33,21 +33,17 @@ public class FastaReader2 {
 	private ByteBuffer buffer = ByteBuffer.allocate( (int)BUFFER_SIZE);
 	
 	private String currentContig = null;
-	private long currentContigPos = 0; //File position (byte offset) of of first base in current contig
+	private long currentContigByteStart = 0; //File position (byte offset) of of first base in current contig
 	private long chrPos = 0; //Chromosomal position of current pointer
 	private long chrBufferOffset = 0; //Chromosomal offset of beginning of buffer
 	
-	private Map<String, Long> contigMap = new HashMap<String, Long>();
+	//private Map<String, Long> contigMap = new HashMap<String, Long>();
 	private final FileChannel chan;
 	private final FastaIndex index;
-	private int lineLength;
 	
-	public FastaReader2(File fastaFile) throws IOException, UnevenLineLengthException, IndexNotFoundException {
+	public FastaReader2(File fastaFile) throws IOException, IndexNotFoundException {
 		this.fastaFile = fastaFile;
-		
 		index = new FastaIndex(fastaFile);
-		lineLength = checkLineLength();
-		System.out.println("Line length:" + lineLength);
 		
 		FileInputStream fis = new FileInputStream(fastaFile);
 		chan = fis.getChannel();
@@ -72,14 +68,14 @@ public class FastaReader2 {
 	 * @throws IOException
 	 */
 	public void advanceToContig(String newContig) throws IOException {
-		Long cPos = contigMap.get(newContig);
+		Long cPos = index.getContigByteOffset(newContig);
 		if (cPos == null) {
 			throw new IllegalArgumentException("Unknown contig : " + newContig);
 		}
 		buffer.clear();
 		chan.read(buffer, cPos);
 		currentContig = newContig;
-		currentContigPos = cPos;
+		currentContigByteStart = cPos;
 		chrBufferOffset = 0;
 		chrPos = 0;
 	}
@@ -104,8 +100,10 @@ public class FastaReader2 {
 	 */
 	public void advanceToPosition(int pos) throws IOException, EndOfContigException {
 		//Expect one newline char every lineLength bytes read, so read actual byte offset will be pos + (pos/lineLength)
-		long newStart = currentContigPos + pos + pos/lineLength;
-		System.out.println("Advance from " + currentContigPos + " to " + pos + ", offset: " + pos / lineLength);
+		
+		double frac = (double)pos / (double)index.getLineLength(currentContig);
+		long newStart = currentContigByteStart + pos + pos/ index.getLineBaseCount(currentContig);
+		System.out.println("Advance from " + currentContigByteStart + " to " + pos + ", frac : " + frac + "  offset: " + pos / index.getLineLength(currentContig));
 		buffer.clear();
 		int read = chan.read(buffer, newStart);
 		if (read == -1)
@@ -156,7 +154,7 @@ public class FastaReader2 {
 	 * @throws EndOfContigException 
 	 */
 	private void bumpBuffer() throws IOException, EndOfContigException {
-		long newStart = currentContigPos + chrBufferOffset + buffer.limit();
+		long newStart = currentContigByteStart + chrBufferOffset + buffer.limit();
 		buffer.clear();
 		int read = chan.read(buffer, newStart);
 		if (read == -1)
@@ -165,35 +163,45 @@ public class FastaReader2 {
 		chrBufferOffset += read;
 	}
 	
-	public static void main(String[] args) throws IOException, EndOfContigException, UnevenLineLengthException {
+	public static void main(String[] args) throws IOException, EndOfContigException, IndexNotFoundException {
 		//FastaReader2 fa2 = new FastaReader2(new File("/home/brendan/workspace/SNPSVM/practicefasta.fasta"));
 		FastaReader2 fa2 = new FastaReader2(new File("/Users/brendanofallon/resources/testref.fa"));
 		
 		BufferedWriter writer = new BufferedWriter(new FileWriter("testfa2.txt"));
+		int pos = 5001;
+		StringBuffer test = new StringBuffer();
 		fa2.advanceToContig("1");
-		fa2.advanceToPosition(5050);
+		fa2.advanceToPosition(pos);
 		for(int i=0; i<50; i++) {
 			char c = fa2.nextBase();
 			//System.out.print(c);
 			writer.write(c);
+			test.append(c);
 			if (i>0 && i%60 == 0)
 				writer.write('\n');
 		}
 		fa2.closeStream();
 		writer.close();
 		
+		
+		StringBuffer trueSeq = new StringBuffer();
 		writer = new BufferedWriter(new FileWriter("testfa.txt"));
 		System.out.println();
 		FastaReader fa = new FastaReader(new File("/Users/brendanofallon/resources/testref.fa"));
 		fa.advanceToTrack("1");
-		fa.advanceToPos(5050);
+		fa.advanceToPos(pos);
 		for(int i=0; i<50; i++) {
 			char c= fa.nextPos();
+			trueSeq.append(c);
 			writer.write(c);
 			if (i > 0 && i%60 == 0) 
 				writer.write('\n');
 		}
 		writer.close();
+		
+		
+		System.out.println(test);
+		System.out.println(trueSeq);
 		
 //		System.out.println();
 //		fa2.advanceToContig("17");
@@ -230,9 +238,6 @@ public class FastaReader2 {
 		
 	}
 	
-	class UnevenLineLengthException extends Exception {
-		
-	}
 	
 	static class ContigPos {
 		final String contig;
