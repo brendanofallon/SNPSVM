@@ -31,7 +31,7 @@ public class QualSumComputer extends VarCountComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
 		

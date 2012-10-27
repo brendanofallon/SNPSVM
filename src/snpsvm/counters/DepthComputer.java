@@ -10,7 +10,7 @@ import snpsvm.bamreading.FastaWindow;
  */
 public class DepthComputer implements ColumnComputer {
 
-	private final Double[] value = new Double[1];
+	private final double[] value = new double[1];
 	
 	@Override
 	public String getName() {
@@ -18,7 +18,7 @@ public class DepthComputer implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		value[0] = (double)col.getDepth();
 		return value;
 	}

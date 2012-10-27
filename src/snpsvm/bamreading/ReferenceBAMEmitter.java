@@ -9,8 +9,11 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 
+import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
+import snpsvm.bamreading.FastaReader2.EndOfContigException;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
+import util.ArrayCircularQueue.FullQueueException;
 
 public class ReferenceBAMEmitter {
 
@@ -18,20 +21,19 @@ public class ReferenceBAMEmitter {
 	protected AlignmentColumn alnCol;
 	private Map<String, Integer> contigMap;
 	List<ColumnComputer> counters;
-	protected File positionsFile = null;
 	protected BufferedWriter positionWriter = null;
 	protected DecimalFormat formatter = new DecimalFormat("0.0###");
 	protected BinomProbComputer binomComputer = new BinomProbComputer(); //Used for initial filtering 
 	
 	
-	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window) throws IOException {
+	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
 		contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(window);
 		this.counters = counters;
 	}
 	
-	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException {
+	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
 		contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(bamFile);
@@ -44,15 +46,8 @@ public class ReferenceBAMEmitter {
 	 * @param file
 	 * @throws IOException 
 	 */
-	public void setPositionsFile(File file) throws IOException {
-		this.positionsFile = file;
-		if (positionsFile != null) {
-			positionsFile.createNewFile();
-			positionWriter = new BufferedWriter(new FileWriter(positionsFile));
-		}
-		else {
-			positionWriter = null;
-		}
+	public void setPositionsWriter(BufferedWriter writer) throws IOException {
+		positionWriter = writer;
 	}
 	
 	public void emitLine(PrintStream out) {
@@ -69,7 +64,7 @@ public class ReferenceBAMEmitter {
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
-				Double[] values = counter.computeValue(refBase, refReader, alnCol);
+				double[] values = counter.computeValue(refBase, refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
 					if (values[i] != 0)
 						out.print("\t" + index + ":" + formatter.format(values[i]) );
@@ -80,7 +75,8 @@ public class ReferenceBAMEmitter {
 			
 			if (positionWriter != null) {
 				try {
-					positionWriter.write( alnCol.getCurrentContig() + ":" + alnCol.getCurrentPosition() + ":" + refBase + ":" + alnCol.getBasesAsString() + "\n");
+					int[] counts = alnCol.getBaseCounts();
+					positionWriter.write( alnCol.getCurrentContig() + ":" + alnCol.getCurrentPosition() + ":" + refBase + ":" + counts[AlignmentColumn.A] + "," + counts[AlignmentColumn.C] + "," + counts[AlignmentColumn.G] + "," + counts[AlignmentColumn.T] + "\n");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -122,27 +118,30 @@ public class ReferenceBAMEmitter {
 	
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
 		
-		refReader.resetTo(contig, Math.max(1, start-refReader.windowSize/2)); //Left edge of window, centers window on start position
-		alnCol.advanceTo(contig, start);
-		
-		int curPos = start;
-		while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {
-			emitLine(out);
-			
-			if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2))
-				refReader.shift();
-			alnCol.advance(1);
-			curPos++;
-			
-			//Sanity check
-			if (alnCol.getCurrentPosition() != (curPos)) {
-				System.err.println("Yikes, bam reader position is not equal to current position");
+		try {
+			refReader.resetTo(contig, Math.max(1, start-refReader.windowSize/2));
+			alnCol.advanceTo(contig, start);
+
+			int curPos = start;
+			while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {
+				emitLine(out);
+
+				if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2))
+					refReader.shift();
+				alnCol.advance(1);
+				curPos++;
+
+				//Sanity check
+				if (alnCol.getCurrentPosition() != (curPos)) {
+					System.err.println("Yikes, bam reader position is not equal to current position");
+				}
 			}
+
+		} catch (EndOfContigException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
-		if (positionWriter != null)
-			positionWriter.flush();
-		
+	
 	}
 	
 }

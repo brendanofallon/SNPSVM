@@ -18,8 +18,8 @@ public class NucDiversityCounter implements ColumnComputer {
 	public final double expG = 0.2;
 	public final double expT = 0.3;
 
-	private final Double[] val = new Double[1];
-	private Double[] counts = new Double[4];
+	private final double[] val = new double[1];
+	private double[] counts = new double[4];
 	
 	public final int WINDOW_SIZE = 10; //Window in either direction, total size will be 2*W+1
 	
@@ -40,7 +40,7 @@ public class NucDiversityCounter implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(char refBase, FastaWindow window,
+	public double[] computeValue(char refBase, FastaWindow window,
 			AlignmentColumn col) {
 
 		int startPos = Math.max(window.indexOfLeftEdge(), col.getCurrentPosition()-WINDOW_SIZE);

@@ -1,7 +1,9 @@
 package snpsvm.app;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
@@ -11,6 +13,7 @@ import libsvm.LIBSVMPredictor;
 import libsvm.LIBSVMResult;
 import snpsvm.bamreading.BAMWindowStore;
 import snpsvm.bamreading.BamWindow;
+import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
@@ -61,11 +64,12 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 
 			File data = new File(tmpDataPrefix + ".data");
 			File positionsFile = new File(tmpDataPrefix + ".pos");
-			emitter.setPositionsFile(positionsFile);
+			BufferedWriter posWriter = new BufferedWriter(new FileWriter(positionsFile));
+			emitter.setPositionsWriter(posWriter);
 
 			//Read BAM file, write results to temporary file
 			PrintStream dataStream = new PrintStream(new FileOutputStream(data));		
-
+						
 			for(String contig : intervals.getContigs()) {
 
 				for(Interval interval : intervals.getIntervalsInContig(contig)) {
@@ -77,9 +81,10 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 			//CRITICAL: must return its bamWindow to the BAMWindowStore
 			bamWindows.returnToStore(window);
 			dataStream.close();
+			posWriter.close();
 	
-
 			LIBSVMPredictor predictor = new LIBSVMPredictor();
+			
 			LIBSVMResult result = predictor.predictData(data, new LIBSVMModel(modelFile));
 			result.setPositionsFile(positionsFile);
 
@@ -95,6 +100,12 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 		catch (IOException iox) {
 
 			iox.printStackTrace();
+		} catch (IndexNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		
 	}

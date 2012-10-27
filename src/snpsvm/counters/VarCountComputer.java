@@ -13,7 +13,7 @@ import snpsvm.bamreading.MappedRead;
  */
 public class VarCountComputer implements ColumnComputer {
 
-	final Double[] values = new Double[2];
+	final double[] values = new double[2];
 	
 	static final int ref = 0;
 	static final int alt = 1;
@@ -40,7 +40,7 @@ public class VarCountComputer implements ColumnComputer {
 	}
 
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
 		if (col.getDepth() > 0) {

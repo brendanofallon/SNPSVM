@@ -162,11 +162,13 @@ public class BamWindow {
 		
 		//Must occur BEFORE we try to get new records...
 		currentPos = pos;
-		
+		int count = 0;
 		while(nextRecord != null 
 				&& nextRecord.getAlignmentStart() <= pos
 				&& nextRecord.getReferenceName().equals(currentContig)) {
 			expand();
+			if (count %128 == 0)
+				shrinkTrailingEdge();
 		}
 		
 		shrinkTrailingEdge();

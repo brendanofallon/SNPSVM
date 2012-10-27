@@ -8,9 +8,9 @@ import snpsvm.bamreading.MappedRead;
 
 public class StrandBiasComputer implements ColumnComputer {
 
-	final Double[] value = new Double[1];
-	final Double[] forward = new Double[2];
-	final Double[] reverse = new Double[2];
+	final double[] value = new double[1];
+	final double[] forward = new double[2];
+	final double[] reverse = new double[2];
 	
 	@Override
 	public String getName() {
@@ -29,7 +29,7 @@ public class StrandBiasComputer implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		value[0] = 0.0;
 		forward[0] = 1.0; //prevents divide by zero errors
 		forward[1] = 1.0;

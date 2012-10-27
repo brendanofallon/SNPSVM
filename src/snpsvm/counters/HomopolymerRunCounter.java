@@ -10,7 +10,7 @@ import snpsvm.bamreading.FastaWindow;
  */
 public class HomopolymerRunCounter implements ColumnComputer {
 
-	final Double[] values = new Double[2];
+	final double[] values = new double[2];
 	
 	final int maxLength = 10; //dont look beyond this many bases in either direction
 	
@@ -34,7 +34,7 @@ public class HomopolymerRunCounter implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(char refBase, FastaWindow window,
+	public double[] computeValue(char refBase, FastaWindow window,
 			AlignmentColumn col) {
 		
 		
@@ -53,11 +53,16 @@ public class HomopolymerRunCounter implements ColumnComputer {
 		
 		base = window.getBaseAt(refPos+1);
 		count = 0;
-		for(int i=refPos+2; i<Math.min(window.indexOfRightEdge(), refPos+1+maxLength); i++) {
+		for(int i=refPos+2; i<Math.min(window.indexOfRightEdge()-1, refPos+1+maxLength); i++) {
+                    if (i < window.indexOfRightEdge()) {
+                        //System.out.println("requested pos : " + i + " right edge : " + window.indexOfRightEdge());
 			if (base == window.getBaseAt(i))
 				count++;
 			else
 				break;
+                    }
+                    else
+                        break;
 		}
 		values[1] = count;
 		

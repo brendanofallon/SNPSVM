@@ -6,6 +6,7 @@ import net.sf.samtools.SAMRecord;
 
 public class MappedRead {
 
+    static long count = 0;
         public static final int[] defaultMap = new int[1024];
         private static boolean mapInitialized = false;
         

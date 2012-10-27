@@ -14,7 +14,7 @@ import snpsvm.bamreading.MappedRead;
 public class MQComputer extends VarCountComputer {
 
 	//final Double maxScore = 1000.0;
-	final Double[] counts = new Double[2];
+	final double[] counts = new double[2];
 	
 	@Override
 	public String getName() {
@@ -36,7 +36,7 @@ public class MQComputer extends VarCountComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		values[ref] = 0.0;
 		values[alt] = 0.0;
 		counts[0] = 0.0;

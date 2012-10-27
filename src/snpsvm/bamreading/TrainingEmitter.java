@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.counters.ColumnComputer;
 
 
@@ -30,7 +31,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			File knownFalseSites,
 			File reference, 
 			File bamFile,
-			List<ColumnComputer> counters) throws IOException {
+			List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
 		super(reference, bamFile, counters); 
 		
 		this.knownTrueSites = new VariantPositionList(knownVarSites);
@@ -87,7 +88,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				out.print(prefix);
 				//out.print(alnCol.getCurrentPosition() + "\t" + refReader.getCurrentBase() + " : " + alnCol.getBasesAsString());
 				for(ColumnComputer counter : counters) {
-					Double[] values = counter.computeValue(refBase, refReader, alnCol);
+					double[] values = counter.computeValue(refBase, refReader, alnCol);
 					for(int i=0; i<values.length; i++) {
 						if (values[i] != 0)
 							out.print("\t" + index + ":" + formatter.format(values[i]) );

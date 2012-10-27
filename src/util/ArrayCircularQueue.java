@@ -18,6 +18,7 @@ public class ArrayCircularQueue {
 	public ArrayCircularQueue (int maxElements) {
 		queue=new char[maxElements+1];
 		count++;
+		System.out.println("Allocating array queue");
 	}
 	
 	/**
@@ -73,11 +74,11 @@ public class ArrayCircularQueue {
 	}	
 	
 	
-	public class FullQueueException extends Exception {
+	public class FullQueueException extends RuntimeException {
 		
 	}
 	
-	public class EmptyQueueException extends Exception {
+	public class EmptyQueueException extends RuntimeException {
 	}
 	
 	public String toString() {
@@ -89,38 +90,38 @@ public class ArrayCircularQueue {
 		return strB.toString();
 	}
 	
-	public static void main(String[] args) {
-		
-		ArrayCircularQueue q = new ArrayCircularQueue(6);
-		try {
-			System.out.println(q);
-			q.add('A');
-			System.out.println(q);
-			q.add('B');
-			System.out.println(q);
-			q.add('C');
-			System.out.println(q);
-			q.add('D');
-			System.out.println(q);
-			q.add('E');
-			System.out.println(q);
-			q.add('F');
-			System.out.println(q);
-			q.remove();
-			q.remove();
-			q.remove();
-			q.remove();
-			q.remove();
-			q.remove();
-			System.out.println(q);
-		} catch (FullQueueException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (EmptyQueueException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+//	public static void main(String[] args) {
+//		
+//		ArrayCircularQueue q = new ArrayCircularQueue(6);
+//		try {
+//			System.out.println(q);
+//			q.add('A');
+//			System.out.println(q);
+//			q.add('B');
+//			System.out.println(q);
+//			q.add('C');
+//			System.out.println(q);
+//			q.add('D');
+//			System.out.println(q);
+//			q.add('E');
+//			System.out.println(q);
+//			q.add('F');
+//			System.out.println(q);
+//			q.remove();
+//			q.remove();
+//			q.remove();
+//			q.remove();
+//			q.remove();
+//			q.remove();
+//			System.out.println(q);
+//		} catch (FullQueueException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (EmptyQueueException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//	}
 	
 }

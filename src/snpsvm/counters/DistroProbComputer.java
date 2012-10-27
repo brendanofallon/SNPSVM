@@ -8,7 +8,7 @@ import snpsvm.bamreading.MappedRead;
 
 public class DistroProbComputer implements ColumnComputer {
 
-	Double[] value = new Double[1];
+	double[] value = new double[1];
 	
 	@Override
 	public int getColumnCount() {
@@ -22,7 +22,7 @@ public class DistroProbComputer implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		int refCount = 0;
 		int altCount = 0;
 		if (col.getDepth() > 0) {

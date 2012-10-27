@@ -13,6 +13,11 @@ import java.util.Iterator;
 public class AlignmentColumn {
 
 	final int MAX_DEPTH = 256; //never consider more than this many reads
+	private final int[] baseCounts = new int[4];
+	public static final int A = 0;
+	public static final int C = 1;
+	public static final int G = 2;
+	public static final int T = 3;
 	
 	final BamWindow bam;
 	
@@ -104,7 +109,26 @@ public class AlignmentColumn {
 		return false;
 	}
         
-        
+	/**
+	 * Obtain an array with counts of each base (counts are indexed by the static fields A,C,G and T in this class)
+	 * @return
+	 */
+     public int[] getBaseCounts() {
+    	baseCounts[A] = 0;
+    	baseCounts[C] = 0;
+    	baseCounts[G] = 0;
+    	baseCounts[T] = 0;
+    	
+ 		for(int i=0; i<getDepth(); i++) {
+ 			switch( (char)bases[i]) {
+ 			case 'A' : baseCounts[A]++; break;
+ 			case 'C' : baseCounts[C]++; break;
+ 			case 'G' : baseCounts[G]++; break;
+ 			case 'T' : baseCounts[T]++; break;
+ 			}
+ 		}
+ 		return baseCounts;
+     }
 	
 	/**
 	 * Obtain a string representation of the bases at the current position
@@ -176,49 +200,6 @@ public class AlignmentColumn {
 		}
 		return strB.toString();
 	}
-	
-//	public static void main(String[] args) {
-//		
-//		File inBAM = new File( args[0] );
-//		AlignmentColumn col = new AlignmentColumn(inBAM);
-//		
-//		col.advanceTo("1", 15813700);
-//		
-//		byte[] base = new byte[1];
-//		
-//		DepthComputer depth = new DepthComputer();
-//		VarCountComputer varCount = new VarCountComputer();
-//		QualSumComputer qSumComputer = new QualSumComputer();
-//		PosDevComputer posDev = new PosDevComputer();
-//		
-//		while(col.getCurrentPosition()>0) {
-//			byte[] bases = col.getBases();
-//			if (col.getDepth() > 0) {
-//				System.out.print(col.getCurrentPosition() + "\t:\t");
-//				for(int i=0; i<col.getDepth(); i++) {
-//					base[0] = bases[i];
-//					System.out.print(new String( base));
-//				}
-//				
-//				System.out.print( "\t" );
-//				
-//				String depthStr = dataString( depth.computeValue(col) );
-//				//String valsStr = dataString( varCount.computeValue(col));
-//				String qSumStr = dataString( qSumComputer.computeValue(col));
-//				String posDevStr = dataString( posDev.computeValue(col));
-//				
-//				System.out.print( depthStr );
-//				//System.out.print( valsStr );
-//				System.out.print( qSumStr );
-//				System.out.print( posDevStr );
-//				
-//				System.out.println();
-//			}
-//			col.advance();
-//			
-//		}
-//		
-//	}
 	
 }
 

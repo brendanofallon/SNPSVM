@@ -24,7 +24,7 @@ import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
  */
 public class FastaReader2 {
 
-	public static final long BUFFER_SIZE = 128; //Size of buffer in bytes
+	public static final long BUFFER_SIZE = 512; //Size of buffer in bytes
 	final static char CONTIG_START = '>';
 	final File fastaFile;
 	
@@ -101,9 +101,9 @@ public class FastaReader2 {
 	public void advanceToPosition(int pos) throws IOException, EndOfContigException {
 		//Expect one newline char every lineLength bytes read, so read actual byte offset will be pos + (pos/lineLength)
 		
-		double frac = (double)pos / (double)index.getLineLength(currentContig);
+		//double frac = (double)pos / (double)index.getLineLength(currentContig);
 		long newStart = currentContigByteStart + pos + pos/ index.getLineBaseCount(currentContig);
-		System.out.println("Advance from " + currentContigByteStart + " to " + pos + ", frac : " + frac + "  offset: " + pos / index.getLineLength(currentContig));
+		//System.out.println("Advance from " + currentContigByteStart + " to " + pos + ", frac : " + frac + "  offset: " + pos / index.getLineLength(currentContig));
 		buffer.clear();
 		int read = chan.read(buffer, newStart);
 		if (read == -1)
@@ -156,11 +156,19 @@ public class FastaReader2 {
 	private void bumpBuffer() throws IOException, EndOfContigException {
 		long newStart = currentContigByteStart + chrBufferOffset + buffer.limit();
 		buffer.clear();
+		//System.out.println("Bumping buffer");
 		int read = chan.read(buffer, newStart);
 		if (read == -1)
 			throw new EndOfContigException();
-		System.out.println("Bumping buffer to pos: " + newStart);
 		chrBufferOffset += read;
+	}
+	
+	public Map<String, Integer> getContigSizes() {
+		Map<String, Integer> contigSizeMap = new HashMap<String, Integer>();
+		for(String contig : index.getContigs()) {
+			contigSizeMap.put(contig, (int) index.getContigLength(contig));
+		}
+		return contigSizeMap;
 	}
 	
 	public static void main(String[] args) throws IOException, EndOfContigException, IndexNotFoundException {
@@ -202,31 +210,6 @@ public class FastaReader2 {
 		
 		System.out.println(test);
 		System.out.println(trueSeq);
-		
-//		System.out.println();
-//		fa2.advanceToContig("17");
-//		fa2.advanceToPosition(1400000);
-//		for(int i=0; i<50000; i++) {
-//			char c = fa2.nextBase();
-//			System.out.print(c);
-//		}
-//		
-//		System.out.println();
-//		fa2.advanceToContig("1");
-//		//fa2.advanceToPosition(14);
-//		for(int i=0; i<5; i++) {
-//			char c = fa2.nextBase();
-//			System.out.print(c);
-//		}
-//		
-//		System.out.println();
-//		fa2.advanceToContig("20");
-//		fa2.advanceToPosition(5);
-//		for(int i=0; i<5; i++) {
-//			char c = fa2.nextBase();
-//			System.out.print(c);
-//		}
-		
 	}
 	
 	/**
@@ -234,7 +217,7 @@ public class FastaReader2 {
 	 * @author brendan
 	 *
 	 */
-	class EndOfContigException extends Exception {
+	public class EndOfContigException extends Exception {
 		
 	}
 	

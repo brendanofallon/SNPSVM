@@ -9,8 +9,8 @@ import snpsvm.bamreading.MappedRead;
 public class NearbyQualComputer implements ColumnComputer {
 
 	public final int WINDOW_SIZE = 5; //Window spans the focus position, so 7 means three in either direction
-	Double[] values = new Double[WINDOW_SIZE];
-	Double[] counts = new Double[WINDOW_SIZE];
+	double[] values = new double[WINDOW_SIZE];
+	double[] counts = new double[WINDOW_SIZE];
 	public final double defaultVal = 20;
 	
 	@Override
@@ -30,7 +30,7 @@ public class NearbyQualComputer implements ColumnComputer {
 	}
 	
 	@Override
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		for(int i=0; i<WINDOW_SIZE; i++) {
 			values[i] = 0.0;
 			counts[i] = 0.0;

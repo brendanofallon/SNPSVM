@@ -21,7 +21,7 @@ public class SplitSNPAndCall implements HasBaseProgress {
 	
 	//Interval sets smaller than this size will be computed forthwith, otherwise
 	//they'll be split into approximate halves and each side will be processed separately
-	int thresholdExtent = 5000000; 
+	int thresholdExtent = 250000; 
 	
 	protected File reference;
 	protected File inputBam;
@@ -30,7 +30,6 @@ public class SplitSNPAndCall implements HasBaseProgress {
 	private List<ColumnComputer> counters;
 	private ThreadPoolExecutor pool;
 	private List<SNPCaller> callers = new ArrayList<SNPCaller>();
-	private FastaReader refReader;
 	
 	public SplitSNPAndCall(File referenceFile, BAMWindowStore bamWindows, File modelFile, List<ColumnComputer> counters, ThreadPoolExecutor pool) {
 		this.reference = referenceFile;
@@ -38,11 +37,6 @@ public class SplitSNPAndCall implements HasBaseProgress {
 		this.model = modelFile;
 		this.counters = counters;
 		this.pool = pool;	
-		try {
-			refReader = new FastaReader(reference);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
@@ -57,8 +51,9 @@ public class SplitSNPAndCall implements HasBaseProgress {
 			//Intervals size is pretty small, just call 'em
 			SNPCaller caller = new SNPCaller(reference, model, intervals, counters, bamWindows);
 			callers.add(caller);
-			pool.submit(caller);	
-		//	System.out.println("Submitting job, " + callers.size() + " tot jobs, queue has :" + pool.getActiveCount() + " active and " + pool.getCompletedTaskCount() + " completed jobs");
+			//pool.submit(caller);
+			pool.execute(caller);
+			//System.out.println("Submitting job, " + callers.size() + " tot jobs, queue has :" + pool.getActiveCount() + " active and " + pool.getCompletedTaskCount() + " completed jobs");
 		}
 		else {	
 			//Intervals cover a lot of ground, so split them in half and submit each half

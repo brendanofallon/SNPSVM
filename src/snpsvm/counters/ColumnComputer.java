@@ -29,6 +29,6 @@ public interface ColumnComputer {
 	 * @param col
 	 * @return
 	 */
-	public Double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col);
+	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col);
 	
 }

@@ -6,14 +6,14 @@ import snpsvm.bamreading.FastaWindow;
 public class ContextComputer implements ColumnComputer {
 
 	final int RANGE = 5; //number of bases in either direction to record
-	private final Double[] values = new Double[4*(2*RANGE+1)];
+	private final double[] values = new double[4*(2*RANGE+1)];
 	@Override
 	public String getName() {
 		return "nuc.context.computer";
 	}
 	
 	@Override
-	public Double[] computeValue(char refBase, FastaWindow window,
+	public double[] computeValue(char refBase, FastaWindow window,
 			AlignmentColumn col) {
 
 		for(int i=0; i<values.length; i++) {

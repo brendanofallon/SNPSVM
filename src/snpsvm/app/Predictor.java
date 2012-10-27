@@ -144,7 +144,8 @@ public class Predictor extends AbstractModule {
 			IntervalList intervals,
 			List<ColumnComputer> counters) throws IOException {
 		
-		intervals = validateIntervals(ref, intervals);
+		if (intervals != null)
+			intervals = validateIntervals(ref, intervals);
 		
 		int threads= CommandLineApp.configModule.getThreadCount();
 		//Initialize BAMWindow store
@@ -155,58 +156,37 @@ public class Predictor extends AbstractModule {
 		final int intervalExtent = intervals.getExtent();
 		
 		List<Variant> allVars; 
-		if (threads > 1) {
-			ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-			final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, counters, threadPool);
-			
-			
-			//Submit multiple jobs to thread pool, returns immediately
-			caller.submitAll(intervals);
-			
-			
-			if (emitProgress) {
-				System.out.println("Calling SNPs over " + intervals.getExtent() + " bases with " + threads + " threads in " + caller.getCallerCount() + " chunks");
-				
-				progressTimer = new javax.swing.Timer(100, new ActionListener() {
+		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						emitProgressString(caller, intervalExtent);
-					}
-				});
-				progressTimer.setDelay(500);
-				progressTimer.start();
-			}
+		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, counters, threadPool);
 
-			//Blocks until all variants are called
-			allVars = caller.getAllVariants();
-			
-			//Emit one more progress message
-			if (emitProgress) {
-				emitProgressString(caller, intervalExtent);
-			}
+
+		//Submit multiple jobs to thread pool, returns immediately
+		caller.submitAll(intervals);
+
+		if (emitProgress) {
+			System.out.println("Calling SNPs over " + intervals.getExtent() + " bases with " + threads + " threads in " + caller.getCallerCount() + " chunks");
+
+			progressTimer = new javax.swing.Timer(100, new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					emitProgressString(caller, intervalExtent);
+				}
+			});
+			progressTimer.setDelay(500);
+			progressTimer.start();
 		}
-		else {
-			final SNPCaller caller = new SNPCaller(ref, model, intervals, counters, bamWindows);
-			
-			if (emitProgress) {
-				System.out.println("Calling SNPs over " + intervals.getExtent() + " bases with " + threads + " threads in 1 chunk");
-				
-				progressTimer = new javax.swing.Timer(100, new ActionListener() {
 
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						emitProgressString(caller, intervalExtent);
-					}
-				});
-				progressTimer.setDelay(500);
-				progressTimer.start();
-			}
-			
-			caller.run();
-			allVars = caller.getVariantList();
+		//Blocks until all variants are called
+		allVars = caller.getAllVariants();
+
+		//Emit one more progress message
+		if (emitProgress) {
+			emitProgressString(caller, intervalExtent);
 		}
+		
 		
 		if (progressTimer != null)
 			progressTimer.stop();
@@ -228,7 +208,7 @@ public class Predictor extends AbstractModule {
 		double frac = basesCalled / intervalExtent;
 		if (startTime == null) {
 			startTime = System.currentTimeMillis();
-			System.out.println("   Elapsed       Bases      Bases / sec   % Complete");
+			System.out.println("   Elapsed       Bases      Bases / sec   % Complete     mem");
 		}
 		long elapsedTimeMS = System.currentTimeMillis() - startTime;
 		double elapsedSecs = elapsedTimeMS / 1000.0;
@@ -239,8 +219,16 @@ public class Predictor extends AbstractModule {
 			System.out.print('\b');
 		}
 		char cm = markers[charIndex % markers.length];
-		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "%";
-		System.out.print(msg);
+                long usedBytes = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                
+                long usedMB = usedBytes / (1024*1024);
+                double usedGB = usedMB / 1024.00;
+                String memStr = usedMB + "MB";
+                if (usedMB > 1000)
+                    memStr = formatter.format(usedGB) + "GB";
+                
+		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "% " + padTo(memStr, 10);
+		System.out.println(msg);
 		prevLength = msg.length();
 		charIndex++;
 	}
