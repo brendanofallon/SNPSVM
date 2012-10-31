@@ -3,6 +3,7 @@ package snpsvm.bamreading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +15,14 @@ import libsvm.LIBSVMResult;
  *
  */
 public class ResultVariantConverter {
-
+	
 	public List<Variant> createVariantList(LIBSVMResult result) throws IOException {
 
 		List<Variant> variants = new ArrayList<Variant>(256); 
 		BufferedReader resultReader = new BufferedReader(new FileReader(result.getFilePath()));
 		BufferedReader posReader = new BufferedReader(new FileReader(result.getPositionsFile()));
 
+		//System.out.println("Parsing results from output file: " + result.getFilePath() + " pos file: " + result.getPositionsFile().getName());
 		String resultLine = resultReader.readLine();
 
 		//Columns may be in any order, so parse the first result line to figure out which one's which
@@ -63,13 +65,12 @@ public class ResultVariantConverter {
 		char ref = posToks[2].charAt(0);
 		String contig = posToks[0];
 		int pos = Integer.parseInt(posToks[1]);
-		//int end = pos + 1;
-		String pileUp = posToks[3];
-		char alt = computeAlt(ref, pileUp);
-		//int depth = posToks[3].length();
+		int[] baseCounts = toBaseCounts(posToks[3]);
+		int altIndex = computeAlt(ref, baseCounts); //index of alt allele in base counts array
 
-		int T = pileUp.length();
-		int X = count(alt, pileUp);
+
+		int T = baseCounts[0] + baseCounts[1] + baseCounts[2] + baseCounts[3];
+		int X = baseCounts[altIndex];
 		
 		if (T > 250) {
 			X = (250 * X)/T;
@@ -88,9 +89,36 @@ public class ResultVariantConverter {
 		//Compute homo-reference prob
 		double homRefProb = util.Math.binomPDF((int)Math.round(X), (int)Math.round(T), 0.005);
 		
-
+		char alt = 'N';
+		if (altIndex == 0)
+			alt = 'A';
+		if (altIndex == 1)
+			alt = 'C';
+		if (altIndex == 2)
+			alt = 'G';
+		if (altIndex == 3)
+			alt = 'T';
+		
 		Variant var = new Variant(contig, pos, ref, alt, qScore, hetProb/(hetProb + homRefProb + homNonRefProb));
 		return var;
+	}
+
+	/**
+	 * Parses a comma-separated series of integers to an array
+	 * @param countStr
+	 * @return
+	 */
+	private static int[] toBaseCounts(String countStr) {
+		int[] counts = new int[4];
+		String[] toks = countStr.split(",");
+		if (toks.length != 4) {
+			throw new IllegalArgumentException("Not exactly four tokens in base count string");
+		}
+		counts[0] = Integer.parseInt(toks[0]);
+		counts[1] = Integer.parseInt(toks[1]);
+		counts[2] = Integer.parseInt(toks[2]);
+		counts[3] = Integer.parseInt(toks[3]);
+		return counts;
 	}
 
 	private double parseQuality(String varProb, String noVarProb) {
@@ -99,22 +127,6 @@ public class ResultVariantConverter {
 		double quality = computeQuality(p1, p2);
 		return quality;
 	}
-
-	
-	/**
-	 * Return number of occurrences of c in str
-	 * @param c
-	 * @param str
-	 * @return
-	 */
-	private static int count(char c, String str) {
-		int count = 0;
-		for(int i=0; i<str.length(); i++) {
-			if (str.charAt(i) == c) 
-				count++;
-		}
-		return count;
-	}
 	
 	/**
 	 * Clumsy procedure to figure out alt allele....
@@ -122,36 +134,24 @@ public class ResultVariantConverter {
 	 * @param string
 	 * @return
 	 */
-	private static char computeAlt(char ref, String pileup) {
-		int A = 0;
-		int C = 0;
-		int G = 0;
-		int T = 0;
-
-		for(int i=0; i<pileup.length(); i++) {
-			char c = pileup.charAt(i);
-			if (c != ref) {
-				switch(c) {
-				case 'A' : A++; break;
-				case 'C' : C++; break;
-				case 'G' : G++; break;
-				case 'T' : T++; break;
-				}
-			}
-		}
+	private static int computeAlt(char ref, int[] counts) {
+		int A = counts[0];
+		int C = counts[1];
+		int G = counts[2];
+		int T = counts[3];
 
 		//Find max of all...
 		if (A >= C && A>=G && A>=T) {
-			return 'A';
+			return 0;
 		}
 		if (C >= A && C>=G && C>=T) {
-			return 'C';
+			return 1;
 		}
 		if (G >= A && G>=C && G>=T) {
-			return 'G';
+			return 2;
 		}
 		if (T >= A && T>=C && T>=G) {
-			return 'T';
+			return 3;
 		}
 
 

@@ -77,7 +77,7 @@ public class FastaWindow {
 		}
 		else {
 			if (leftEdgePos < indexOfRightEdge()) {
-				//System.out.println("Thread #" + Thread.currentThread().toString() + " Shifting from " + leftEdge + "-" + indexOfRightEdge() + " to " + leftEdgePos + " without filling");
+				//System.out.println(" Shifting from " + leftEdge + "-" + indexOfRightEdge() + " to " + leftEdgePos + " without filling");
 				//Advance by amount less than current window size, so just shift and don't clear any bases
 				while(leftEdge < leftEdgePos) {
 					shift();
@@ -97,10 +97,14 @@ public class FastaWindow {
 		leftEdge = leftEdgePos;
 		int contigSize = reader.getContigSizes().get(contig);
 
+//		System.out.println(">" + leftEdgePos);
 		for(int i=leftEdgePos; i<Math.min(leftEdgePos+windowSize, contigSize); i++) {
-			bases.add( reader.nextBase() );
+			char c = reader.nextBase();
+			bases.add( c );
+			//System.out.print(c);
 		}
-
+	//	System.out.println();
+		
 	}
 	
 	/**

@@ -1,5 +1,7 @@
 package snpsvm.bamreading;
 
+import java.text.DecimalFormat;
+
 /**
  * Lightweight storage for individual variant calls
  * @author brendanofallon
@@ -7,6 +9,7 @@ package snpsvm.bamreading;
  */
 public class Variant implements Comparable<Variant> {
 
+	final DecimalFormat qualFormatter = new DecimalFormat("0.00");
 	public final String contig;
 	public final int pos;
 	public final char ref;
@@ -33,7 +36,7 @@ public class Variant implements Comparable<Variant> {
 	}
 	
 	public String toString() {
-		return contig + "\t" + pos + "\t" + ref + "\t" + alt + "\t" + quality + "\t" + hetProb;
+		return contig + "\t" + pos + "\t" + ref + "\t" + alt + "\t" + qualFormatter.format(quality) + "\t" + qualFormatter.format(hetProb);
 	}
 
 	@Override

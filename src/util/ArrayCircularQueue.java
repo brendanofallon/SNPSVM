@@ -18,7 +18,6 @@ public class ArrayCircularQueue {
 	public ArrayCircularQueue (int maxElements) {
 		queue=new char[maxElements+1];
 		count++;
-		System.out.println("Allocating array queue");
 	}
 	
 	/**

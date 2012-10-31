@@ -24,7 +24,7 @@ import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
  */
 public class FastaReader2 {
 
-	public static final long BUFFER_SIZE = 512; //Size of buffer in bytes
+	public static final long BUFFER_SIZE = 128; //Size of buffer in bytes
 	final static char CONTIG_START = '>';
 	final File fastaFile;
 	
@@ -34,7 +34,8 @@ public class FastaReader2 {
 	
 	private String currentContig = null;
 	private long currentContigByteStart = 0; //File position (byte offset) of of first base in current contig
-	private long chrPos = 0; //Chromosomal position of current pointer
+	private long chrCharsRead = 0; //Number of characters read (including newlines) from the current contig
+	private long chrBasesRead = 0; //Number of bases read in current contig, this is the 'currentPos'
 	private long chrBufferOffset = 0; //Chromosomal offset of beginning of buffer
 	
 	//private Map<String, Long> contigMap = new HashMap<String, Long>();
@@ -77,7 +78,8 @@ public class FastaReader2 {
 		currentContig = newContig;
 		currentContigByteStart = cPos;
 		chrBufferOffset = 0;
-		chrPos = 0;
+		chrCharsRead = 0;
+		chrBasesRead = 0;
 	}
 	
 	public String getCurrentContig() {
@@ -89,7 +91,7 @@ public class FastaReader2 {
 	 * @return
 	 */
 	public long getCurrentPos() {
-		return chrPos; //Distance in bases from beginning of contig
+		return chrBasesRead; //Distance in bases from beginning of contig
 	}
 	
 	/**
@@ -100,17 +102,18 @@ public class FastaReader2 {
 	 */
 	public void advanceToPosition(int pos) throws IOException, EndOfContigException {
 		//Expect one newline char every lineLength bytes read, so read actual byte offset will be pos + (pos/lineLength)
+		int offset = pos/ index.getLineBaseCount(currentContig);
+		long newStart = currentContigByteStart + pos + offset;
 		
-		//double frac = (double)pos / (double)index.getLineLength(currentContig);
-		long newStart = currentContigByteStart + pos + pos/ index.getLineBaseCount(currentContig);
-		//System.out.println("Advance from " + currentContigByteStart + " to " + pos + ", frac : " + frac + "  offset: " + pos / index.getLineLength(currentContig));
+		//System.out.println("Advance from " + getCurrentPos() + " to " + pos + "  byte pos: " + newStart + " pos dif: " + (pos - getCurrentPos()) + " byte dif: "+ (newStart - chrCharsRead));
 		buffer.clear();
 		int read = chan.read(buffer, newStart);
 		if (read == -1)
 			throw new EndOfContigException();
 		
-		chrPos = pos;
-		chrBufferOffset = pos;
+		chrCharsRead = pos + offset;
+		chrBasesRead = pos;
+		chrBufferOffset = pos + offset;
 	}
 	
 	/**
@@ -120,7 +123,7 @@ public class FastaReader2 {
 	 * @throws EndOfContigException 
 	 */
 	public char nextBase() throws IOException, EndOfContigException {
-		int buffDif = (int)(chrPos - chrBufferOffset);
+		int buffDif = (int)(chrCharsRead - chrBufferOffset);
 		if (buffDif == buffer.limit()) {
 			bumpBuffer();
 			buffDif = 0;
@@ -128,22 +131,22 @@ public class FastaReader2 {
 		
 		char c = (char) buffer.get(buffDif);
 		while(c == '\n') {
-			chrPos++;
-			buffDif = (int)(chrPos - chrBufferOffset);
+			chrCharsRead++;
+			buffDif = (int)(chrCharsRead - chrBufferOffset);
 			if (buffDif == buffer.limit()) {
 				bumpBuffer();
 				buffDif =0 ;
 			}
 				
 			c = (char) buffer.get(buffDif);
-			
 		}
 		
 		if (c==CONTIG_START) {
 			throw new EndOfContigException();
 		}
 		
-		chrPos++;
+		chrCharsRead++;
+		chrBasesRead++;
 		return c;
 	}
 	
@@ -154,15 +157,13 @@ public class FastaReader2 {
 	 * @throws EndOfContigException 
 	 */
 	private void bumpBuffer() throws IOException, EndOfContigException {
-		long newStart = currentContigByteStart + chrBufferOffset + buffer.limit();
-		buffer.clear();
-		//System.out.println("Bumping buffer");
-		int read = chan.read(buffer, newStart);
-		if (read == -1)
-			throw new EndOfContigException();
-		chrBufferOffset += read;
+		advanceToPosition((int)getCurrentPos());
 	}
 	
+	/**
+	 * Obtain map with all contigs and their sizes 
+	 * @return
+	 */
 	public Map<String, Integer> getContigSizes() {
 		Map<String, Integer> contigSizeMap = new HashMap<String, Integer>();
 		for(String contig : index.getContigs()) {
@@ -173,43 +174,49 @@ public class FastaReader2 {
 	
 	public static void main(String[] args) throws IOException, EndOfContigException, IndexNotFoundException {
 		//FastaReader2 fa2 = new FastaReader2(new File("/home/brendan/workspace/SNPSVM/practicefasta.fasta"));
-		FastaReader2 fa2 = new FastaReader2(new File("/Users/brendanofallon/resources/testref.fa"));
-		
-		BufferedWriter writer = new BufferedWriter(new FileWriter("testfa2.txt"));
-		int pos = 5001;
-		StringBuffer test = new StringBuffer();
-		fa2.advanceToContig("1");
-		fa2.advanceToPosition(pos);
-		for(int i=0; i<50; i++) {
-			char c = fa2.nextBase();
-			//System.out.print(c);
-			writer.write(c);
-			test.append(c);
-			if (i>0 && i%60 == 0)
-				writer.write('\n');
+		FastaReader2 fa2 = new FastaReader2(new File("/Users/brendanofallon/resources/human_GRC37.fa"));
+
+		for(int j=0; j<10; j++) {
+			int pos = (int)(200000000*Math.random());
+			StringBuffer test = new StringBuffer();
+			fa2.advanceToContig("1");
+			fa2.advanceToPosition(pos);
+			for(int i=0; i<1024; i++) {
+				char c = fa2.nextBase();
+				test.append(c);
+			}
+
+
+
+			StringBuffer trueSeq = new StringBuffer();
+			System.out.println();
+			FastaReader fa = new FastaReader(new File("/Users/brendanofallon/resources/human_GRC37.fa"));
+			fa.advanceToTrack("1");
+			fa.advanceToPos(pos);
+			for(int i=0; i<1024; i++) {
+				char c= fa.nextPos();
+				trueSeq.append(c);	
+			}
+
+			if (! test.toString().equals(trueSeq.toString())) {
+				System.out.println("No match! Pos : " + pos);
+				System.out.println(test);
+				System.out.println(trueSeq);	
+				for(int i=0; i<test.length(); i++) {
+					if ( test.charAt(i) == trueSeq.charAt(i)) {
+						System.out.print(" ");
+					}
+					else {
+						System.out.print("*");
+					}
+				}
+				System.out.println();
+			}
+			else {
+				System.out.println("Perfect");
+			}
+
 		}
-		fa2.closeStream();
-		writer.close();
-		
-		
-		StringBuffer trueSeq = new StringBuffer();
-		writer = new BufferedWriter(new FileWriter("testfa.txt"));
-		System.out.println();
-		FastaReader fa = new FastaReader(new File("/Users/brendanofallon/resources/testref.fa"));
-		fa.advanceToTrack("1");
-		fa.advanceToPos(pos);
-		for(int i=0; i<50; i++) {
-			char c= fa.nextPos();
-			trueSeq.append(c);
-			writer.write(c);
-			if (i > 0 && i%60 == 0) 
-				writer.write('\n');
-		}
-		writer.close();
-		
-		
-		System.out.println(test);
-		System.out.println(trueSeq);
 	}
 	
 	/**

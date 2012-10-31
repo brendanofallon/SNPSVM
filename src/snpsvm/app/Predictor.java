@@ -227,8 +227,8 @@ public class Predictor extends AbstractModule {
                 if (usedMB > 1000)
                     memStr = formatter.format(usedGB) + "GB";
                 
-		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "% " + padTo(memStr, 10);
-		System.out.println(msg);
+		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "% " + padTo(memStr, 12);
+		System.out.print(msg);
 		prevLength = msg.length();
 		charIndex++;
 	}

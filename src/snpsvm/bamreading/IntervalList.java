@@ -121,6 +121,30 @@ public class IntervalList {
 		}
 	}
 	
+	public String toString() {
+		if (this.getIntervalCount()==1) {
+			return this.asList().get(0).toString();
+		}
+		
+		StringBuilder strB = new StringBuilder();
+		strB.append("extent: " + this.getExtent() + " count: " + this.getIntervalCount() + "  " );
+		int count = 0;
+		boolean ellipses = false;
+		for(String contig : getContigs()) {
+			for(Interval interval : getIntervalsInContig(contig)) {
+				if (count < 3 || count>( this.getIntervalCount()-2))
+					strB.append( interval.toString() +", ");
+				else if (!ellipses) {
+					strB.append("....");
+					ellipses = true;
+				}
+				
+				count++;
+			}
+		}
+		return strB.toString();
+	}
+	
 	/**
 	 * Add the given interval to the list 
 	 * @param contig
@@ -224,6 +248,10 @@ public class IntervalList {
 		
 		public int getSize() {
 			return lastPos - firstPos + 1;
+		}
+		
+		public String toString() {
+			return firstPos + "-" + lastPos;
 		}
 		
 		public int compareTo(Interval inter) {

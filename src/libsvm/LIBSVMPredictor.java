@@ -15,7 +15,7 @@ public class LIBSVMPredictor extends LIBSVMTool {
 	private boolean initialized = false;
 	
 	public LIBSVMResult predictData(File inputData, LIBSVMModel model) {
-		return predictData(inputData, model, true);
+		return predictData(inputData, model, false);
 	}
 	
 	public LIBSVMResult predictData(File inputData, LIBSVMModel model, boolean scaleDataFirst) {
