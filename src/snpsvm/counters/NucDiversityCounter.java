@@ -74,7 +74,7 @@ public class NucDiversityCounter implements ColumnComputer {
 					+ (counts[3]-expG)*(counts[3]-expG);
 		
 		
-		
+		val[0] = val[0]*2.0 - 1.0;
 		
 		return val;
 	}

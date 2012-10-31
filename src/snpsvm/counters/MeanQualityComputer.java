@@ -66,6 +66,10 @@ public class MeanQualityComputer extends VarCountComputer {
 			values[ref] /= refCount;
 		if (altCount > 0)
 			values[alt] /= altCount;
+		
+		values[ref] = values[ref] / 60.0 * 2.0 -1.0;
+		values[alt] = values[alt] / 60.0 * 2.0 -1.0;
+		
 		return values;
 	}
 }

@@ -1,13 +1,13 @@
 package snpsvm.bamreading;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import snpsvm.app.SNPCaller;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.counters.ColumnComputer;
 
@@ -97,11 +97,10 @@ public class SplitSNPAndCall implements HasBaseProgress {
 		for(SNPCaller caller : callers) {
 			List<Variant> subVars = caller.getVariantList();
 			if (subVars != null) {
-				System.out.println("\nFound " + subVars.size()+ " variants in caller for intervals: " + caller.getIntervalList());
+				//System.out.println("\nFound " + subVars.size()+ " variants in caller for intervals: " + caller.getIntervalList());
 				vars.addAll( subVars );
 			}
-			else
-				System.out.println("No vars for caller #" + caller.myNumber);
+			
 		}
 		return vars;
 	}

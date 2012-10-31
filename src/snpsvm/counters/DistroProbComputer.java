@@ -61,14 +61,14 @@ public class DistroProbComputer implements ColumnComputer {
 		double homProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.99);
 		
 		//Compute error prob
-		double errProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.2);
+		double errProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.1);
 		
 		double result = Math.log(errProb / (hetProb + homProb + errProb)); 
 		
 		if (result < -10)
 			result = -10;
 		
-		value[0] = result;
+		value[0] = result/(-10.0) *2.0 - 1.0;
 		return value;
 	}
 	

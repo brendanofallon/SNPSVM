@@ -58,8 +58,10 @@ public class NearbyQualComputer implements ColumnComputer {
 		}
 		
 		for(int i=0; i<WINDOW_SIZE; i++) {
-			if (counts[i] > 0)
+			if (counts[i] > 0) {
 				values[i] /= counts[i];
+				values[i] = values[i] / 60.0 * 2.0 -1.0;
+			}
 		}
 		
 		return values;

@@ -64,6 +64,8 @@ public class StrandBiasComputer implements ColumnComputer {
 		
 		if (value[0] > 100.0)
 			value[0] = 100.0;
+		
+		value[0] = value[0] / 100.0 * 2.0 - 1.0;
 		return value;
 	}
 

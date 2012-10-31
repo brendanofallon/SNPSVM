@@ -73,7 +73,9 @@ public class BinomProbComputer implements ColumnComputer {
 		if (homRefProb < 0 || homRefProb > 1) {
 			System.err.println("Whoa, got homo ref probability: " + homRefProb);
 		}
+		
 		value[0] = result;
+		value[0] = value[0]*2.0 - 1.0; //Scale to between -1 and 1
 		return value;
 	}
 	

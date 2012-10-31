@@ -68,6 +68,8 @@ public class MQComputer extends VarCountComputer {
 		if (counts[1] > 0) 
 			values[1] /= counts[1];
 		
+		values[ref] = values[ref] / 80.0 * 2.0 -1.0;
+		values[alt] = values[alt] / 80.0 * 2.0 -1.0;
 		return values;
 	}
 

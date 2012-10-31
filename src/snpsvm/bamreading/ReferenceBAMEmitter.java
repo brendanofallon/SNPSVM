@@ -2,7 +2,6 @@ package snpsvm.bamreading;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -13,7 +12,6 @@ import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.FastaReader2.EndOfContigException;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
-import util.ArrayCircularQueue.FullQueueException;
 
 public class ReferenceBAMEmitter {
 
@@ -22,7 +20,7 @@ public class ReferenceBAMEmitter {
 	private Map<String, Integer> contigMap;
 	List<ColumnComputer> counters;
 	protected BufferedWriter positionWriter = null;
-	protected DecimalFormat formatter = new DecimalFormat("0.0###");
+	protected DecimalFormat formatter = new DecimalFormat("0.0####");
 	protected BinomProbComputer binomComputer = new BinomProbComputer(); //Used for initial filtering 
 	
 	
@@ -66,6 +64,12 @@ public class ReferenceBAMEmitter {
 			for(ColumnComputer counter : counters) {
 				double[] values = counter.computeValue(refBase, refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
+					if (values[i] < -1 || values[i] > 1) {
+						throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
+					}
+					if (Double.isInfinite(values[i]) || Double.isNaN(values[i])) {
+						throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
+					}
 					if (values[i] != 0)
 						out.print("\t" + index + ":" + formatter.format(values[i]) );
 					index++;

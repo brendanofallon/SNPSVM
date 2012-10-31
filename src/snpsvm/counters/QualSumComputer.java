@@ -56,6 +56,11 @@ public class QualSumComputer extends VarCountComputer {
 			}
 		}
 		
+		values[ref] = Math.min(1024, values[ref]);
+		values[alt] = Math.min(1024, values[alt]);
+		values[ref] = values[ref] / 1024.0 * 2.0 -1.0;
+		values[alt] = values[alt] / 1024.0 * 2.0 -1.0;
+		
 		return values;
 	}
 

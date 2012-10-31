@@ -66,6 +66,9 @@ public class HomopolymerRunCounter implements ColumnComputer {
 		}
 		values[1] = count;
 		
+		values[0] = values[0] / maxLength * 2.0 -1.0;
+		values[1] = values[1] / maxLength * 2.0 -1.0;
+		
 		return values;
 	}
 

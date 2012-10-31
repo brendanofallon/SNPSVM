@@ -5,7 +5,7 @@ import snpsvm.bamreading.FastaWindow;
 
 public class DinucRepeatCounter implements ColumnComputer {
 
-final double[] values = new double[2];
+	final double[] values = new double[2];
 	
 	final int maxLength = 10; //dont look beyond this many bases in either direction
 	
@@ -63,6 +63,8 @@ final double[] values = new double[2];
 		}
 		values[1] = count;
 		
+		values[0] = values[0] / maxLength * 2.0 -1.0;
+		values[1] = values[1] / maxLength * 2.0 -1.0;
 		return values;
 	}
 }

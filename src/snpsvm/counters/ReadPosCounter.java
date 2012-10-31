@@ -68,6 +68,9 @@ public class ReadPosCounter extends VarCountComputer {
 			values[ref] /= counts[ref];
 		if (counts[alt] > 0)
 			values[alt] /= counts[alt];
+		
+		values[ref] = values[ref] / 101.0 *2.0 - 1.0;
+		values[alt] = values[alt] / 101.0 *2.0 - 1.0;
 		return values;
 	}
 

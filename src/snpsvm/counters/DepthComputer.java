@@ -20,6 +20,8 @@ public class DepthComputer implements ColumnComputer {
 	@Override
 	public double[] computeValue(final char refBase, FastaWindow window, AlignmentColumn col) {
 		value[0] = (double)col.getDepth();
+		value[0] = Math.min(512, value[0]);
+		value[0] = value[0]/512.0 *2.0 - 1.0; //Scale to between -1 and 1
 		return value;
 	}
 

@@ -23,8 +23,8 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int trueSites = 0;
 	private int falseSites = 0;
 	
-	private double invariantFrac = 0.0004; //Probability that any non-variant individual site will be included in the no-variant class
-	private int maxInvariants = 40000; //Dont ever include more than this number of non-variant sites
+	private double invariantFrac = 0.00001; //Probability that any non-variant individual site will be included in the no-variant class
+	private int maxInvariants = 5000; //Dont ever include more than this number of non-variant sites
 	private int invariantSites = 0; //Number of non-variant sites included so far
 	
 	public TrainingEmitter(File knownVarSites,
@@ -90,6 +90,12 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				for(ColumnComputer counter : counters) {
 					double[] values = counter.computeValue(refBase, refReader, alnCol);
 					for(int i=0; i<values.length; i++) {
+						if (values[i] < -1 || values[i] > 1) {
+							throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
+						}
+						if (Double.isInfinite(values[i]) || Double.isNaN(values[i])) {
+							throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
+						}
 						if (values[i] != 0)
 							out.print("\t" + index + ":" + formatter.format(values[i]) );
 						index++;

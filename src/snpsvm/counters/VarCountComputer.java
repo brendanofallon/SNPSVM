@@ -59,6 +59,11 @@ public class VarCountComputer implements ColumnComputer {
 			}
 		}
 		
+		values[ref] = Math.min(100, values[ref]);
+		values[alt] = Math.min(100, values[alt]);
+		values[ref] = values[ref] / 100.0 * 2.0 - 1.0;
+		values[alt] = values[alt] / 100.0 * 2.0 - 1.0;
+		
 		return values;
 	}
 
