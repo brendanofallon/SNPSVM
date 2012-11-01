@@ -64,7 +64,11 @@ public class MismatchComputer extends VarCountComputer {
 		
 		if (altReads > 0)
 			values[alt] /= altReads;
-		
+		 
+		if(values[ref] > 50.0)
+			 values[ref] = 50.0;
+		if(values[alt] > 50.0)
+			 values[alt] = 50.0;
 		
 		values[alt] = values[alt] / 50.0 * 2.0 -1.0;
 		values[ref] = values[ref] / 50.0 * 2.0 -1.0;

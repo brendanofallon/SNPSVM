@@ -3,7 +3,6 @@ package snpsvm.bamreading;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,7 +98,8 @@ public class ResultVariantConverter {
 		if (altIndex == 3)
 			alt = 'T';
 		
-		Variant var = new Variant(contig, pos, ref, alt, qScore, hetProb/(hetProb + homRefProb + homNonRefProb));
+		int depth = baseCounts[0] + baseCounts[1] + baseCounts[2] + baseCounts[3];
+		Variant var = new Variant(contig, pos, ref, alt, qScore, depth, hetProb/(hetProb + homRefProb + homNonRefProb));
 		return var;
 	}
 
@@ -140,6 +140,15 @@ public class ResultVariantConverter {
 		int G = counts[2];
 		int T = counts[3];
 
+		if (ref == 'A')
+			A = 0;
+		if (ref == 'C')
+			C = 0;
+		if (ref == 'G')
+			G = 0;
+		if (ref == 'T')
+			T = 0;
+		
 		//Find max of all...
 		if (A >= C && A>=G && A>=T) {
 			return 0;

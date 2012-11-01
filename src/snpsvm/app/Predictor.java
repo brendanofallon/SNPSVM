@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -23,46 +22,12 @@ import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.SplitSNPAndCall;
 import snpsvm.bamreading.Variant;
-import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
-import snpsvm.counters.DepthComputer;
-import snpsvm.counters.DinucRepeatCounter;
-import snpsvm.counters.DistroProbComputer;
-import snpsvm.counters.HomopolymerRunCounter;
-import snpsvm.counters.MQComputer;
-import snpsvm.counters.MeanQualityComputer;
-import snpsvm.counters.MismatchComputer;
-import snpsvm.counters.NearbyQualComputer;
-import snpsvm.counters.NucDiversityCounter;
-import snpsvm.counters.PosDevComputer;
-import snpsvm.counters.QualSumComputer;
-import snpsvm.counters.ReadPosCounter;
-import snpsvm.counters.StrandBiasComputer;
+import snpsvm.counters.CounterSource;
 
 public class Predictor extends AbstractModule {
 
-	List<ColumnComputer> counters;
-	boolean emitProgress = true;
-	
-	public Predictor() {
-		counters = new ArrayList<ColumnComputer>();
-		
-		counters.add( new DepthComputer());
-		counters.add( new BinomProbComputer());
-		counters.add( new QualSumComputer());
-		counters.add( new MeanQualityComputer());
-		counters.add( new PosDevComputer());
-		counters.add( new MQComputer());
-		counters.add( new DistroProbComputer());
-		counters.add( new NearbyQualComputer());
-		counters.add( new StrandBiasComputer());
-		counters.add( new MismatchComputer());
-		counters.add( new ReadPosCounter());
-		counters.add( new HomopolymerRunCounter());
-		counters.add( new DinucRepeatCounter());
-		counters.add( new NucDiversityCounter());
-//		counters.add( new ContextComputer());
-	}
+	private boolean emitProgress = true;
 	
 	@Override
 	public boolean matchesModuleName(String name) {
@@ -71,7 +36,7 @@ public class Predictor extends AbstractModule {
 	
 	public void emitColumnNames() {
 		int index = 1;
-		for(ColumnComputer counter : counters) {
+		for(ColumnComputer counter : CounterSource.getCounters()) {
 			for(int i=0; i<counter.getColumnCount(); i++) {
 				System.out.println(index + "\t" + counter.getColumnDesc(i));
 				index++;
@@ -104,7 +69,7 @@ public class Predictor extends AbstractModule {
 		File vcf = new File(vcfPath);
 		
 		try {
-			callSNPs(inputBAM, reference, model, vcf, intervals, counters);
+			callSNPs(inputBAM, reference, model, vcf, intervals);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -141,8 +106,7 @@ public class Predictor extends AbstractModule {
 			File ref,
 			File model,
 			File destination,
-			IntervalList intervals,
-			List<ColumnComputer> counters) throws IOException {
+			IntervalList intervals) throws IOException {
 		
 		if (intervals != null)
 			intervals = validateIntervals(ref, intervals);
@@ -159,7 +123,7 @@ public class Predictor extends AbstractModule {
 
 		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, counters, threadPool);
+		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool);
 
 
 		//Submit multiple jobs to thread pool, returns immediately

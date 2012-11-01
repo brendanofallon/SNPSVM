@@ -15,16 +15,18 @@ public class Variant implements Comparable<Variant> {
 	public final char ref;
 	public final char alt;
 	public final double quality;
-	public final double hetProb; 
+	public final double hetProb;
+	public final int depth;
 	
 	
-	public Variant(String contig, int pos, char ref, char alt, double quality, double hetProb) {
+	public Variant(String contig, int pos, char ref, char alt, double quality, int depth, double hetProb) {
 		this.contig = contig;
 		this.pos = pos;
 		this.ref = ref;
 		this.alt = alt;
 		this.quality = quality;
 		this.hetProb = hetProb;
+		this.depth = depth;
 	}
 	
 	/**
@@ -36,7 +38,10 @@ public class Variant implements Comparable<Variant> {
 	}
 	
 	public String toString() {
-		return contig + "\t" + pos + "\t" + ref + "\t" + alt + "\t" + qualFormatter.format(quality) + "\t" + qualFormatter.format(hetProb);
+		String hetStr = "het";
+		if (! isHetMostLikely())
+			hetStr = "hom";
+		return contig + "\t" + pos + "\t" + (pos+1) + "\t" + ref + "\t" + alt + "\t" + qualFormatter.format(quality) + "\t" + depth + "\t" + hetStr + "\t" + qualFormatter.format(hetProb);
 	}
 
 	@Override

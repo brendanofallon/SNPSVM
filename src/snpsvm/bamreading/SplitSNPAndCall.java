@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import snpsvm.app.SNPCaller;
 import snpsvm.bamreading.IntervalList.Interval;
-import snpsvm.counters.ColumnComputer;
+import snpsvm.counters.CounterSource;
 
 /**
  * Splits a set of intervals in half, calls snps concurrently on each half, then merges the results 
@@ -26,15 +26,13 @@ public class SplitSNPAndCall implements HasBaseProgress {
 	protected File inputBam;
 	protected BAMWindowStore bamWindows;
 	protected File model;
-	private List<ColumnComputer> counters;
 	private ThreadPoolExecutor pool;
 	private List<SNPCaller> callers = new ArrayList<SNPCaller>();
 	
-	public SplitSNPAndCall(File referenceFile, BAMWindowStore bamWindows, File modelFile, List<ColumnComputer> counters, ThreadPoolExecutor pool) {
+	public SplitSNPAndCall(File referenceFile, BAMWindowStore bamWindows, File modelFile, ThreadPoolExecutor pool) {
 		this.reference = referenceFile;
 		this.bamWindows = bamWindows; 
 		this.model = modelFile;
-		this.counters = counters;
 		this.pool = pool;	
 	}
 
@@ -48,7 +46,7 @@ public class SplitSNPAndCall implements HasBaseProgress {
 			
 		if (intervals.getExtent() < thresholdExtent) {
 			//Intervals size is pretty small, just call 'em
-			SNPCaller caller = new SNPCaller(reference, model, intervals, counters, bamWindows);
+			SNPCaller caller = new SNPCaller(reference, model, intervals, CounterSource.getCounters(), bamWindows);
 			callers.add(caller);
 			//pool.submit(caller);
 			pool.execute(caller);

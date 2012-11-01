@@ -62,13 +62,14 @@ public class ReferenceBAMEmitter {
 			out.print("-1"); //libsvm requires some label here but doesn't use it
 			int index = 1;
 			for(ColumnComputer counter : counters) {
-				double[] values = counter.computeValue(refBase, refReader, alnCol);
+				final double[] values = counter.computeValue(refBase, refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
-					if (values[i] < -1 || values[i] > 1) {
+					if (values[i] < -1.0 || values[i] > 1.0) {
+						final double x = values[i];
 						throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
 					}
 					if (Double.isInfinite(values[i]) || Double.isNaN(values[i])) {
-						throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
+						throw new IllegalArgumentException("Non-regular value for counter: " + counter.getName() + " found value=" + values[i]);
 					}
 					if (values[i] != 0)
 						out.print("\t" + index + ":" + formatter.format(values[i]) );

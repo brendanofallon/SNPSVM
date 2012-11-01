@@ -64,13 +64,29 @@ public class ReadPosCounter extends VarCountComputer {
 			}
 		}
 		
+		double origRef = values[ref];
+		double origAlt = values[alt];
+		
 		if (counts[ref] > 0)
 			values[ref] /= counts[ref];
 		if (counts[alt] > 0)
 			values[alt] /= counts[alt];
 		
-		values[ref] = values[ref] / 101.0 *2.0 - 1.0;
-		values[alt] = values[alt] / 101.0 *2.0 - 1.0;
+		values[ref] = values[ref] / 105.0 *2.0 - 1.0;
+		values[alt] = values[alt] / 105.0 *2.0 - 1.0;
+		
+		if (values[ref] < -1.0) {
+			System.out.println("huh?");
+		}
+		if (values[alt] < -1.0) {
+			System.out.println("huh?");
+		}
+		if (values[ref] > 1.0) {
+			System.out.println("huh?+");
+		}
+		if (values[alt] > 1.0) {
+			System.out.println("huh?+");
+		}
 		return values;
 	}
 
