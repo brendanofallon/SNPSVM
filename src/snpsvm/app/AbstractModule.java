@@ -8,13 +8,12 @@ import snpsvm.bamreading.IntervalList;
 public abstract class AbstractModule implements Module {
 
 	
-	public String getRequiredStringArg(ArgParser args, String arg, String errorMessage) {
+	public String getRequiredStringArg(ArgParser args, String arg, String errorMessage) throws MissingArgumentException {
 		if (args.hasOption(arg)) {
 			return args.getStringArg(arg);
 		}
 		else {
-			System.err.println(errorMessage);
-			return null;
+			throw new MissingArgumentException(errorMessage);
 		}
 	}
 	
@@ -82,4 +81,15 @@ public abstract class AbstractModule implements Module {
 		}
 	}
 	
+	/**
+	 * These are thrown when the user has not specified a required argument
+	 * @author brendanofallon
+	 *
+	 */
+	class MissingArgumentException extends Exception {
+		
+		public MissingArgumentException(String message) {
+			super(message);
+		}
+	}
 }

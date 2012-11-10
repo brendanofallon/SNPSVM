@@ -15,6 +15,7 @@ import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.TrainingEmitter;
 import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
+import snpsvm.counters.CounterSource;
 import snpsvm.counters.DepthComputer;
 import snpsvm.counters.DinucRepeatCounter;
 import snpsvm.counters.DistroProbComputer;
@@ -30,26 +31,8 @@ import snpsvm.counters.ReadPosCounter;
 import snpsvm.counters.StrandBiasComputer;
 
 public class ModelBuilder extends AbstractModule {
-
-	List<ColumnComputer> counters;
 	
 	public ModelBuilder() {
-		counters = new ArrayList<ColumnComputer>();
-		counters.add( new DepthComputer());
-		counters.add( new BinomProbComputer());
-		counters.add( new QualSumComputer());
-		counters.add( new MeanQualityComputer());
-		counters.add( new PosDevComputer());
-		counters.add( new MQComputer());
-		counters.add( new DistroProbComputer());
-		counters.add( new NearbyQualComputer());
-		counters.add( new StrandBiasComputer());
-		counters.add( new MismatchComputer());
-		counters.add( new ReadPosCounter());
-		counters.add( new HomopolymerRunCounter());
-		counters.add( new DinucRepeatCounter());
-		counters.add( new NucDiversityCounter());
-//		counters.add( new ContextComputer());
 	}
 	
 	@Override
@@ -59,11 +42,23 @@ public class ModelBuilder extends AbstractModule {
 
 	@Override
 	public void performOperation(String name, ArgParser args) {
-		String referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
-		String trueTrainingPath = getRequiredStringArg(args, "-T", "Missing required argument for true training sites file, use -T");
-		String falseTrainingPath = getRequiredStringArg(args, "-F", "Missing required argument for false training sites file, use -F");
-		String inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
-		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model destination file, use -M");
+		String referencePath;
+		String trueTrainingPath;
+		String falseTrainingPath;
+		String modelPath;
+		String inputBAMPath;
+		
+		try {
+			referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
+			trueTrainingPath = getRequiredStringArg(args, "-T", "Missing required argument for true training sites file, use -T");
+			falseTrainingPath = getRequiredStringArg(args, "-F", "Missing required argument for false training sites file, use -F");
+			inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
+			modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model destination file, use -M");
+
+		} catch (MissingArgumentException e1) {
+			System.err.println(e1.getMessage());
+			return;
+		}
 		
 		IntervalList intervals = getIntervals(args);
 		
@@ -82,8 +77,7 @@ public class ModelBuilder extends AbstractModule {
 					trueTraining, 
 					falseTraining, 
 					modelDestination,
-					intervals, 
-					counters);
+					intervals);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -100,10 +94,9 @@ public class ModelBuilder extends AbstractModule {
 			File ref, 
 			File trueTraining, 
 			File falseTraining,
-			File modelFile,
-			List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
+			File modelFile) throws IOException, IndexNotFoundException {
 		
-		generateModel(knownBAM, ref, trueTraining, falseTraining, modelFile, null, counters);
+		generateModel(knownBAM, ref, trueTraining, falseTraining, modelFile, null);
 	}
 
 	public static void generateModel(File knownBAM, 
@@ -111,8 +104,9 @@ public class ModelBuilder extends AbstractModule {
 			File trueTraining, 
 			File falseTraining,
 			File modelFile,
-			IntervalList intervals,
-			List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
+			IntervalList intervals) throws IOException, IndexNotFoundException {
+		
+		List<ColumnComputer> counters = CounterSource.getCounters();
 		
 		TrainingEmitter emitter = new TrainingEmitter(trueTraining, falseTraining, ref, knownBAM, counters);
 		

@@ -52,10 +52,21 @@ public class Predictor extends AbstractModule {
 		}
 		
 		
-		String referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
-		String inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
-		String modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model file, use -M");
-		String vcfPath = getRequiredStringArg(args, "-V", "Missing required argument for destination vcf file, use -V");
+		String referencePath;
+		String inputBAMPath;
+		String modelPath;
+		String vcfPath;
+		
+		try {
+			referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");
+			inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
+			modelPath = getRequiredStringArg(args, "-M", "Missing required argument for model file, use -M");
+			vcfPath = getRequiredStringArg(args, "-V", "Missing required argument for destination vcf file, use -V");
+		} catch (MissingArgumentException e1) {
+			System.err.println(e1.getMessage());
+			return;
+		}
+		
 		boolean writeData = ! args.hasOption("-X");
 		IntervalList intervals = getIntervals(args);
 		

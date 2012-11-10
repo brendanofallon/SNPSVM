@@ -1,9 +1,16 @@
+
 package snpsvm.app;
 
 import java.io.IOException;
 
 import util.Timer;
 
+/**
+ * Main entry point for command-line application. Mostly we just parse the first argument
+ * in the arg list and look for a module recognizes the arg as its name. 
+ * @author brendanofallon
+ *
+ */
 public class CommandLineApp {
 	
 	
@@ -12,6 +19,14 @@ public class CommandLineApp {
 	
 	public static void main(String[] args) throws IOException {
 
+		if (args.length == 0 || args[0].equals("help")) {
+			System.out.println("\tSNP-SVM v 0.01");
+			System.out.println("\tBrendan O'Fallon, ARUP Labs, Salt Lake City, Utah");
+			System.out.println("\tbrendan.d.ofallon@aruplab.com");
+			System.out.println("\n  To begin, enter the name of a module, for instance 'buildmodel' to train a new model or 'predict' to call snps.");
+			return;
+		}
+		
 		Timer mainTimer = new Timer("main");
 		mainTimer.start();
 		
