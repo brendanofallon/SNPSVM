@@ -60,6 +60,16 @@ public class ModelBuilder extends AbstractModule {
 			return;
 		}
 		
+		//See if user has asked for training data to be appended to existing data file. 
+		String existingDataPath = getOptionalStringArg(args, "-A");
+		File existingDataFile = null;
+		if (existingDataPath != null) {
+			existingDataFile = new File(existingDataPath);
+			if (! existingDataFile.exists()) {
+				System.err.println("Could not find specified training data file: " + existingDataFile.getAbsolutePath());
+			}
+		}
+		
 		IntervalList intervals = getIntervals(args);
 		
 		File referenceFile = new File(referencePath);
@@ -77,6 +87,7 @@ public class ModelBuilder extends AbstractModule {
 					trueTraining, 
 					falseTraining, 
 					modelDestination,
+					existingDataFile,
 					intervals);
 			
 		} catch (IOException e) {
@@ -94,7 +105,8 @@ public class ModelBuilder extends AbstractModule {
 			File ref, 
 			File trueTraining, 
 			File falseTraining,
-			File modelFile) throws IOException, IndexNotFoundException {
+			File modelFile,
+			File extantData) throws IOException, IndexNotFoundException {
 		
 		generateModel(knownBAM, ref, trueTraining, falseTraining, modelFile, null);
 	}
@@ -104,16 +116,25 @@ public class ModelBuilder extends AbstractModule {
 			File trueTraining, 
 			File falseTraining,
 			File modelFile,
+			File extantData,
 			IntervalList intervals) throws IOException, IndexNotFoundException {
 		
 		List<ColumnComputer> counters = CounterSource.getCounters();
 		
 		TrainingEmitter emitter = new TrainingEmitter(trueTraining, falseTraining, ref, knownBAM, counters);
 		
-		
 		//Read BAM file, write results to training file
-		File trainingFile = new File(knownBAM.getName().replace(".bam", "") + ".training.csv");
-		PrintStream trainingStream = new PrintStream(new FileOutputStream(trainingFile));
+		File trainingFile = null;
+		PrintStream trainingStream = null;
+		if (extantData == null) {
+			trainingFile = new File(knownBAM.getName().replace(".bam", "") + ".training.csv");
+			trainingStream = new PrintStream(new FileOutputStream(trainingFile));
+		}
+		else {
+			System.out.println("Appending training data to existing data file " + extantData.getName());
+			trainingStream = new PrintStream(new FileOutputStream(extantData));
+		}
+		
 		if (intervals == null) {
 			emitter.emitAll(trainingStream); 
 		}
@@ -131,6 +152,8 @@ public class ModelBuilder extends AbstractModule {
 		LIBSVMTrain trainer = new LIBSVMTrain();
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);
 		
+		System.out.println("\n Created training data file: " + trainingFile);
+		System.out.println("\n Created model file: " + modelFile);
 	}
 
 	@Override
@@ -141,5 +164,7 @@ public class ModelBuilder extends AbstractModule {
 		System.out.println("  -F false / invariant sites VCF file");
 		System.out.println("  -B input BAM file");
 		System.out.println("  -M name of output .model file");
+		System.out.println("Optional :");
+		System.out.println("  -A [existing training data file]   Append data to existing training file");
 	}
 }
