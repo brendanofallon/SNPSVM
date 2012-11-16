@@ -1,6 +1,7 @@
 
 import sys
 import os
+import random
 
 libsvm = "/home/brendan/libsvm-3.12/"
 
@@ -63,7 +64,15 @@ def removeFeature(inputdata, col, outputdata):
 	outfh.close()
 	infh.close()
 
-	
+def removeFeatures(inputdata, cols, outputdata):
+	src = inputdata
+	dest = ".removetmp1.txt"
+	for col in cols:
+		removeFeature(src, col, dest)
+		src = dest
+		rstr = str(int(random.random()*10000))
+		dest = ".removetmp" + rstr + ".txt"
+	os.system("mv " + dest + " " + outputdata)
 	
 
 trainingdata = sys.argv[1]
@@ -77,9 +86,10 @@ mean = sum(cvs) / float(len(cvs))
 print "Base cv for all data : " + str(mean) + "( " + str(min(cvs)) + "-" + str(max(cvs)) + ")"
 
 
-for col in range(1, 20):
+cols =[3,4]
+#for col in cols:
 	removedfilename = "removed" + str(col) + ".txt"
-	removeFeature(trainingdata, col, removedfilename)
+	removeFeatures(trainingdata, cols, removedfilename)
 	cvs = []
 	for i in range(1,10):
 		cvs.append( generateCV(removedfilename) )

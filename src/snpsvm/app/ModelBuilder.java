@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import libsvm.LIBSVMModel;
@@ -13,23 +12,14 @@ import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.TrainingEmitter;
-import snpsvm.counters.BinomProbComputer;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
-import snpsvm.counters.DepthComputer;
-import snpsvm.counters.DinucRepeatCounter;
-import snpsvm.counters.DistroProbComputer;
-import snpsvm.counters.HomopolymerRunCounter;
-import snpsvm.counters.MQComputer;
-import snpsvm.counters.MeanQualityComputer;
-import snpsvm.counters.MismatchComputer;
-import snpsvm.counters.NearbyQualComputer;
-import snpsvm.counters.NucDiversityCounter;
-import snpsvm.counters.PosDevComputer;
-import snpsvm.counters.QualSumComputer;
-import snpsvm.counters.ReadPosCounter;
-import snpsvm.counters.StrandBiasComputer;
 
+/**
+ * This module is used to train a svm and build a model that can be used to call variants in future data sets.
+ * @author brendan
+ *
+ */
 public class ModelBuilder extends AbstractModule {
 	
 	public ModelBuilder() {
@@ -132,7 +122,9 @@ public class ModelBuilder extends AbstractModule {
 		}
 		else {
 			System.out.println("Appending training data to existing data file " + extantData.getName());
-			trainingStream = new PrintStream(new FileOutputStream(extantData));
+			trainingFile = extantData; //Required to train model below
+			emitter.setInvariantProb(0.0); //Don't emit invariant sites
+			trainingStream = new PrintStream(new FileOutputStream(extantData, true), true); //Append to existing file and autoflush
 		}
 		
 		if (intervals == null) {
@@ -150,7 +142,7 @@ public class ModelBuilder extends AbstractModule {
 		emitter.emitTrainingCounts();
 		
 		LIBSVMTrain trainer = new LIBSVMTrain();
-		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, true);
+		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, false);
 		
 		System.out.println("\n Created training data file: " + trainingFile);
 		System.out.println("\n Created model file: " + modelFile);

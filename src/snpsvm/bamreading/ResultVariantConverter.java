@@ -43,7 +43,7 @@ public class ResultVariantConverter {
 		while(resultLine != null && posLine != null) {
 			toks = resultLine.split(" ");
 			double qScore = parseQuality(toks[noVarIndex], toks[varIndex]);
-			if (qScore > 1) {
+			if (qScore > 0.01) {
 				Variant var = toVariant(posLine, qScore);
 				variants.add(var);
 			}

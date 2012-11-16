@@ -126,7 +126,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 		System.out.println("   Trainer total sites examined: " + tot);
 		System.out.println("     True positive sites found : " + trueSites + "\t" + formatter.format(trueFrac));
 		System.out.println("    False positive sites found : " + falseSites + "\t" + formatter.format(falseFrac));
-		System.out.println("Invariant positive sites found : " + invariantSites + "\t" + formatter.format(invarFrac));
+		System.out.println("         Invariant sites found : " + invariantSites + "\t" + formatter.format(invarFrac));
 		//System.out.println("Trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + invariantSites + " invariant \t"  + counted + " total sites");
 	}
 }
