@@ -51,6 +51,5 @@ SNPSVM can do two things:
 To tell SNPSVM to use multiple threads, use the following command:
 
 		java -Xmx1g -jar snpsvm.jar config -add threads=X
-
 	where X is the number of threads you wish to use. Currently only variant calling (not model building) supports the use of multiple threads.
 
