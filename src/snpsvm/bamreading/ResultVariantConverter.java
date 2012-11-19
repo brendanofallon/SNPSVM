@@ -15,6 +15,21 @@ import libsvm.LIBSVMResult;
  */
 public class ResultVariantConverter {
 	
+	private double variantQualityCutoff = 10.0;
+	
+
+	public double getVariantQualityCutoff() {
+		return variantQualityCutoff;
+	}
+
+	/**
+	 * Set minimum q-score required to report variant
+	 * @param variantQualityCutoff
+	 */
+	public void setVariantQualityCutoff(double variantQualityCutoff) {
+		this.variantQualityCutoff = variantQualityCutoff;
+	}
+
 	public List<Variant> createVariantList(LIBSVMResult result) throws IOException {
 
 		List<Variant> variants = new ArrayList<Variant>(256); 
@@ -43,7 +58,7 @@ public class ResultVariantConverter {
 		while(resultLine != null && posLine != null) {
 			toks = resultLine.split(" ");
 			double qScore = parseQuality(toks[noVarIndex], toks[varIndex]);
-			if (qScore > 0.01) {
+			if (qScore > variantQualityCutoff) {
 				Variant var = toVariant(posLine, qScore);
 				variants.add(var);
 			}
