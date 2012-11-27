@@ -101,7 +101,7 @@ public class AlignmentColumn {
 		byte[] bases = getBases();
 		int count = 0;
 		for(int i=0; i<getDepth(); i++) {
-			if (refBase != (char)bases[i])
+			if (refBase != (char)bases[i] && ( (char)bases[i] != 'N'))
 				count++;
 			if (count > 1)
 				return true;

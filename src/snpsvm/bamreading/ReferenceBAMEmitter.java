@@ -52,6 +52,10 @@ public class ReferenceBAMEmitter {
 		
 		if (alnCol.getApproxDepth() > 1) {
             final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
+            if (refBase == 'N') {
+            	return;
+            }
+            
             boolean hasTwoDifferringBases = alnCol.hasTwoDifferingBases(refBase);
 
             if (! hasTwoDifferringBases) {

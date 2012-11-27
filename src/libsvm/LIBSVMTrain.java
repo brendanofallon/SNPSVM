@@ -7,6 +7,7 @@ public class LIBSVMTrain extends LIBSVMTool {
 	public static final String trainingExecutable = "svm-train";
 	
 	private double defaultC = 10.0;
+	private double defaultG = 0.01;
 	
 	public LIBSVMModel createModel(File trainingData) {
 		return createModel(trainingData, false);
@@ -41,7 +42,7 @@ public class LIBSVMTrain extends LIBSVMTool {
 		
 		String pathToModel = destinationModelFile.getAbsolutePath();
 		LIBSVMModel model = new LIBSVMModel(new File(pathToModel));
-		String command = libsvmPath + trainingExecutable + " -t 2 -b 1 -c " + defaultC + " " + trainingData.getAbsolutePath() + " " + pathToModel;
+		String command = libsvmPath + trainingExecutable + " -t 2 -b 1 -c " + defaultC + " -g " + defaultG + " " + trainingData.getAbsolutePath() + " " + pathToModel;
 		executeCommand(command);
 		return model;
 	}

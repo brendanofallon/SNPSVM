@@ -22,11 +22,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 	private int counted = 0;
 	private int trueSites = 0;
 	private int falseSites = 0;
-	
-	private double invariantFrac = 0.000025; //Probability that any non-variant individual site will be included in the no-variant class
-	private int maxInvariants = 5000; //Dont ever include more than this number of non-variant sites
-	private int invariantSites = 0; //Number of non-variant sites included so far
-	
+		
 	public TrainingEmitter(File knownVarSites,
 			File knownFalseSites,
 			File reference, 
@@ -38,13 +34,6 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 		this.knownFalseSites = new VariantPositionList(knownFalseSites);
 	}
 	
-	/**
-	 * Set probability that a randomly selected invariant site will be included in the false training set
-	 * @param prob
-	 */
-	public void setInvariantProb(double prob) {
-		this.invariantFrac = prob;
-	}
 	
 	public void emitLine(PrintStream out) {
 		if (alnCol.getApproxDepth()>1) {
@@ -74,13 +63,6 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				falseSites++;
 			}
 
-			if (prefix == null && invariantSites < maxInvariants && (! hasTwoDiffering)) {
-				double r = Math.random();
-				if (r < invariantFrac) {
-					prefix = "-1";
-					invariantSites++;
-				}
-			}
 
 			if (prefix != null) {
 				int index = 1;
@@ -118,15 +100,13 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 
 	public void emitTrainingCounts() {
 		DecimalFormat formatter = new DecimalFormat("0.00");
-		int tot = trueSites + falseSites + invariantSites;
+		int tot = trueSites + falseSites;
 		double trueFrac = (double)trueSites / (double)tot;
 		double falseFrac = (double)falseSites / (double)tot;
-		double invarFrac = (double)invariantSites / (double)tot;
 		
 		System.out.println("   Trainer total sites examined: " + tot);
 		System.out.println("     True positive sites found : " + trueSites + "\t" + formatter.format(trueFrac));
 		System.out.println("    False positive sites found : " + falseSites + "\t" + formatter.format(falseFrac));
-		System.out.println("         Invariant sites found : " + invariantSites + "\t" + formatter.format(invarFrac));
-		//System.out.println("Trainer found \t" + trueSites + " true positive \t" + falseSites + " false positive \t" + invariantSites + " invariant \t"  + counted + " total sites");
+	
 	}
 }

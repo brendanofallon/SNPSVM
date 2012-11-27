@@ -32,6 +32,7 @@ public class LIBSVMPredictor extends LIBSVMTool {
 		String pathToOutput = inputData.getAbsolutePath() + ("." + (int)(1000.0*Math.random())) + ".output";
 
 		String command = libsvmPath + predictionExecutable + " -b 1 " + inputData.getAbsolutePath() + " " + model.getModelPath() + " " + pathToOutput ;
+		//System.out.println(command);
 		
 		executeCommand(command);
 		

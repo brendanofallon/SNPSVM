@@ -43,9 +43,9 @@ public class MappedRead {
 		if (mismatchCount == -1) {
 			mismatchCount = 0;
 
-			for(int i=Math.max(read.getAlignmentStart(), ref.indexOfLeftEdge()+1); i<Math.min(ref.indexOfRightEdge(), read.getAlignmentEnd()); i++) {
+			for(int i=Math.max(read.getAlignmentStart(), ref.indexOfLeftEdge()+1); i<Math.min(ref.indexOfRightEdge(), read.getAlignmentEnd()+1); i++) {
 				if (hasBaseAtReferencePos(i)) {		
-					if ( ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i)) {
+					if (getQualityAtReferencePos(i)>5 && ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i)) {
 						mismatchCount++;
 					}
 				}

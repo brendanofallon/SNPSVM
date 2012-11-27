@@ -1,6 +1,7 @@
 package snpsvm.bamreading;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,13 +18,30 @@ public class ResultVariantConverter {
 	
 	public List<Variant> createVariantList(LIBSVMResult result) throws IOException {
 
+		//Check validity of result
+		File resFile = new File(result.getFilePath());
+		if (! resFile.exists()) {
+			throw new IllegalStateException("Result file " + result.getFilePath() + " does not exist");
+		}
+		if (result.getPositionsFile() == null) {
+			throw new IllegalStateException("Result position info file has not been set.");
+		}
+		if ((! result.getPositionsFile().exists())) {
+			throw new IllegalStateException("Result position info file " + result.getFilePath() + " does not exist");
+		}
+		
 		List<Variant> variants = new ArrayList<Variant>(256); 
 		BufferedReader resultReader = new BufferedReader(new FileReader(result.getFilePath()));
 		BufferedReader posReader = new BufferedReader(new FileReader(result.getPositionsFile()));
 
 		//System.out.println("Parsing results from output file: " + result.getFilePath() + " pos file: " + result.getPositionsFile().getName());
 		String resultLine = resultReader.readLine();
-
+		if (resultLine == null) {
+			resultReader.close();
+			posReader.close();
+			throw new IllegalStateException("Error reading from prediction result file: " + result.getFilePath());
+		}
+		
 		//Columns may be in any order, so parse the first result line to figure out which one's which
 		String[] toks = resultLine.split(" ");
 		if (toks.length < 3) {

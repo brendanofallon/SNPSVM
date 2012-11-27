@@ -40,7 +40,7 @@ public class CommandLineApp {
 			System.err.println("Loading module " + mod.getClass().toString().replace(".class", ""));
 			
 			ArgParser argParser = new ArgParser(args);
-			if (args.length==1 || (args.length==2 && args[1].equals("help"))) {
+			if ((args.length==2 && args[1].equals("help"))) {
 				mod.emitUsage();
 			}
 			else {

@@ -31,7 +31,6 @@ public class BAMWindowStore {
 	 */
 	public synchronized BamWindow getWindow() {
 		if (windows.isEmpty()) {
-			System.out.println("Warning : creating new bam window since stack size is zero");
 			return new BamWindow(bamSource);
 		}
 		else {

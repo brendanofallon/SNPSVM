@@ -150,7 +150,7 @@ public class Predictor extends AbstractModule {
 					emitProgressString(caller, intervalExtent);
 				}
 			});
-			progressTimer.setDelay(500);
+			progressTimer.setDelay(419);
 			progressTimer.start();
 		}
 

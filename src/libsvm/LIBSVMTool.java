@@ -6,6 +6,8 @@ import snpsvm.app.CommandLineApp;
 
 public class LIBSVMTool {
 
+	public static boolean DEBUG = false;
+	
 	protected String libsvmPath = null;
 	protected boolean initialized = false;
 	
@@ -21,11 +23,18 @@ public class LIBSVMTool {
 
 	protected void executeCommand(String command) {
 		ProcessBuilder procBuilder = new ProcessBuilder("bash", "-c", command);
-		//System.out.println("Executing command : " + command);
+		
+		
+		//procBuilder.r
+		if (DEBUG)
+			System.out.println("LIBSVM tool executing command : " + command);
 		
 		try {
 			Process proc = procBuilder.start();
 			int exitVal = proc.waitFor();
+			if (exitVal != 0) {
+				System.err.println("Warning: libsvm process executing command " + command + " reported an error");
+			}
 		}
 		catch (InterruptedException ex) {
 			

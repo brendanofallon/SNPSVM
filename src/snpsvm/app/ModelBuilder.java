@@ -123,20 +123,20 @@ public class ModelBuilder extends AbstractModule {
 		else {
 			System.out.println("Appending training data to existing data file " + extantData.getName());
 			trainingFile = extantData; //Required to train model below
-			emitter.setInvariantProb(0.0); //Don't emit invariant sites
 			trainingStream = new PrintStream(new FileOutputStream(extantData, true), true); //Append to existing file and autoflush
 		}
 		
 		if (intervals == null) {
-			emitter.emitAll(trainingStream); 
+			//No intervals specified, so produce intervals set from training data positions
+			intervals = getIntervalsFromTrainingSites(trueTraining, falseTraining); 
 		}
-		else {
-			for(String contig : intervals.getContigs()) {
-				for(Interval interval : intervals.getIntervalsInContig(contig)) {
-					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
-				}
+		
+		for(String contig : intervals.getContigs()) {
+			for(Interval interval : intervals.getIntervalsInContig(contig)) {
+				emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
 			}
 		}
+		
 		trainingStream.close();
 		
 		emitter.emitTrainingCounts();
@@ -146,6 +146,24 @@ public class ModelBuilder extends AbstractModule {
 		
 		System.out.println("\n Created training data file: " + trainingFile);
 		System.out.println("\n Created model file: " + modelFile);
+	}
+
+	/**
+	 * Add an interval for each site in the vcf file
+	 * @param fileA
+	 * @param fileB
+	 * @return
+	 * @throws IOException
+	 */
+	private static IntervalList getIntervalsFromTrainingSites(
+			File fileA, File fileB) throws IOException {
+
+		IntervalList intervals = new IntervalList();
+		intervals.addFromVCF(fileA);
+		intervals.addFromVCF(fileB);
+		intervals.sortAllIntervals();
+		
+		return intervals;
 	}
 
 	@Override

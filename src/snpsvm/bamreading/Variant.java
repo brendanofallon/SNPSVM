@@ -9,7 +9,7 @@ import java.text.DecimalFormat;
  */
 public class Variant implements Comparable<Variant> {
 
-	final DecimalFormat qualFormatter = new DecimalFormat("0.00");
+	final DecimalFormat qualFormatter = new DecimalFormat("0.0000");
 	public final String contig;
 	public final int pos;
 	public final char ref;
