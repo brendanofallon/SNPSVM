@@ -70,6 +70,8 @@ public class Predictor extends AbstractModule {
 		boolean writeData = ! args.hasOption("-X");
 		IntervalList intervals = getIntervals(args);
 		
+		Double qCutoff = getOptionalDoubleArg(args, "-q");
+		
 		if (!writeData) {
 			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
 		}
