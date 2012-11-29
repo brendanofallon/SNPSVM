@@ -16,7 +16,7 @@ import libsvm.LIBSVMResult;
  */
 public class ResultVariantConverter {
 	
-	private double variantQualityCutoff = 10.0;
+	private double variantQualityCutoff = 0.01;
 	
 
 	public double getVariantQualityCutoff() {

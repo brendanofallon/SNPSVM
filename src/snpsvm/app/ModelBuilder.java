@@ -50,6 +50,9 @@ public class ModelBuilder extends AbstractModule {
 			return;
 		}
 		
+		//Mostly for debugging, allows user-specified exclusion of counters
+		super.processExcludedIntervals(args);
+		
 		//See if user has asked for training data to be appended to existing data file. 
 		String existingDataPath = getOptionalStringArg(args, "-A");
 		File existingDataFile = null;

@@ -45,7 +45,7 @@ public class MappedRead {
 
 			for(int i=Math.max(read.getAlignmentStart(), ref.indexOfLeftEdge()+1); i<Math.min(ref.indexOfRightEdge(), read.getAlignmentEnd()+1); i++) {
 				if (hasBaseAtReferencePos(i)) {		
-					if (getQualityAtReferencePos(i)>5 && ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i)) {
+					if (getQualityAtReferencePos(i)>10 && ((char)getBaseAtReferencePos(i)) != ref.getBaseAt(i)) {
 						mismatchCount++;
 					}
 				}
@@ -63,6 +63,16 @@ public class MappedRead {
 	 */
 	public boolean hasBaseAtReferencePos(int refPos) {
 		return refPosToReadPos(refPos) != -1;
+	}
+	
+	/**
+	 * True if the reference pos it greater than or equal to alignment start and less than
+	 * or equal to aligment end
+	 * @param refPos
+	 * @return
+	 */
+	public boolean containsPosition(int refPos) {
+		return refPos >= readAlignmentStart && refPos <= read.getAlignmentEnd();
 	}
 
 	public byte getBaseAtReadPos(int readPos) {

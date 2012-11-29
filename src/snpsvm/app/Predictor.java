@@ -67,6 +67,9 @@ public class Predictor extends AbstractModule {
 			return;
 		}
 		
+		//Mostly for debugging, allows user-specified exclusion of counters
+		super.processExcludedIntervals(args);
+		
 		boolean writeData = ! args.hasOption("-X");
 		IntervalList intervals = getIntervals(args);
 		

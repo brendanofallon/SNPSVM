@@ -40,9 +40,12 @@ public class MismatchTotal implements ColumnComputer {
 			}
 		}
 		
-		value[0] /= counted;
-		if (value[0] > 100.0)
-			value[0] = 100.0;
+		if (counted > 0) {
+			value[0] /= counted;
+			if (value[0] > 100.0)
+				value[0] = 100.0;
+		}
+		
 		value[0] = value[0] / 100.0 *2.0 -1.0;
 		return value;
 	}
