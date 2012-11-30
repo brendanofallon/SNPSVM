@@ -28,7 +28,7 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 			File reference, 
 			File bamFile,
 			List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
-		super(reference, bamFile, counters); 
+		super(reference, bamFile, counters, new CallingOptions()); 
 		
 		this.knownTrueSites = new VariantPositionList(knownVarSites);
 		this.knownFalseSites = new VariantPositionList(knownFalseSites);
@@ -50,10 +50,10 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 				return;
 			}
 			
-			boolean hasTwoDiffering = alnCol.hasTwoDifferingBases(refBase);
+			boolean differing = alnCol.hasXDifferingBases(refBase, 2);
 			counted++;
 			String prefix = null;
-			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && hasTwoDiffering) {
+			if (knownTrueSites.hasSNP( alnCol.getCurrentPosition() ) && differing) {
 				prefix = "1";
 				trueSites++;
 			}

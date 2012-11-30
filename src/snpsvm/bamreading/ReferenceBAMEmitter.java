@@ -22,19 +22,25 @@ public class ReferenceBAMEmitter {
 	protected BufferedWriter positionWriter = null;
 	protected DecimalFormat formatter = new DecimalFormat("0.0####");
 	protected BinomProbComputer binomComputer = new BinomProbComputer(); //Used for initial filtering 
+	protected final int minDepth;
+	protected final int minVarDepth;
 	
 	
-	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window) throws IOException, IndexNotFoundException {
+	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window, CallingOptions ops) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
 		contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(window);
+		this.minDepth = ops.getMinTotalDepth();
+		this.minVarDepth = ops.getMinVariantDepth();
 		this.counters = counters;
 	}
 	
-	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
+	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters, CallingOptions ops) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
 		contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(bamFile);
+		this.minDepth = ops.getMinTotalDepth();
+		this.minVarDepth = ops.getMinVariantDepth();
 		this.counters = counters;
 	}
 	
@@ -50,15 +56,15 @@ public class ReferenceBAMEmitter {
 	
 	public void emitLine(PrintStream out) {
 		
-		if (alnCol.getApproxDepth() > 1) {
+		if (alnCol.getApproxDepth() >= minDepth) {
             final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
             if (refBase == 'N') {
             	return;
             }
             
-            boolean hasTwoDifferringBases = alnCol.hasTwoDifferingBases(refBase);
+            boolean differringBases = alnCol.hasXDifferingBases(refBase, minVarDepth);
 
-            if (! hasTwoDifferringBases) {
+            if (! differringBases) {
                return;
             }
 

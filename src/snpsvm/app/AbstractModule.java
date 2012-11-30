@@ -107,6 +107,21 @@ public abstract class AbstractModule implements Module {
 	}
 	
 	/**
+	 * Return the given argument if it was given, otherwise return null and emit no message
+	 * @param args
+	 * @param arg
+	 * @return
+	 */
+	public Integer getOptionalIntegerArg(ArgParser args, String arg) {
+		if (args.hasOption(arg)) {
+			return args.getIntegerArg(arg);
+		}
+		else {
+			return null;
+		}
+	}
+	
+	/**
 	 * Return true if the user has supplied the given arg
 	 * @param args
 	 * @param arg

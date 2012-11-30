@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import snpsvm.app.SNPCaller;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.counters.CounterSource;
 
@@ -162,19 +161,6 @@ public class SplitSNPAndCall implements HasBaseProgress {
 		}
 		return subIntervals;
 	}
-	
-	public CallingOptions getCallingOptions() {
-		return new CallingOptions();
-	}
-	
-	/**
-	 * A few user-settable options for variant calling
-	 * @author brendan
-	 *
-	 */
-	public class CallingOptions {
-		int minTotalDepth = 2;
-		int minVariantDepth = 2;
-		double minQuality = 1.0;
-	}
+		
+
 }

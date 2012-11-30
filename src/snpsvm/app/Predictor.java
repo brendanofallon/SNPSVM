@@ -16,12 +16,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 import javax.swing.Timer;
 
 import snpsvm.bamreading.BAMWindowStore;
+import snpsvm.bamreading.CallingOptions;
 import snpsvm.bamreading.FastaReader;
 import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.SplitSNPAndCall;
-import snpsvm.bamreading.SplitSNPAndCall.CallingOptions;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
@@ -74,7 +74,7 @@ public class Predictor extends AbstractModule {
 		boolean writeData = ! args.hasOption("-X");
 		IntervalList intervals = getIntervals(args);
 		
-		Double qCutoff = getOptionalDoubleArg(args, "-q");
+		
 		
 		if (!writeData) {
 			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
@@ -98,9 +98,23 @@ public class Predictor extends AbstractModule {
 			System.err.println("Model file " + model.getAbsolutePath() + " not found");
 			return;
 		}
+
+		
+		//Generate a CallingOptions object with some params for variant calling
+		CallingOptions ops = new CallingOptions();
+		Double qCutoff = getOptionalDoubleArg(args, "-q");
+		if (qCutoff != null)
+			ops.setMinQuality(qCutoff);
+		Integer minDepth = getOptionalIntegerArg(args, "-d");
+		if (minDepth != null)
+			ops.setMinTotalDepth(minDepth);
+		Integer minVarDepth = getOptionalIntegerArg(args, "-v");
+		if (minVarDepth != null) {
+			ops.setMinVariantDepth(minVarDepth);
+		}
 		
 		try {
-			callSNPs(inputBAM, reference, model, vcf, intervals);
+			callSNPs(inputBAM, reference, model, vcf, intervals, ops);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -137,7 +151,8 @@ public class Predictor extends AbstractModule {
 			File ref,
 			File model,
 			File destination,
-			IntervalList intervals) throws IOException {
+			IntervalList intervals,
+			CallingOptions ops) throws IOException {
 		
 		if (intervals != null)
 			intervals = validateIntervals(ref, intervals);
@@ -154,9 +169,7 @@ public class Predictor extends AbstractModule {
 
 		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-		CallingOptions ops = new CallingOptions();
-		
-		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool);
+		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool, ops);
 
 
 		//Submit multiple jobs to thread pool, returns immediately
@@ -264,6 +277,10 @@ public class Predictor extends AbstractModule {
 		System.out.println(" -B input BAM file");
 		System.out.println(" -V output variant file");
 		System.out.println(" -M model file produced by buildmodel");
+		System.out.println(" ---- Optional arguments -----");
+		System.out.println(" -q [1.0] minimum quality to report variant");
+		System.out.println(" -d [2] minimum total depth to examine for variant");
+		System.out.println(" -v [2] minimum reads with variant allele required for variant calling");
 	}
 
 	private Long startTime = null;
