@@ -36,7 +36,9 @@ public class LIBSVMPredictor extends LIBSVMTool {
 		
 		executeCommand(command);
 		
-		LIBSVMResult result = new LIBSVMResult(new File(pathToOutput));
+		File outputData = new File(pathToOutput);
+		outputData.deleteOnExit();
+		LIBSVMResult result = new LIBSVMResult(outputData);
 		result.setInputData(inputData);
 		
 		return result;

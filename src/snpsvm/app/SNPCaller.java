@@ -19,6 +19,7 @@ import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.ReferenceBAMEmitter;
 import snpsvm.bamreading.ResultVariantConverter;
+import snpsvm.bamreading.SplitSNPAndCall.CallingOptions;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 
@@ -39,16 +40,24 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	protected List<ColumnComputer> counters;
 	protected List<Variant> variants = null;
 	protected BAMWindowStore bamWindows;
+	protected CallingOptions options = null;
 	
 	private boolean removeTmpFiles = true; //Erase 'data' and 'positions' files after use 
 	private int basesComputed = 0;
 	
-	public SNPCaller(File referenceFile, File modelFile, IntervalList intervals, List<ColumnComputer> counters, BAMWindowStore bamWindows) {
+	
+	public SNPCaller(File referenceFile, 
+			File modelFile, 
+			IntervalList intervals, 
+			List<ColumnComputer> counters, 
+			BAMWindowStore bamWindows,
+			CallingOptions options) {
 		this.referenceFile = referenceFile;
 		this.intervals = intervals;
 		this.modelFile = modelFile;
 		this.counters = counters;
 		this.bamWindows = bamWindows;
+		this.options = options;
 		instanceCount++;
 	}
 	

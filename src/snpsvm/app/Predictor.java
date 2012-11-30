@@ -21,6 +21,7 @@ import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.SplitSNPAndCall;
+import snpsvm.bamreading.SplitSNPAndCall.CallingOptions;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
@@ -84,6 +85,20 @@ public class Predictor extends AbstractModule {
 		File model = new File(modelPath);
 		File vcf = new File(vcfPath);
 		
+		//Some error checking...make sure files exist
+		if (!inputBAM.exists()) {
+			System.err.println("Input .BAM file " + inputBAM.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!reference.exists()) {
+			System.err.println("Reference file " + reference.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!model.exists()) {
+			System.err.println("Model file " + model.getAbsolutePath() + " not found");
+			return;
+		}
+		
 		try {
 			callSNPs(inputBAM, reference, model, vcf, intervals);
 		} catch (IOException e) {
@@ -139,6 +154,8 @@ public class Predictor extends AbstractModule {
 
 		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
+		CallingOptions ops = new CallingOptions();
+		
 		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool);
 
 

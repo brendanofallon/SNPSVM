@@ -72,6 +72,23 @@ public class ModelBuilder extends AbstractModule {
 		
 		File modelDestination = new File(modelPath);
 		
+		//Make sure necessary input files exist
+		if (!inputBAM.exists()) {
+			System.err.println("Input .BAM file " + inputBAM.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!referenceFile.exists()) {
+			System.err.println("Reference file " + referenceFile.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!trueTraining.exists()) {
+			System.err.println("Training file " + trueTraining.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!falseTraining.exists()) {
+			System.err.println("Training file " + falseTraining.getAbsolutePath() + " not found");
+			return;
+		}
 		
 		try {
 			

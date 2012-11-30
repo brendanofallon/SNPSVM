@@ -28,12 +28,18 @@ public class SplitSNPAndCall implements HasBaseProgress {
 	protected File model;
 	private ThreadPoolExecutor pool;
 	private List<SNPCaller> callers = new ArrayList<SNPCaller>();
+	private CallingOptions options;
 	
-	public SplitSNPAndCall(File referenceFile, BAMWindowStore bamWindows, File modelFile, ThreadPoolExecutor pool) {
+	public SplitSNPAndCall(File referenceFile, 
+			BAMWindowStore bamWindows, 
+			File modelFile, 
+			ThreadPoolExecutor pool,
+			CallingOptions options) {
 		this.reference = referenceFile;
 		this.bamWindows = bamWindows; 
 		this.model = modelFile;
-		this.pool = pool;	
+		this.pool = pool;
+		this.options = options;
 	}
 
 	/**
@@ -46,7 +52,12 @@ public class SplitSNPAndCall implements HasBaseProgress {
 			
 		if (intervals.getExtent() < thresholdExtent) {
 			//Intervals size is pretty small, just call 'em
-			SNPCaller caller = new SNPCaller(reference, model, intervals, CounterSource.getCounters(), bamWindows);
+			SNPCaller caller = new SNPCaller(reference,
+					model, 
+					intervals,
+					CounterSource.getCounters(), 
+					bamWindows,
+					options);
 			callers.add(caller);
 			//pool.submit(caller);
 			pool.execute(caller);
@@ -150,5 +161,20 @@ public class SplitSNPAndCall implements HasBaseProgress {
 			}
 		}
 		return subIntervals;
+	}
+	
+	public CallingOptions getCallingOptions() {
+		return new CallingOptions();
+	}
+	
+	/**
+	 * A few user-settable options for variant calling
+	 * @author brendan
+	 *
+	 */
+	public class CallingOptions {
+		int minTotalDepth = 2;
+		int minVariantDepth = 2;
+		double minQuality = 1.0;
 	}
 }
