@@ -161,7 +161,6 @@ public class Predictor extends AbstractModule {
 		//Initialize BAMWindow store
 		BAMWindowStore bamWindows = new BAMWindowStore(inputBAM, threads);
 		
-		//Somehow logically divide work into rational number of workers
 		Timer progressTimer = null;
 		final int intervalExtent = intervals.getExtent();
 		
