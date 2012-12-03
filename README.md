@@ -46,6 +46,19 @@ SNPSVM can do two things:
 
 		-L regions.bed
 	Call variants in areas specified in .BED formatted file
+	
+	Optional variant calling parameters
+	
+		-q 2.0
+	Minimum quality to report a variant
+	
+		-d 5
+	Minimum depth required for reporting a variant
+	
+		-v 3
+	Minimum number of reads containing variant allele required for reporting variants
+		
+	
 
 
 To tell SNPSVM to use multiple threads, use the following command:
