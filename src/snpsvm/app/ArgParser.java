@@ -66,6 +66,7 @@ public class ArgParser {
 			return val;
 		}
 		catch (NumberFormatException nfe) {
+			System.err.println("Error parsing value for argument " + key);
 			return null;
 		}
 	}
@@ -85,6 +86,7 @@ public class ArgParser {
 			return val;
 		}
 		catch (NumberFormatException nfe) {
+			System.err.println("Error parsing integer value for argument " + key);
 			return null;
 		}
 	}

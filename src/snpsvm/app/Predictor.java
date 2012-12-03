@@ -105,12 +105,13 @@ public class Predictor extends AbstractModule {
 		Double qCutoff = getOptionalDoubleArg(args, "-q");
 		if (qCutoff != null)
 			ops.setMinQuality(qCutoff);
-		Integer minDepth = getOptionalIntegerArg(args, "-d");
-		if (minDepth != null)
-			ops.setMinTotalDepth(minDepth);
-		Integer minVarDepth = getOptionalIntegerArg(args, "-v");
-		if (minVarDepth != null) {
-			ops.setMinVariantDepth(minVarDepth);
+		Double minDepthDub = getOptionalDoubleArg(args, "-d");
+		if (minDepthDub != null) {
+			ops.setMinTotalDepth((int) Math.floor(minDepthDub));
+		}
+		Double minVarDepthDub = getOptionalDoubleArg(args, "-v");
+		if (minVarDepthDub != null) {
+			ops.setMinVariantDepth((int)Math.floor(minVarDepthDub));
 		}
 		
 		try {

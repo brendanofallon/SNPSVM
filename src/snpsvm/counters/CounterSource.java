@@ -33,7 +33,7 @@ public class CounterSource {
 		/* 5 */ counters.add( new VarFracCounter());  // 9
 		/* 6 */ counters.add( new MQComputer()); // 10-11
 		/* 7 */ counters.add( new DistroProbComputer()); // 12
-		/* 8 */ counters.add( new NearbyQualComputer()); //13 -15
+		/* 8  counters.add( new NearbyQualComputer()); //13 -15 */
 		/* 9 */ counters.add( new StrandBiasComputer()); // 16
 		/* 10 */ counters.add( new MismatchComputer()); //17 -18
 		/* 11 */ counters.add( new ReadPosCounter()); // 19 - 20
