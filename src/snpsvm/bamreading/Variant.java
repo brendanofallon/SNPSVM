@@ -9,32 +9,47 @@ import java.text.DecimalFormat;
  */
 public class Variant implements Comparable<Variant> {
 
-	final DecimalFormat qualFormatter = new DecimalFormat("0.0000");
+	final DecimalFormat qualFormatter = new DecimalFormat("0.000");
 	public final String contig;
 	public final int pos;
 	public final char ref;
 	public final char alt;
 	public final double quality;
-	public final double hetProb;
 	public final int depth;
+	public final int varDepth;
+	public final double homRefProb;
+	public final double hetProb;
+	public final double homAltProb;
 	
 	
-	public Variant(String contig, int pos, char ref, char alt, double quality, int depth, double hetProb) {
+	public Variant(String contig, 
+			int pos, 
+			char ref, 
+			char alt,
+			double quality, 
+			int depth,
+			int varDepth,
+			double homRefProb,
+			double hetProb,
+			double homAltProb) {
 		this.contig = contig;
 		this.pos = pos;
 		this.ref = ref;
 		this.alt = alt;
 		this.quality = quality;
-		this.hetProb = hetProb;
 		this.depth = depth;
+		this.varDepth = varDepth;
+		this.homRefProb = homRefProb;
+		this.hetProb = hetProb;
+		this.homAltProb = homAltProb;
 	}
 	
 	/**
-	 * Returns true if the relative probability that this variant is a heterozygote is greater than 1/2
+	 * Returns true if the probability that this variant is a het is greater than other possibilities
 	 * @return
 	 */
 	public boolean isHetMostLikely() {
-		return hetProb > 0.50;
+		return hetProb > homRefProb && hetProb > homAltProb;
 	}
 	
 	public String toString() {

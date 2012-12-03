@@ -1,17 +1,11 @@
 package snpsvm.bamreading;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
@@ -27,8 +21,6 @@ public class FastaReader2 {
 	public static final long BUFFER_SIZE = 128; //Size of buffer in bytes
 	final static char CONTIG_START = '>';
 	final File fastaFile;
-	
-	 
 	
 	private ByteBuffer buffer = ByteBuffer.allocate( (int)BUFFER_SIZE);
 	
@@ -49,6 +41,22 @@ public class FastaReader2 {
 		FileInputStream fis = new FileInputStream(fastaFile);
 		chan = fis.getChannel();
 		
+	}
+	
+	/**
+	 * A reference to the (final) index of the fasta file
+	 * @return
+	 */
+	public FastaIndex getIndex() {
+		return index;
+	}
+	
+	/**
+	 * A reference to the file this fasta reader is reading
+	 * @return
+	 */
+	public File getFile() {
+		return fastaFile;
 	}
 	
 	/**

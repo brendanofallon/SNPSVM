@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.List;
@@ -15,13 +14,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.Timer;
 
+import libsvm.LIBSVMModel;
 import snpsvm.bamreading.BAMWindowStore;
 import snpsvm.bamreading.CallingOptions;
+import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.FastaReader;
+import snpsvm.bamreading.FastaReader2;
 import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.SplitSNPAndCall;
+import snpsvm.bamreading.VCFVariantEmitter;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
@@ -204,10 +207,15 @@ public class Predictor extends AbstractModule {
 		Collections.sort(allVars);
 		
 		//Write the variants to a file
-		PrintWriter writer = new PrintWriter(new PrintStream(new FileOutputStream(destination)));
+		PrintStream writer = new PrintStream(new FileOutputStream(destination));
 		
-		for(Variant var : allVars) {
-			writer.println(var);
+		VCFVariantEmitter vcfWriter = new VCFVariantEmitter();
+		try {
+			vcfWriter.writeHeader(writer, new FastaReader2(ref), inputBAM.getName().replace(".bam", ""), new LIBSVMModel(model));
+			vcfWriter.writeVariants(allVars, writer);
+		} catch (IndexNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		writer.close();

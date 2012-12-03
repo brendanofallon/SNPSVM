@@ -132,7 +132,8 @@ public class ResultVariantConverter {
 			alt = 'T';
 		
 		int depth = baseCounts[0] + baseCounts[1] + baseCounts[2] + baseCounts[3];
-		Variant var = new Variant(contig, pos, ref, alt, qScore, depth, hetProb/(hetProb + homRefProb + homNonRefProb));
+		int varDepth = baseCounts[altIndex];
+		Variant var = new Variant(contig, pos, ref, alt, qScore, depth, varDepth, homRefProb, hetProb, homNonRefProb);
 		return var;
 	}
 
