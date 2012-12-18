@@ -8,7 +8,7 @@ Installation:
 
 1. Install libsvm
 
-	SNPSVM uses libsvm (http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy lifting. You must download and install libsvm to use SNPSVM
+	SNPSVM uses [libsvm](http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy lifting. You must download and install libsvm to use SNPSVM
 
 2. Download snpsvm.jar 
 
@@ -32,6 +32,8 @@ SNPSVM can do two things:
 2. Use an already-constructed model to call snps on a new .BAM file:
 
 		java -Xmx1g -jar snpsvm.jar predict -R reference.fasta -B input.bam -M input.model -V output.vcf
+
+	Note : SNPSVM comes with a default model that you can use if you don't have a bunch of training data on hand. Its called 'default.model' and lives in the model directory. 
 
 	Optionally, you can use -L to specify the range of sites you'd like to examine in several ways
 

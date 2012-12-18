@@ -33,15 +33,16 @@ public class CounterSource {
 		/* 5 */ counters.add( new VarFracCounter());  // 9
 		/* 6 */ counters.add( new MQComputer()); // 10-11
 		/* 7 */ counters.add( new DistroProbComputer()); // 12
-		/* 8  counters.add( new NearbyQualComputer()); //13 -15 */
-		/* 9 */ counters.add( new StrandBiasComputer()); // 16
-		/* 10 */ counters.add( new MismatchComputer()); //17 -18
-		/* 11 */ counters.add( new ReadPosCounter()); // 19 - 20
-		/* 12 */ counters.add( new HomopolymerRunCounter()); //21-22
-		/* 13 */ counters.add( new DinucRepeatCounter()); //23-24
-		/* 14 */ counters.add( new NucDiversityCounter()); //25
-		/* 15 */ counters.add( new MismatchTotal()); //26
-		/* 16 */ counters.add( new OverlappingIndelComputer()); //27
+		/* 8 */ counters.add( new StrandBiasComputer()); // 16
+		/* 9 */ counters.add( new MismatchComputer()); //17 -18
+		/* 10 */ counters.add( new ReadPosCounter()); // 19 - 20
+		/* 11 */ counters.add( new HomopolymerRunCounter()); //21-22
+		/* 12 */ counters.add( new DinucRepeatCounter()); //23-24
+		/* 13 */ counters.add( new NucDiversityCounter()); //25
+		/* 14 */ counters.add( new MismatchTotal()); //26
+		/* 15 */ counters.add( new OverlappingIndelComputer()); //27
+		/* 16 */ counters.add( new TsTvComputer()); //28
+		// /* 17 */ counters.add( new TGPCounter() ); 
 		countersObtained = true;
 		if (exclusions != null) {
 			//Sort descending

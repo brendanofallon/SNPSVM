@@ -94,7 +94,7 @@ public class IntervalList {
 					try {
 						int first = Integer.parseInt(toks[1]);
 						int last = Integer.parseInt(toks[2]);
-						Interval inter = new Interval(first, last);
+						Interval inter = new Interval(first+1, last);
 						addInterval(contig, inter);
 					}
 					catch (NumberFormatException nfe) {
