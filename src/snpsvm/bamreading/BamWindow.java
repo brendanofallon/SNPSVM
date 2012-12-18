@@ -23,7 +23,7 @@ import net.sf.samtools.SAMSequenceRecord;
  */
 public class BamWindow {
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = false; //Emit some debugging messages (yes, we should have better logging...)
 	
 	final File bamFile;
 	final SAMFileReader samReader; 
@@ -213,7 +213,8 @@ public class BamWindow {
 		if (nextRecord != null)
 			currentContig = contig;
 		else {
-			System.err.println("Could not find any reads that mapped to contig : " + contig);
+			if (DEBUG)
+				System.err.println("Could not find any reads that mapped to contig : " + contig);
 		}
 	}
 	

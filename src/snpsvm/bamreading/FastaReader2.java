@@ -52,6 +52,23 @@ public class FastaReader2 {
 	}
 	
 	/**
+	 * Returns sum of all contig sizes
+	 * @return
+	 */
+	public long getExtent() {
+		return getIndex().getExtent();
+	}
+	
+	public IntervalList toIntervals() {
+		IntervalList intervals = new IntervalList();
+		
+		for(String contig : index.getContigs()) {
+			intervals.addInterval(contig, 1,(int)index.getContigLength(contig));
+		}
+		return intervals;
+	}
+	
+	/**
 	 * A reference to the file this fasta reader is reading
 	 * @return
 	 */

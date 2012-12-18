@@ -103,6 +103,17 @@ public class Predictor extends AbstractModule {
 		}
 
 		
+		//If no interval list supplied create one from the reference
+		if (intervals == null) {
+			try {
+				intervals = (new FastaReader2(reference)).toIntervals();
+			} catch (IOException e) {
+				System.err.println("There was an error reading the reference file, cannot proceed.");
+			} catch (IndexNotFoundException e) {
+				System.err.println("No index found for the reference file, cannot proceed.");
+			}
+		}
+		
 		//Generate a CallingOptions object with some params for variant calling
 		CallingOptions ops = new CallingOptions();
 		Double qCutoff = getOptionalDoubleArg(args, "-q");
@@ -122,6 +133,11 @@ public class Predictor extends AbstractModule {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.err.println("There was an error reading some of the files, cannot proceed.");
+		} catch (IndexNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.err.println("Could not find the index file for the reference, please create one using samtools or picard");
 		}
 	}
 	
@@ -156,7 +172,7 @@ public class Predictor extends AbstractModule {
 			File model,
 			File destination,
 			IntervalList intervals,
-			CallingOptions ops) throws IOException {
+			CallingOptions ops) throws IOException, IndexNotFoundException {
 		
 		if (intervals != null)
 			intervals = validateIntervals(ref, intervals);
@@ -166,6 +182,7 @@ public class Predictor extends AbstractModule {
 		BAMWindowStore bamWindows = new BAMWindowStore(inputBAM, threads);
 		
 		Timer progressTimer = null;
+
 		final int intervalExtent = intervals.getExtent();
 		
 		List<Variant> allVars; 
@@ -220,7 +237,7 @@ public class Predictor extends AbstractModule {
 		writer.close();
 	}
 
-	protected void emitProgressString(HasBaseProgress caller, int intervalExtent) {
+	protected void emitProgressString(HasBaseProgress caller, long intervalExtent) {
 		double basesCalled = (double)caller.getBasesCalled();
 		double frac = basesCalled / intervalExtent;
 		if (startTime == null) {

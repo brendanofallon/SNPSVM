@@ -50,6 +50,18 @@ public class FastaIndex {
 		return info.length;
 	}
 	
+	/**
+	 * Returns sum of all contig sizes
+	 * @return
+	 */
+	public long getExtent() {
+		long sum = 0;
+		for (ChrInfo info : infoMap.values()) {
+			sum += info.length;
+		}
+		return sum;
+	}
+	
 	public long getContigByteOffset(String contigName) {
 		ChrInfo info = infoMap.get(contigName);
 		if (info == null) {
