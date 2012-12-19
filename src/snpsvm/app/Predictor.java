@@ -186,7 +186,7 @@ public class Predictor extends AbstractModule {
 		
 		Timer progressTimer = null;
 
-		final int intervalExtent = intervals.getExtent();
+		final long intervalExtent = intervals.getExtent();
 		
 		List<Variant> allVars; 
 

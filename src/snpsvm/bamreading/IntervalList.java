@@ -114,6 +114,54 @@ public class IntervalList {
 	}
 	
 	/**
+	 * Returns biggest interval in list
+	 * @return
+	 */
+	public Interval biggestInterval() {
+		Interval biggest = null;
+		for(String contig : getContigs()) {
+			for(Interval inter : getIntervalsInContig(contig)) {
+				if (biggest == null || inter.getSize() > biggest.getSize()) {
+					biggest = inter;
+				}
+			}
+		}
+		return biggest;
+	}
+	
+	/**
+	 * Remove the given interval from this list
+	 * @param intToRemove
+	 * @return
+	 */
+	public boolean removeInterval(Interval intToRemove) {
+		for(String contig : getContigs()) {
+			List<Interval> list = getIntervalsInContig(contig);
+			if (list.contains(intToRemove)) {
+				list.remove(intToRemove);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns the contig that contains the given interval, or null
+	 * if the given interval is not in the contig
+	 * @param inter
+	 * @return
+	 */
+	public String contigOfInterval(Interval inter) {
+		for(String contig : getContigs()) {
+			List<Interval> list = getIntervalsInContig(contig);
+			if (list.contains(inter)) {
+				return contig;
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Sort all intervals and merge all mergeable intervals in all contigs
 	 */
 	public void sortAllIntervals() {
@@ -243,8 +291,8 @@ public class IntervalList {
 	 * Returns the number of bases covered by all of the intervals
 	 * @return
 	 */
-	public int getExtent() {
-		int size = 0;
+	public long getExtent() {
+		long size = 0;
 		if (intervals == null) {
 			return 0;
 		}
