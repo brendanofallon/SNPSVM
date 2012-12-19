@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,10 @@ public class ReferenceBAMEmitter {
 	
 	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window, CallingOptions ops) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
-		contigMap = refReader.getContigSizes();
+		contigMap = new HashMap<String, Integer>();
+		for(String contig : refReader.getContigs()) {
+			contigMap.put(contig, refReader.getContigLength(contig).intValue());
+		}
 		alnCol = new AlignmentColumn(window);
 		this.minDepth = ops.getMinTotalDepth();
 		this.minVarDepth = ops.getMinVariantDepth();
@@ -37,7 +41,7 @@ public class ReferenceBAMEmitter {
 	
 	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters, CallingOptions ops) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
-		contigMap = refReader.getContigSizes();
+		//contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(bamFile);
 		this.minDepth = ops.getMinTotalDepth();
 		this.minVarDepth = ops.getMinVariantDepth();
@@ -120,7 +124,7 @@ public class ReferenceBAMEmitter {
 	 * @throws IOException 
 	 */
 	public void emitContig(String contig, PrintStream out) throws IOException {
-		if (! contigMap.containsKey(contig)) {
+		if (! refReader.containsContig(contig)) {
 			throw new IllegalArgumentException("Reference does not have contig : " + contig);
 		}
 		Integer size = contigMap.get(contig);

@@ -2,7 +2,7 @@ package snpsvm.bamreading;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.util.Collection;
 
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.FastaReader2.EndOfContigException;
@@ -25,9 +25,9 @@ public class FastaWindow {
 		this.reader = reader;
 	}
 	
-	public Map<String, Integer> getContigSizes() {
-		return reader.getContigSizes();
-	}
+//	public Map<String, Integer> getContigSizes() {
+//		return reader.getContigSizes();
+//	}
 	
 	/**
 	 * Reference index of left (trailing) edge
@@ -55,6 +55,23 @@ public class FastaWindow {
 	
 	public int getMaxSize() {
 		return windowSize;
+	}
+	
+	/**
+	 * A collection with all of the contig names, taken straight from the index
+	 * @return
+	 */
+	public Collection<String> getContigs() {
+		return reader.getIndex().getContigs();
+	}
+	
+	/**
+	 * The length of the requested contig
+	 * @param contig
+	 * @return
+	 */
+	public Long getContigLength(String contig) {
+		return reader.getContigLength(contig);
 	}
 	
 	/**
@@ -95,8 +112,7 @@ public class FastaWindow {
 
 		reader.advanceToPosition(leftEdgePos-1); //reader actually keeps things 0-indexed, so subtract 1
 		leftEdge = leftEdgePos;
-		int contigSize = reader.getContigSizes().get(contig);
-
+		int contigSize = (int) (reader.getContigLength(contig).intValue());
 //		System.out.println(">" + leftEdgePos);
 		for(int i=leftEdgePos; i<Math.min(leftEdgePos+windowSize, contigSize); i++) {
 			char c = reader.nextBase();
@@ -163,6 +179,10 @@ public class FastaWindow {
 			strB.append( bases.get(i));
 		}
 		return strB.toString();
+	}
+
+	public boolean containsContig(String contig) {
+		return reader.containsContig(contig);
 	}
 	
 //	public static void main(String[] args) throws IOException, IndexNotFoundException {

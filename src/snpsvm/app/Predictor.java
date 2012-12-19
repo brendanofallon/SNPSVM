@@ -18,7 +18,6 @@ import libsvm.LIBSVMModel;
 import snpsvm.bamreading.BAMWindowStore;
 import snpsvm.bamreading.CallingOptions;
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
-import snpsvm.bamreading.FastaReader;
 import snpsvm.bamreading.FastaReader2;
 import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
@@ -148,17 +147,21 @@ public class Predictor extends AbstractModule {
 	 * @param intervals
 	 * @return
 	 * @throws IOException 
+	 * @throws IndexNotFoundException 
 	 */
-	protected static IntervalList validateIntervals(File reference, IntervalList intervals) throws IOException {
-		FastaReader refReader = new FastaReader(reference);
+	protected static IntervalList validateIntervals(File reference, IntervalList intervals) throws IOException, IndexNotFoundException {
+		FastaReader2 refReader = new FastaReader2(reference);
 		IntervalList newIntervals = new IntervalList();
 		for(String contig : intervals.getContigs()) {
-			Integer maxLength = refReader.getContigSizes().get(contig);
+			if (! refReader.containsContig(contig)) {
+				throw new IllegalArgumentException("No contig '" + contig + "' found in reference.");
+			}
+			Long maxLength = refReader.getContigLength(contig);
 			if (maxLength == null) {
-				throw new IllegalArgumentException("Could not find contig " + contig + " in reference");
+				throw new IllegalArgumentException("Could not read length of contig " + contig + " in reference");
 			}
 			for(Interval interval : intervals.getIntervalsInContig(contig)) {
-				int newPos = Math.min(maxLength, interval.getLastPos());
+				int newPos = (int) Math.min(maxLength, interval.getLastPos());
 				newIntervals.addInterval(contig, interval.getFirstPos(), newPos);
 			}
 		}
