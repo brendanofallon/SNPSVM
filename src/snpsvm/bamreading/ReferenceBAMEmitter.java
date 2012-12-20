@@ -145,8 +145,14 @@ public class ReferenceBAMEmitter {
 			while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {
 				emitLine(out);
 
-				if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2))
-					refReader.shift();
+				if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2)) {
+					try {
+						refReader.shift();
+					}
+					catch(EndOfContigException ex) {
+						//don't worry about it
+					}
+				}
 				alnCol.advance(1);
 				curPos++;
 

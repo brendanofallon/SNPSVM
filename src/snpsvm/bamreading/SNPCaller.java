@@ -35,7 +35,7 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	protected CallingOptions options = null;
 	
 	private boolean removeTmpFiles = true; //Erase 'data' and 'positions' files after use 
-	private int basesComputed = 0;
+	private long basesComputed = 0;
 	
 	
 	public SNPCaller(File referenceFile, 
@@ -115,7 +115,7 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	 * Obtain the approximate number of bases so far called by this caller 
 	 * @return
 	 */
-	public int getBasesCalled() {
+	public long getBasesCalled() {
 		return basesComputed;
 	}
 	

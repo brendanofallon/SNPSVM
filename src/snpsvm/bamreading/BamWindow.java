@@ -39,9 +39,9 @@ public class BamWindow {
 	public BamWindow(File bamFile) {
 		this.bamFile = bamFile;
 		
-		SAMFileReader.setDefaultValidationStringency(ValidationStringency.LENIENT);
+		SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
 		samReader = new SAMFileReader(bamFile);
-		samReader.setValidationStringency(ValidationStringency.LENIENT);
+		samReader.setValidationStringency(ValidationStringency.SILENT);
 		SAMFileHeader header = samReader.getFileHeader();
 		sequenceDict = header.getSequenceDictionary();
 		contigMap = new HashMap<String, Integer>();

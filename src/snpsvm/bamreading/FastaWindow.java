@@ -125,8 +125,9 @@ public class FastaWindow {
 	
 	/**
 	 * Shift by one base to the right
+	 * @throws EndOfContigException 
 	 */
-	public void shift() {
+	public void shift() throws EndOfContigException {
 		if (bases.size()>0) {
 			try {
 				bases.remove();
@@ -142,17 +143,14 @@ public class FastaWindow {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
-			} catch (EndOfContigException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} 
 		}
 		
 	}
 	
-	public void shift(int howmany) {
+	public void shift(int howmany) throws EndOfContigException {
 		for(int i=0; i<howmany; i++)
 			shift();
 	}

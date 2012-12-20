@@ -79,8 +79,8 @@ public class SplitSNPAndCall implements HasBaseProgress {
 		}
 	}
 
-	public int getBasesCalled() {
-		int tot = 0;
+	public long getBasesCalled() {
+		long tot = 0;
 		for(SNPCaller caller : callers) {
 			tot += caller.getBasesCalled();
 		}

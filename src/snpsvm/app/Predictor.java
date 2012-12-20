@@ -76,8 +76,6 @@ public class Predictor extends AbstractModule {
 		boolean writeData = ! args.hasOption("-X");
 		IntervalList intervals = getIntervals(args);
 		
-		
-		
 		if (!writeData) {
 			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
 		}
@@ -241,7 +239,7 @@ public class Predictor extends AbstractModule {
 	}
 
 	protected void emitProgressString(HasBaseProgress caller, long intervalExtent) {
-		double basesCalled = (double)caller.getBasesCalled();
+		double basesCalled = 1.0 * caller.getBasesCalled();
 		double frac = basesCalled / intervalExtent;
 		if (startTime == null) {
 			startTime = System.currentTimeMillis();
