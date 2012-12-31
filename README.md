@@ -8,7 +8,7 @@ Installation:
 
 1. Install libsvm
 
-	SNPSVM uses [libsvm](http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy lifting. You must download and install libsvm to use SNPSVM
+	SNPSVM uses [libsvm](http://www.csie.ntu.edu.tw/~cjlin/libsvm/) to do the heavy lifting. You must download and install libsvm to use SNPSVM (libsvm appears to be in many package repositories, if you're on linux system try using a package manager such as *yum* or *apt*).
 
 2. Download snpsvm.jar 
 
@@ -26,7 +26,7 @@ SNPSVM can do two things:
 		java -Xmx1g -jar snpsvm.jar buildmodel -R reference.fasta -T some.true.sites.vcf -F some.false.sites.vcf -B input.bam -M output.model
 
 
-	All arguments are required
+	All arguments are required. 
 
 
 2. Use an already-constructed model to call snps on a new .BAM file:
