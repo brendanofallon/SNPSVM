@@ -26,7 +26,7 @@ SNPSVM can do two things:
 		java -Xmx1g -jar snpsvm.jar buildmodel -R reference.fasta -T some.true.sites.vcf -F some.false.sites.vcf -B input.bam -M output.model
 
 
-	All arguments are required. 
+	All arguments are required. The some.true.sites and some.false.sites files are the true and false training data that will be read from the .bam file provided. The resulting model will be written to a file with filename given by -M (output.model in the example above)
 
 
 2. Use an already-constructed model to call snps on a new .BAM file:
