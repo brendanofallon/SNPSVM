@@ -1,6 +1,6 @@
 SNPSVM 
 ------
-Pronounced "snip ess-vee-ehmmm",  SNPSVM is a support vector machine based method for identifying sequence variants in next-gen sequencing data. It takes as input a BAM-formatted alignment of sequencing reads, and emits a VCF formatted file describing where all the SNPs (single nucleotide polymorphisms) are. At least, that's the idea. 
+Pronounced "snip ess-vee-ehmmm",  SNPSVM is a support vector machine based method for identifying sequence variants in next-gen sequencing data. It takes as input a BAM-formatted alignment of sequencing reads, and emits a VCF formatted file describing where all the SNPs (single nucleotide polymorphisms) are.  
  SNPSVM is in the early stages of development, but can be used to produce a list of variant calls. Work is ongoing, so expect some bugs and lots of changes. 
 
 -----
@@ -29,11 +29,11 @@ SNPSVM can do two things:
 	All arguments are required. The some.true.sites and some.false.sites files are the true and false training data that will be read from the .bam file provided. The resulting model will be written to a file with filename given by -M (output.model in the example above)
 
 
-2. Use an already-constructed model to call snps on a new .BAM file:
+2. Use an existing model to call snps on a new .BAM file:
 
 		java -Xmx1g -jar snpsvm.jar predict -R reference.fasta -B input.bam -M input.model -V output.vcf
 
-	Note : SNPSVM comes with a default model that you can use if you don't have a bunch of training data on hand. Its called 'default.model' and lives in the model directory. 
+	Note : SNPSVM comes with a default model that you can use if you don't have a bunch of training data on hand. It's called 'default.model' and lives in the model directory. 
 
 	Optionally, you can use -L to specify the range of sites you'd like to examine in several ways
 
