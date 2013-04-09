@@ -28,6 +28,11 @@ import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
 
+/**
+ * Module that calls SNPs from an existing model. 
+ * @author brendan
+ *
+ */
 public class Predictor extends AbstractModule {
 
 	private boolean emitProgress = true;
@@ -124,6 +129,10 @@ public class Predictor extends AbstractModule {
 		if (minVarDepthDub != null) {
 			ops.setMinVariantDepth((int)Math.floor(minVarDepthDub));
 		}
+		
+		emitProgress = ! args.hasOption("-quiet");
+		
+		ops.setRemoveTempFiles( ! args.hasOption("-preserve") );
 		
 		try {
 			callSNPs(inputBAM, reference, model, vcf, intervals, ops);
@@ -303,9 +312,10 @@ public class Predictor extends AbstractModule {
 		System.out.println(" -V output variant file");
 		System.out.println(" -M model file produced by buildmodel");
 		System.out.println(" ---- Optional arguments -----");
-		System.out.println(" -q [1.0] minimum quality to report variant");
+		System.out.println(" -q [1.0] minimum Phred-scaled quality to report variant");
 		System.out.println(" -d [2] minimum total depth to examine for variant");
 		System.out.println(" -v [2] minimum reads with variant allele required for variant calling");
+		System.out.println(" -quiet [false] do not emit progress to std. out");
 	}
 
 	private Long startTime = null;

@@ -15,9 +15,25 @@ public class CallingOptions {
 	int minVariantDepth = DEFAULT_MIN_VAR_DEPTH;
 	double minQuality = DEFAULT_MIN_QUALITY;
 	
+	boolean removeTempFiles = true;
+	
 	public CallingOptions() {
 		
 	}
+
+	
+	
+	public boolean isRemoveTempFiles() {
+		return removeTempFiles;
+	}
+
+
+
+	public void setRemoveTempFiles(boolean removeTempFiles) {
+		this.removeTempFiles = removeTempFiles;
+	}
+
+
 
 	public int getMinTotalDepth() {
 		return minTotalDepth;

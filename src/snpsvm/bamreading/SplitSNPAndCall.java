@@ -67,9 +67,7 @@ public class SplitSNPAndCall implements HasBaseProgress {
 					bamWindows,
 					options);
 			callers.add(caller);
-			//pool.submit(caller);
 			pool.execute(caller);
-			//System.out.println("Submitting job, " + callers.size() + " tot jobs, queue has :" + pool.getActiveCount() + " active and " + pool.getCompletedTaskCount() + " completed jobs");
 		}
 		else {	
 			//Intervals cover a lot of ground, so split them in half and submit each half

@@ -34,7 +34,6 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	protected BAMWindowStore bamWindows;
 	protected CallingOptions options = null;
 	
-	private boolean removeTmpFiles = true; //Erase 'data' and 'positions' files after use 
 	private long basesComputed = 0;
 	
 	
@@ -52,8 +51,8 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 		this.options = options;
 		instanceCount++;
 	}
-	
-	
+
+
 	@Override
 	public void run()  {
 		try {		
@@ -93,7 +92,7 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 			variants = converter.createVariantList(result);
 
 			//Remove temporary files 
-			if (removeTmpFiles) {
+			if (options.isRemoveTempFiles()) {
 				data.delete();
 				positionsFile.delete();
 			}

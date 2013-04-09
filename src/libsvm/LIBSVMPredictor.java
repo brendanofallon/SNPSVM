@@ -13,6 +13,7 @@ public class LIBSVMPredictor extends LIBSVMTool {
 	
 	public static final String predictionExecutable = "svm-predict";
 	private boolean initialized = false;
+	private boolean removeTempFiles = true;
 	
 	public LIBSVMResult predictData(File inputData, LIBSVMModel model) {
 		return predictData(inputData, model, false);
@@ -37,10 +38,22 @@ public class LIBSVMPredictor extends LIBSVMTool {
 		executeCommand(command);
 		
 		File outputData = new File(pathToOutput);
-		outputData.deleteOnExit();
+		if (removeTempFiles) {
+			outputData.deleteOnExit();
+		}
 		LIBSVMResult result = new LIBSVMResult(outputData);
 		result.setInputData(inputData);
 		
 		return result;
 	}
+
+	public boolean isRemoveTempFiles() {
+		return removeTempFiles;
+	}
+
+	public void setRemoveTempFiles(boolean removeTempFiles) {
+		this.removeTempFiles = removeTempFiles;
+	}
+	
+	
 }

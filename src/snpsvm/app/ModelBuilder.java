@@ -151,6 +151,8 @@ public class ModelBuilder extends AbstractModule {
 			intervals = getIntervalsFromTrainingSites(trueTraining, falseTraining); 
 		}
 		
+		System.out.println(" Reading data, this may take a few minutes. Please be patient...");
+		
 		for(String contig : intervals.getContigs()) {
 			for(Interval interval : intervals.getIntervalsInContig(contig)) {
 				emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
@@ -161,11 +163,13 @@ public class ModelBuilder extends AbstractModule {
 		
 		emitter.emitTrainingCounts();
 		
+		System.out.println(" Done reading data, now training model.");
+		
 		LIBSVMTrain trainer = new LIBSVMTrain();
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, false);
 		
 		System.out.println("\n Created training data file: " + trainingFile);
-		System.out.println("\n Created model file: " + modelFile);
+		System.out.println(" Created model file: " + modelFile);
 	}
 
 	/**

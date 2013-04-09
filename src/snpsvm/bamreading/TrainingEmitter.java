@@ -104,9 +104,9 @@ public class TrainingEmitter extends ReferenceBAMEmitter {
 		double trueFrac = (double)trueSites / (double)tot;
 		double falseFrac = (double)falseSites / (double)tot;
 		
-		System.out.println("   Trainer total sites examined: " + tot);
-		System.out.println("     True positive sites found : " + trueSites + "\t" + formatter.format(trueFrac));
-		System.out.println("    False positive sites found : " + falseSites + "\t" + formatter.format(falseFrac));
+		System.out.println("  Trainer total sites examined: " + tot);
+		System.out.println("  True positive sites found : " + trueSites + "\t" + formatter.format(trueFrac));
+		System.out.println("  False positive sites found : " + falseSites + "\t" + formatter.format(falseFrac));
 	
 	}
 }

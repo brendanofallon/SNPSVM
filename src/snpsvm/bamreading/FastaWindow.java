@@ -183,39 +183,4 @@ public class FastaWindow {
 		return reader.containsContig(contig);
 	}
 	
-//	public static void main(String[] args) throws IOException, IndexNotFoundException {
-//		FastaWindow fw = new FastaWindow(new File("/home/brendan/resources/human_g1k_v37.fasta"));
-//		
-//		fw.resetTo("1", 861200);
-//		
-//		
-//		for(int i=0; i<10; i++) {
-//			int pos = 861200 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		System.out.println("\n\n");
-//		fw.resetTo("1", 861500);
-//		for(int i=0; i<10; i++) {
-//			int pos = 861500 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		System.out.println("\n\n");
-//		fw.resetTo("1", 863140);
-//		for(int i=0; i<10; i++) {
-//			int pos = 863140 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		
-//		System.out.println("\n\n");
-//		fw.resetTo("5", 863142);
-//		for(int i=0; i<10; i++) {
-//			int pos = 863142 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		
-//	}
 }
