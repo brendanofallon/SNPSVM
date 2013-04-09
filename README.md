@@ -52,9 +52,9 @@ SNPSVM can do two things:
 	Optional variant calling parameters
 	
 		-q 2.0
-	Minimum quality to report a variant
+	Minimum (phred-scaled) quality to report a variant. (Note: quality scores reflect actual phred likelihood that variant is real, so quality cutoffs above 1 or 2 are not recommended unless you want extreme specificity.)
 	
-		-d 5
+		-d 1
 	Minimum depth required for reporting a variant
 	
 		-v 3
