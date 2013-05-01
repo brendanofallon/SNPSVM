@@ -81,7 +81,7 @@ public class TsTvComputer implements ColumnComputer {
 	}
 
 	
-	private static int toIndex(char base) {
+	protected static int toIndex(char base) {
 		if (base == 'A')
 			return 0;
 		if (base == 'C')
@@ -93,7 +93,7 @@ public class TsTvComputer implements ColumnComputer {
 		return -1;
 	}
 	
-	private static char computeAlt(int[] counts) {
+	protected static char computeAlt(int[] counts) {
 		int A = counts[0];
 		int C = counts[1];
 		int G = counts[2];

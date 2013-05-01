@@ -23,7 +23,7 @@ public class TGPCounter implements ColumnComputer {
 	static boolean initialized = false;
 	static boolean initializing = false;
 	
-	static String dataFilePath = "/home/brendan/workspace/SNPSVM/1000G.exome.freqs.csv";
+	static String dataFilePath = "/home/brendan/workspace/SNPSVM/1000G.freqdata.csv";
 	
 	static {
 		initializing = true;
@@ -103,10 +103,10 @@ public class TGPCounter implements ColumnComputer {
 		if (contigMap != null) {
 			Integer freqInt = contigMap.get(col.getCurrentPosition());
 			if (freqInt != null) {
-				double freq =  ((double)freqInt) / 10920.0;
-				freq= Math.exp( freq * freq );
+				//double freq =  ((double)freqInt) / 10920.0;
+				//freq= Math.exp( freq * freq );
 				//System.out.println("Freq at pos: " + col.getCurrentContig() + ":" + col.getCurrentPosition() + ":" + freq + "\t" + col.getBasesAsString());
-				freq = (freq/Math.exp(1.0))*1.9 - 1.0;
+				//freq = (freq/Math.exp(1.0))*1.9 - 1.0;
 				value[0] = 1.0;
 			}
 			

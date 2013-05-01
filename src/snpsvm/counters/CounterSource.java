@@ -42,6 +42,7 @@ public class CounterSource {
 		/* 14 */ counters.add( new MismatchTotal()); //26
 		/* 15 */ counters.add( new OverlappingIndelComputer()); //27
 		/* 16 */ counters.add( new TsTvComputer()); //28
+		/* 17 */ counters.add( new MutClassCounter() ); // 29
 		// /* 17 */ counters.add( new TGPCounter() ); 
 		countersObtained = true;
 		if (exclusions != null) {
