@@ -8,6 +8,8 @@ import snpsvm.bamreading.MappedRead;
 
 public class MutClassCounter extends TsTvComputer {
 	
+	// private final double[] vals = new double[2];
+	
 	@Override
 	public double[] computeValue(char refBase, FastaWindow window,
 			AlignmentColumn col) {
@@ -20,6 +22,8 @@ public class MutClassCounter extends TsTvComputer {
 		int totAlts = 0;
 		double val = 0.0;
 		
+//		vals[0] = 0;
+//		vals[1] = 0;
 		values[0] = 0;
 		
 		if (col.getDepth() > 0) {
@@ -46,8 +50,8 @@ public class MutClassCounter extends TsTvComputer {
 			
 			char alt = computeAlt(counts);
 			
-			if ((refBase == 'G' || refBase == 'C') 
-				&& (alt == 'A' || alt=='T')) {
+			if ((refBase == 'C' && alt == 'A') 
+				|| (refBase == 'G' && alt=='T')) {
 				val = 1.0;
 			}
 			else {
@@ -56,6 +60,8 @@ public class MutClassCounter extends TsTvComputer {
 			
 			
 		}
+		
+		values[0] = val;
 		
 		return values;
 	}

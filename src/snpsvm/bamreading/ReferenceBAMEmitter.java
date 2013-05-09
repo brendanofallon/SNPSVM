@@ -124,9 +124,6 @@ public class ReferenceBAMEmitter {
 	 * @throws IOException 
 	 */
 	public void emitContig(String contig, PrintStream out) throws IOException {
-		if (! refReader.containsContig(contig)) {
-			throw new IllegalArgumentException("Reference does not have contig : " + contig);
-		}
 		Integer size = contigMap.get(contig);
 		emitWindow(contig, 1, size, out);
 	}
@@ -136,6 +133,16 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
+		if (! refReader.containsContig(contig)) {
+			//throw new IllegalArgumentException("Reference does not have contig : " + contig);
+			System.err.println("Warning, reference does not contain contig: " + contig + ".  Skipping it.");
+			return;
+		}
+		
+		if (! alnCol.containContig(contig)) {
+			System.err.println("Warning, alignment does not contain contig: " + contig + ".  Skipping it.");
+			return;
+		}
 		
 		try {
 			refReader.resetTo(contig, Math.max(1, start-refReader.windowSize/2));

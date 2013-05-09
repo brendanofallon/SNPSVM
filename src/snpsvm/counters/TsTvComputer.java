@@ -77,6 +77,7 @@ public class TsTvComputer implements ColumnComputer {
 			
 		}
 		
+		values[0] = val;
 		return values;
 	}
 

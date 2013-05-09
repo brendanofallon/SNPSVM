@@ -178,6 +178,15 @@ public class BamWindow {
 	}
 	
 	/**
+	 * True if this bam knows about the given contig. 
+	 * @param contig
+	 * @return
+	 */
+	public boolean containsContig(String contig) {
+		return contigMap.containsKey(contig);
+	}
+	
+	/**
 	 * If given contig equals the currentContig, do nothing. Else, clear records in queue and set
 	 * current position to zero, then search for given contig
 	 * @param contig

@@ -77,6 +77,10 @@ public class AlignmentColumn {
 		return false;
 	}
 	
+	public boolean containContig(String contig) {
+		return bam.containsContig(contig);
+	}
+	
 	/**
 	 * Counts the number of bases that differ from the given base at the current position
 	 * @param c
