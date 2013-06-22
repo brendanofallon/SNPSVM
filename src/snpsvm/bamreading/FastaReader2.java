@@ -1,18 +1,10 @@
 package snpsvm.bamreading;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 
@@ -27,8 +19,6 @@ public class FastaReader2 {
 	public static final long BUFFER_SIZE = 128; //Size of buffer in bytes
 	final static char CONTIG_START = '>';
 	final File fastaFile;
-	
-	 
 	
 	private ByteBuffer buffer = ByteBuffer.allocate( (int)BUFFER_SIZE);
 	
@@ -49,6 +39,55 @@ public class FastaReader2 {
 		FileInputStream fis = new FileInputStream(fastaFile);
 		chan = fis.getChannel();
 		
+	}
+	
+	/**
+	 * Returns true if the index contains the given contig
+	 * @param contig
+	 * @return
+	 */
+	public boolean containsContig(String contig) {
+		return index.getContigs().contains(contig);
+	}
+	
+	public Long getContigLength(String contig) {
+		if (! containsContig(contig)) {
+			return null;
+		}
+		return index.getContigLength(contig);
+	}
+	
+	/**
+	 * A reference to the (final) index of the fasta file
+	 * @return
+	 */
+	public FastaIndex getIndex() {
+		return index;
+	}
+	
+	/**
+	 * Returns sum of all contig sizes
+	 * @return
+	 */
+	public long getExtent() {
+		return getIndex().getExtent();
+	}
+	
+	public IntervalList toIntervals() {
+		IntervalList intervals = new IntervalList();
+		
+		for(String contig : index.getContigs()) {
+			intervals.addInterval(contig, 1, (new Long(index.getContigLength(contig))).intValue() );
+		}
+		return intervals;
+	}
+	
+	/**
+	 * A reference to the file this fasta reader is reading
+	 * @return
+	 */
+	public File getFile() {
+		return fastaFile;
 	}
 	
 	/**
@@ -164,60 +203,60 @@ public class FastaReader2 {
 	 * Obtain map with all contigs and their sizes 
 	 * @return
 	 */
-	public Map<String, Integer> getContigSizes() {
-		Map<String, Integer> contigSizeMap = new HashMap<String, Integer>();
-		for(String contig : index.getContigs()) {
-			contigSizeMap.put(contig, (int) index.getContigLength(contig));
-		}
-		return contigSizeMap;
-	}
-	
-	public static void main(String[] args) throws IOException, EndOfContigException, IndexNotFoundException {
-		//FastaReader2 fa2 = new FastaReader2(new File("/home/brendan/workspace/SNPSVM/practicefasta.fasta"));
-		FastaReader2 fa2 = new FastaReader2(new File("/Users/brendanofallon/resources/human_GRC37.fa"));
-
-		for(int j=0; j<10; j++) {
-			int pos = (int)(200000000*Math.random());
-			StringBuffer test = new StringBuffer();
-			fa2.advanceToContig("1");
-			fa2.advanceToPosition(pos);
-			for(int i=0; i<1024; i++) {
-				char c = fa2.nextBase();
-				test.append(c);
-			}
-
-
-
-			StringBuffer trueSeq = new StringBuffer();
-			System.out.println();
-			FastaReader fa = new FastaReader(new File("/Users/brendanofallon/resources/human_GRC37.fa"));
-			fa.advanceToTrack("1");
-			fa.advanceToPos(pos);
-			for(int i=0; i<1024; i++) {
-				char c= fa.nextPos();
-				trueSeq.append(c);	
-			}
-
-			if (! test.toString().equals(trueSeq.toString())) {
-				System.out.println("No match! Pos : " + pos);
-				System.out.println(test);
-				System.out.println(trueSeq);	
-				for(int i=0; i<test.length(); i++) {
-					if ( test.charAt(i) == trueSeq.charAt(i)) {
-						System.out.print(" ");
-					}
-					else {
-						System.out.print("*");
-					}
-				}
-				System.out.println();
-			}
-			else {
-				System.out.println("Perfect");
-			}
-
-		}
-	}
+//	public Map<String, Integer> getContigSizes() {
+//		Map<String, Integer> contigSizeMap = new HashMap<String, Integer>();
+//		for(String contig : index.getContigs()) {
+//			contigSizeMap.put(contig, (int) index.getContigLength(contig));
+//		}
+//		return contigSizeMap;
+//	}
+//	
+//	public static void main(String[] args) throws IOException, EndOfContigException, IndexNotFoundException {
+//		//FastaReader2 fa2 = new FastaReader2(new File("/home/brendan/workspace/SNPSVM/practicefasta.fasta"));
+//		FastaReader2 fa2 = new FastaReader2(new File("/Users/brendanofallon/resources/human_GRC37.fa"));
+//
+//		for(int j=0; j<10; j++) {
+//			int pos = (int)(200000000*Math.random());
+//			StringBuffer test = new StringBuffer();
+//			fa2.advanceToContig("1");
+//			fa2.advanceToPosition(pos);
+//			for(int i=0; i<1024; i++) {
+//				char c = fa2.nextBase();
+//				test.append(c);
+//			}
+//
+//
+//
+//			StringBuffer trueSeq = new StringBuffer();
+//			System.out.println();
+//			FastaReader fa = new FastaReader(new File("/Users/brendanofallon/resources/human_GRC37.fa"));
+//			fa.advanceToTrack("1");
+//			fa.advanceToPos(pos);
+//			for(int i=0; i<1024; i++) {
+//				char c= fa.nextPos();
+//				trueSeq.append(c);	
+//			}
+//
+//			if (! test.toString().equals(trueSeq.toString())) {
+//				System.out.println("No match! Pos : " + pos);
+//				System.out.println(test);
+//				System.out.println(trueSeq);	
+//				for(int i=0; i<test.length(); i++) {
+//					if ( test.charAt(i) == trueSeq.charAt(i)) {
+//						System.out.print(" ");
+//					}
+//					else {
+//						System.out.print("*");
+//					}
+//				}
+//				System.out.println();
+//			}
+//			else {
+//				System.out.println("Perfect");
+//			}
+//
+//		}
+//	}
 	
 	/**
 	 * Thrown when end of contig reached
@@ -238,4 +277,7 @@ public class FastaReader2 {
 			this.absPos = pos;
 		}
 	}
+
+
+
 }

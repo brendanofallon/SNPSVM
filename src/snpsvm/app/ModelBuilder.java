@@ -50,6 +50,9 @@ public class ModelBuilder extends AbstractModule {
 			return;
 		}
 		
+		//Mostly for debugging, allows user-specified exclusion of counters
+		super.processExcludedIntervals(args);
+		
 		//See if user has asked for training data to be appended to existing data file. 
 		String existingDataPath = getOptionalStringArg(args, "-A");
 		File existingDataFile = null;
@@ -69,6 +72,23 @@ public class ModelBuilder extends AbstractModule {
 		
 		File modelDestination = new File(modelPath);
 		
+		//Make sure necessary input files exist
+		if (!inputBAM.exists()) {
+			System.err.println("Input .BAM file " + inputBAM.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!referenceFile.exists()) {
+			System.err.println("Reference file " + referenceFile.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!trueTraining.exists()) {
+			System.err.println("Training file " + trueTraining.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!falseTraining.exists()) {
+			System.err.println("Training file " + falseTraining.getAbsolutePath() + " not found");
+			return;
+		}
 		
 		try {
 			
@@ -123,29 +143,51 @@ public class ModelBuilder extends AbstractModule {
 		else {
 			System.out.println("Appending training data to existing data file " + extantData.getName());
 			trainingFile = extantData; //Required to train model below
-			emitter.setInvariantProb(0.0); //Don't emit invariant sites
 			trainingStream = new PrintStream(new FileOutputStream(extantData, true), true); //Append to existing file and autoflush
 		}
 		
 		if (intervals == null) {
-			emitter.emitAll(trainingStream); 
+			//No intervals specified, so produce intervals set from training data positions
+			intervals = getIntervalsFromTrainingSites(trueTraining, falseTraining); 
 		}
-		else {
-			for(String contig : intervals.getContigs()) {
-				for(Interval interval : intervals.getIntervalsInContig(contig)) {
-					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
-				}
+		
+		System.out.println(" Reading data, this may take a few minutes. Please be patient...");
+		
+		for(String contig : intervals.getContigs()) {
+			for(Interval interval : intervals.getIntervalsInContig(contig)) {
+				emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), trainingStream);
 			}
 		}
+		
 		trainingStream.close();
 		
 		emitter.emitTrainingCounts();
+		
+		System.out.println(" Done reading data, now training model.");
 		
 		LIBSVMTrain trainer = new LIBSVMTrain();
 		LIBSVMModel model = trainer.createModel(trainingFile, modelFile, false);
 		
 		System.out.println("\n Created training data file: " + trainingFile);
-		System.out.println("\n Created model file: " + modelFile);
+		System.out.println(" Created model file: " + modelFile);
+	}
+
+	/**
+	 * Add an interval for each site in the vcf file
+	 * @param fileA
+	 * @param fileB
+	 * @return
+	 * @throws IOException
+	 */
+	private static IntervalList getIntervalsFromTrainingSites(
+			File fileA, File fileB) throws IOException {
+
+		IntervalList intervals = new IntervalList();
+		intervals.addFromVCF(fileA);
+		intervals.addFromVCF(fileB);
+		intervals.sortAllIntervals();
+		
+		return intervals;
 	}
 
 	@Override

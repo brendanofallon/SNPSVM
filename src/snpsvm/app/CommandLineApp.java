@@ -20,10 +20,18 @@ public class CommandLineApp {
 	public static void main(String[] args) throws IOException {
 
 		if (args.length == 0 || args[0].equals("help")) {
-			System.out.println("\tSNP-SVM v 0.01");
+			System.out.println("\n \tSNP-SVM v. 0.01");
 			System.out.println("\tBrendan O'Fallon, ARUP Labs, Salt Lake City, Utah");
 			System.out.println("\tbrendan.d.ofallon@aruplab.com");
-			System.out.println("\n  To begin, enter the name of a module, for instance 'buildmodel' to train a new model or 'predict' to call snps.");
+			
+			if (configModule.getProperty("libsvm") == null) {
+				System.out.println("\n  To begin, you must install libsvm. It's freely available from : http://www.csie.ntu.edu.tw/~cjlin/libsvm/");
+				System.out.println("  Once you have downloaded and installed libsvm, tell SNPSVM where to find it, like this: ");
+				System.out.println("  java snpsvm.jar config -add libsvm=/path/to/libsvm/ ");
+			}
+			else {
+				System.out.println("\n  To begin, enter the name of a module, for instance 'buildmodel' to train a new model or 'predict' to call snps.");
+			}
 			return;
 		}
 		
@@ -40,7 +48,7 @@ public class CommandLineApp {
 			System.err.println("Loading module " + mod.getClass().toString().replace(".class", ""));
 			
 			ArgParser argParser = new ArgParser(args);
-			if (args.length==1 || (args.length==2 && args[1].equals("help"))) {
+			if ((args.length==2 && args[1].equals("help"))) {
 				mod.emitUsage();
 			}
 			else {

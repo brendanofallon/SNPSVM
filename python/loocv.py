@@ -18,6 +18,11 @@ def countlines(filename):
 		line = fh.readline()
 	return count
 
+def generateModel(data, modelname):
+	cmd = libsvm + "svm-train -t 2 -b 1 -c 10.0 " + data + " " + modelname 
+        print cmd
+        os.system(cmd)
+
 def generateCV(data):
 	totallines = countlines(data)
 	subsamplesize = int( float(totallines)*0.20 )
@@ -39,24 +44,26 @@ def generateCV(data):
 	accfh.close()
 	return cvrate
 
-def removeFeature(inputdata, col, outputdata):
+def removeFeatures(inputdata, cols, outputdata):
 	infh = open(inputdata, "r")
 	outfh = open(outputdata, "w")
 	line = infh.readline()
 	while(line):
 		toks = line.split("\t")
 		outfh.write(toks[0] + "\t")
+		index = 1
 		for tok in toks[1:]:
 			subtok = tok.split(":")
 			if (len(subtok)==1):
-				outfh.write(subtok)
+				try:
+					outfh.write(subtok)
+				except:
+					pass
 			else:
 				tokcol = int(subtok[0])
-				index = tokcol
-				if (tokcol > col):
-					index = index - 1
-				if (not (tokcol == col)):
+				if (not (tokcol in cols)):
 					outfh.write(str(index) +":" + subtok[1].rstrip())
+					index = index +1
 					if (not tok == toks[len(toks)-1]):
 						outfh.write("\t"),
 		outfh.write("\n")
@@ -64,36 +71,39 @@ def removeFeature(inputdata, col, outputdata):
 	outfh.close()
 	infh.close()
 
-def removeFeatures(inputdata, cols, outputdata):
-	src = inputdata
-	dest = ".removetmp1.txt"
-	for col in cols:
-		removeFeature(src, col, dest)
-		src = dest
-		rstr = str(int(random.random()*10000))
-		dest = ".removetmp" + rstr + ".txt"
-	os.system("mv " + dest + " " + outputdata)
+	
+def retainFeatures(inputdata, colsToRetain, outputdata):
+	colsToRemove = range(1, 25)
+	for col in colsToRetain:
+		colsToRemove.remove(col)
+	removeFeatures(inputdata, colsToRemove, outputdata)
 	
 
 trainingdata = sys.argv[1]
 trainingfh = open(trainingdata, "r")
 
-cvs = []
-for i in range(1,10):
-	cvs.append( generateCV(trainingdata))
+#cvs = []
+#for i in range(1,10):
+#	cvs.append( generateCV(trainingdata))
+#
+#mean = sum(cvs) / float(len(cvs))
+#print "Base cv for all data : " + str(mean) + "( " + str(min(cvs)) + "-" + str(max(cvs)) + ")"
 
-mean = sum(cvs) / float(len(cvs))
-print "Base cv for all data : " + str(mean) + "( " + str(min(cvs)) + "-" + str(max(cvs)) + ")"
 
+colsIncluded = [1,2,3,4,5,6,7,8,9,10,18,19]
 
-cols =[3,4]
+cols = range(1,26)
+for c in colsIncluded:
+	cols.remove(c)
 #for col in cols:
-	removedfilename = "removed" + str(col) + ".txt"
-	removeFeatures(trainingdata, cols, removedfilename)
-	cvs = []
-	for i in range(1,10):
-		cvs.append( generateCV(removedfilename) )
-	mean = sum(cvs) / float(len(cvs))
-	print "Mean cv after removal of column " + str(col) + " : " + str(mean) + "( " + str(min(cvs)) + "-" + str(max(cvs)) + ")"
+removedfilename = "removed-minimal.txt"
+#retainFeatures(trainingdata, cols, removedfilename)
+removeFeatures(trainingdata, cols, removedfilename)
+generateModel(removedfilename, "minimal.model")
+#cvs = []
+#for i in range(1,10):
+#	cvs.append( generateCV(removedfilename) )
+#mean = sum(cvs) / float(len(cvs))
+#print "Mean cv after removal of columns " + str(cols) + " : " + str(mean) + "( " + str(min(cvs)) + "-" + str(max(cvs)) + ")"
 	
 

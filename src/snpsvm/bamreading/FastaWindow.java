@@ -2,7 +2,7 @@ package snpsvm.bamreading;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.util.Collection;
 
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.FastaReader2.EndOfContigException;
@@ -25,9 +25,9 @@ public class FastaWindow {
 		this.reader = reader;
 	}
 	
-	public Map<String, Integer> getContigSizes() {
-		return reader.getContigSizes();
-	}
+//	public Map<String, Integer> getContigSizes() {
+//		return reader.getContigSizes();
+//	}
 	
 	/**
 	 * Reference index of left (trailing) edge
@@ -55,6 +55,23 @@ public class FastaWindow {
 	
 	public int getMaxSize() {
 		return windowSize;
+	}
+	
+	/**
+	 * A collection with all of the contig names, taken straight from the index
+	 * @return
+	 */
+	public Collection<String> getContigs() {
+		return reader.getIndex().getContigs();
+	}
+	
+	/**
+	 * The length of the requested contig
+	 * @param contig
+	 * @return
+	 */
+	public Long getContigLength(String contig) {
+		return reader.getContigLength(contig);
 	}
 	
 	/**
@@ -95,8 +112,7 @@ public class FastaWindow {
 
 		reader.advanceToPosition(leftEdgePos-1); //reader actually keeps things 0-indexed, so subtract 1
 		leftEdge = leftEdgePos;
-		int contigSize = reader.getContigSizes().get(contig);
-
+		int contigSize = (int) (reader.getContigLength(contig).intValue());
 //		System.out.println(">" + leftEdgePos);
 		for(int i=leftEdgePos; i<Math.min(leftEdgePos+windowSize, contigSize); i++) {
 			char c = reader.nextBase();
@@ -109,8 +125,9 @@ public class FastaWindow {
 	
 	/**
 	 * Shift by one base to the right
+	 * @throws EndOfContigException 
 	 */
-	public void shift() {
+	public void shift() throws EndOfContigException {
 		if (bases.size()>0) {
 			try {
 				bases.remove();
@@ -126,17 +143,14 @@ public class FastaWindow {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
-			} catch (EndOfContigException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} 
 		}
 		
 	}
 	
-	public void shift(int howmany) {
+	public void shift(int howmany) throws EndOfContigException {
 		for(int i=0; i<howmany; i++)
 			shift();
 	}
@@ -164,40 +178,9 @@ public class FastaWindow {
 		}
 		return strB.toString();
 	}
+
+	public boolean containsContig(String contig) {
+		return reader.containsContig(contig);
+	}
 	
-//	public static void main(String[] args) throws IOException, IndexNotFoundException {
-//		FastaWindow fw = new FastaWindow(new File("/home/brendan/resources/human_g1k_v37.fasta"));
-//		
-//		fw.resetTo("1", 861200);
-//		
-//		
-//		for(int i=0; i<10; i++) {
-//			int pos = 861200 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		System.out.println("\n\n");
-//		fw.resetTo("1", 861500);
-//		for(int i=0; i<10; i++) {
-//			int pos = 861500 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		System.out.println("\n\n");
-//		fw.resetTo("1", 863140);
-//		for(int i=0; i<10; i++) {
-//			int pos = 863140 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		
-//		System.out.println("\n\n");
-//		fw.resetTo("5", 863142);
-//		for(int i=0; i<10; i++) {
-//			int pos = 863142 + i;
-//			System.out.println(pos + " : " + fw.getBaseAt(pos));
-//		}
-//		
-//		
-//	}
 }

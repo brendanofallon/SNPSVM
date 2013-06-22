@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.List;
@@ -15,16 +14,25 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.Timer;
 
+import libsvm.LIBSVMModel;
 import snpsvm.bamreading.BAMWindowStore;
-import snpsvm.bamreading.FastaReader;
+import snpsvm.bamreading.CallingOptions;
+import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
+import snpsvm.bamreading.FastaReader2;
 import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.IntervalList;
 import snpsvm.bamreading.IntervalList.Interval;
 import snpsvm.bamreading.SplitSNPAndCall;
+import snpsvm.bamreading.VCFVariantEmitter;
 import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
 
+/**
+ * Module that calls SNPs from an existing model. 
+ * @author brendan
+ *
+ */
 public class Predictor extends AbstractModule {
 
 	private boolean emitProgress = true;
@@ -67,6 +75,9 @@ public class Predictor extends AbstractModule {
 			return;
 		}
 		
+		//Mostly for debugging, allows user-specified exclusion of counters
+		super.processExcludedIntervals(args);
+		
 		boolean writeData = ! args.hasOption("-X");
 		if (!writeData) {
 			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
@@ -75,8 +86,6 @@ public class Predictor extends AbstractModule {
 		
 		IntervalList intervals = getIntervals(args);
 		
-		Double qCutoff = getOptionalDoubleArg(args, "-q");
-		
 		
 		
 		File inputBAM = new File(inputBAMPath);
@@ -84,11 +93,60 @@ public class Predictor extends AbstractModule {
 		File model = new File(modelPath);
 		File vcf = new File(vcfPath);
 		
+		//Some error checking...make sure files exist
+		if (!inputBAM.exists()) {
+			System.err.println("Input .BAM file " + inputBAM.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!reference.exists()) {
+			System.err.println("Reference file " + reference.getAbsolutePath() + " not found");
+			return;
+		}
+		if (!model.exists()) {
+			System.err.println("Model file " + model.getAbsolutePath() + " not found");
+			return;
+		}
+
+		
+		//If no interval list supplied create one from the reference
+		if (intervals == null) {
+			try {
+				intervals = (new FastaReader2(reference)).toIntervals();
+			} catch (IOException e) {
+				System.err.println("There was an error reading the reference file, cannot proceed.");
+			} catch (IndexNotFoundException e) {
+				System.err.println("No index found for the reference file, cannot proceed.");
+			}
+		}
+		
+		//Generate a CallingOptions object with some params for variant calling
+		CallingOptions ops = new CallingOptions();
+		Double qCutoff = getOptionalDoubleArg(args, "-q");
+		if (qCutoff != null)
+			ops.setMinQuality(qCutoff);
+		Double minDepthDub = getOptionalDoubleArg(args, "-d");
+		if (minDepthDub != null) {
+			ops.setMinTotalDepth((int) Math.floor(minDepthDub));
+		}
+		Double minVarDepthDub = getOptionalDoubleArg(args, "-v");
+		if (minVarDepthDub != null) {
+			ops.setMinVariantDepth((int)Math.floor(minVarDepthDub));
+		}
+		
+		emitProgress = ! args.hasOption("-quiet");
+		
+		ops.setRemoveTempFiles( ! args.hasOption("-preserve") );
+		
 		try {
-			callSNPs(inputBAM, reference, model, vcf, intervals);
+			callSNPs(inputBAM, reference, model, vcf, intervals, ops);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.err.println("There was an error reading some of the files, cannot proceed.");
+		} catch (IndexNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.err.println("Could not find the index file for the reference, please create one using samtools or picard");
 		}
 	}
 	
@@ -99,17 +157,21 @@ public class Predictor extends AbstractModule {
 	 * @param intervals
 	 * @return
 	 * @throws IOException 
+	 * @throws IndexNotFoundException 
 	 */
-	protected static IntervalList validateIntervals(File reference, IntervalList intervals) throws IOException {
-		FastaReader refReader = new FastaReader(reference);
+	protected static IntervalList validateIntervals(File reference, IntervalList intervals) throws IOException, IndexNotFoundException {
+		FastaReader2 refReader = new FastaReader2(reference);
 		IntervalList newIntervals = new IntervalList();
 		for(String contig : intervals.getContigs()) {
-			Integer maxLength = refReader.getContigSizes().get(contig);
+			if (! refReader.containsContig(contig)) {
+				throw new IllegalArgumentException("No contig '" + contig + "' found in reference.");
+			}
+			Long maxLength = refReader.getContigLength(contig);
 			if (maxLength == null) {
-				throw new IllegalArgumentException("Could not find contig " + contig + " in reference");
+				throw new IllegalArgumentException("Could not read length of contig " + contig + " in reference");
 			}
 			for(Interval interval : intervals.getIntervalsInContig(contig)) {
-				int newPos = Math.min(maxLength, interval.getLastPos());
+				int newPos = (int) Math.min(maxLength, interval.getLastPos());
 				newIntervals.addInterval(contig, interval.getFirstPos(), newPos);
 			}
 		}
@@ -122,7 +184,8 @@ public class Predictor extends AbstractModule {
 			File ref,
 			File model,
 			File destination,
-			IntervalList intervals) throws IOException {
+			IntervalList intervals,
+			CallingOptions ops) throws IOException, IndexNotFoundException {
 		
 		if (intervals != null)
 			intervals = validateIntervals(ref, intervals);
@@ -131,15 +194,15 @@ public class Predictor extends AbstractModule {
 		//Initialize BAMWindow store
 		BAMWindowStore bamWindows = new BAMWindowStore(inputBAM, threads);
 		
-		//Somehow logically divide work into rational number of workers
 		Timer progressTimer = null;
-		final int intervalExtent = intervals.getExtent();
+
+		final long intervalExtent = intervals.getExtent();
 		
 		List<Variant> allVars; 
 
 		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool);
+		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool, ops);
 
 
 		//Submit multiple jobs to thread pool, returns immediately
@@ -155,7 +218,7 @@ public class Predictor extends AbstractModule {
 					emitProgressString(caller, intervalExtent);
 				}
 			});
-			progressTimer.setDelay(387);
+			progressTimer.setDelay(419);
 			progressTimer.start();
 		}
 
@@ -174,17 +237,21 @@ public class Predictor extends AbstractModule {
 		Collections.sort(allVars);
 		
 		//Write the variants to a file
-		PrintWriter writer = new PrintWriter(new PrintStream(new FileOutputStream(destination)));
+		PrintStream writer = new PrintStream(new FileOutputStream(destination));
 		
-		for(Variant var : allVars) {
-			writer.println(var);
+		VCFVariantEmitter vcfWriter = new VCFVariantEmitter();
+		try {
+			vcfWriter.writeHeader(writer, new FastaReader2(ref), inputBAM.getName().replace(".bam", ""), new LIBSVMModel(model));
+			vcfWriter.writeVariants(allVars, writer);
+		} catch (IndexNotFoundException e) {
+			e.printStackTrace();
 		}
 		
 		writer.close();
 	}
 
-	protected void emitProgressString(HasBaseProgress caller, int intervalExtent) {
-		double basesCalled = (double)caller.getBasesCalled();
+	protected void emitProgressString(HasBaseProgress caller, long intervalExtent) {
+		double basesCalled = 1.0 * caller.getBasesCalled();
 		double frac = basesCalled / intervalExtent;
 		if (startTime == null) {
 			startTime = System.currentTimeMillis();
@@ -247,6 +314,11 @@ public class Predictor extends AbstractModule {
 		System.out.println(" -B input BAM file");
 		System.out.println(" -V output variant file");
 		System.out.println(" -M model file produced by buildmodel");
+		System.out.println(" ---- Optional arguments -----");
+		System.out.println(" -q [1.0] minimum Phred-scaled quality to report variant");
+		System.out.println(" -d [2] minimum total depth to examine for variant");
+		System.out.println(" -v [2] minimum reads with variant allele required for variant calling");
+		System.out.println(" -quiet [false] do not emit progress to std. out");
 	}
 
 	private Long startTime = null;

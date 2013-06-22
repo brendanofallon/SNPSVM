@@ -61,7 +61,7 @@ public class DistroProbComputer implements ColumnComputer {
 		double homProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.99);
 		
 		//Compute error prob
-		double errProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.1);
+		double errProb = binomPDF((int)Math.round(X), (int)Math.round(T), 0.05);
 		
 		double result = Math.log(errProb / (hetProb + homProb + errProb)); 
 		

@@ -32,32 +32,35 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	protected List<ColumnComputer> counters;
 	protected List<Variant> variants = null;
 	protected BAMWindowStore bamWindows;
+	protected CallingOptions options = null;
 	
-	private boolean removeTmpFiles = false; //Erase 'data' and 'positions' files after use 
-	private int basesComputed = 0;
+	private long basesComputed = 0;
 	
-	public SNPCaller(File referenceFile, File modelFile, IntervalList intervals, List<ColumnComputer> counters, BAMWindowStore bamWindows) {
+	
+	public SNPCaller(File referenceFile, 
+			File modelFile, 
+			IntervalList intervals, 
+			List<ColumnComputer> counters, 
+			BAMWindowStore bamWindows,
+			CallingOptions options) {
 		this.referenceFile = referenceFile;
 		this.intervals = intervals;
 		this.modelFile = modelFile;
 		this.counters = counters;
 		this.bamWindows = bamWindows;
+		this.options = options;
 		instanceCount++;
 	}
-	
-	public IntervalList getIntervalList() {
-		return intervals;
-	}
-	
+
+
 	@Override
 	public void run()  {
 		try {		
 			BamWindow window = bamWindows.getWindow();
-			ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(referenceFile, counters, window);
+			ReferenceBAMEmitter emitter = new ReferenceBAMEmitter(referenceFile, counters, window, options);
 
 			//Store intermediate results in temporary files
-			//String tmpDataPrefix =  "." + generateRandomString(12);
-			String tmpDataPrefix =  intervals.toString() + "-2";
+			String tmpDataPrefix =  "." + generateRandomString(12);
 
 			File data = new File(tmpDataPrefix + ".data");
 			File positionsFile = new File(tmpDataPrefix + ".pos");
@@ -68,7 +71,6 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 			PrintStream dataStream = new PrintStream(new FileOutputStream(data));		
 						
 			for(String contig : intervals.getContigs()) {
-
 				for(Interval interval : intervals.getIntervalsInContig(contig)) {
 					emitter.emitWindow(contig, interval.getFirstPos(), interval.getLastPos(), dataStream);
 					basesComputed += interval.getSize();
@@ -86,10 +88,11 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 			result.setPositionsFile(positionsFile);
 
 			ResultVariantConverter converter = new ResultVariantConverter();
+			converter.setVariantQualityCutoff(options.getMinQuality());
 			variants = converter.createVariantList(result);
 
 			//Remove temporary files 
-			if (removeTmpFiles) {
+			if (options.isRemoveTempFiles()) {
 				data.delete();
 				positionsFile.delete();
 			}
@@ -111,7 +114,7 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	 * Obtain the approximate number of bases so far called by this caller 
 	 * @return
 	 */
-	public int getBasesCalled() {
+	public long getBasesCalled() {
 		return basesComputed;
 	}
 	
@@ -120,7 +123,6 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	 * @return
 	 */
 	public List<Variant> getVariantList() {
-		
 		return variants;
 	}
 	

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,19 +23,28 @@ public class ReferenceBAMEmitter {
 	protected BufferedWriter positionWriter = null;
 	protected DecimalFormat formatter = new DecimalFormat("0.0####");
 	protected BinomProbComputer binomComputer = new BinomProbComputer(); //Used for initial filtering 
+	protected final int minDepth;
+	protected final int minVarDepth;
 	
 	
-	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window) throws IOException, IndexNotFoundException {
+	public ReferenceBAMEmitter(File reference, List<ColumnComputer> counters, BamWindow window, CallingOptions ops) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
-		contigMap = refReader.getContigSizes();
+		contigMap = new HashMap<String, Integer>();
+		for(String contig : refReader.getContigs()) {
+			contigMap.put(contig, refReader.getContigLength(contig).intValue());
+		}
 		alnCol = new AlignmentColumn(window);
+		this.minDepth = ops.getMinTotalDepth();
+		this.minVarDepth = ops.getMinVariantDepth();
 		this.counters = counters;
 	}
 	
-	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters) throws IOException, IndexNotFoundException {
+	public ReferenceBAMEmitter(File reference, File bamFile, List<ColumnComputer> counters, CallingOptions ops) throws IOException, IndexNotFoundException {
 		refReader = new FastaWindow(reference);
-		contigMap = refReader.getContigSizes();
+		//contigMap = refReader.getContigSizes();
 		alnCol = new AlignmentColumn(bamFile);
+		this.minDepth = ops.getMinTotalDepth();
+		this.minVarDepth = ops.getMinVariantDepth();
 		this.counters = counters;
 	}
 	
@@ -50,11 +60,15 @@ public class ReferenceBAMEmitter {
 	
 	public void emitLine(PrintStream out) {
 		
-		if (alnCol.getApproxDepth() > 1) {
+		if (alnCol.getApproxDepth() >= minDepth) {
             final char refBase = refReader.getBaseAt(alnCol.getCurrentPosition());
-            boolean hasTwoDifferringBases = alnCol.hasTwoDifferingBases(refBase);
+            if (refBase == 'N') {
+            	return;
+            }
+            
+            boolean differringBases = alnCol.hasXDifferingBases(refBase, minVarDepth);
 
-            if (! hasTwoDifferringBases) {
+            if (! differringBases) {
                return;
             }
 
@@ -110,9 +124,6 @@ public class ReferenceBAMEmitter {
 	 * @throws IOException 
 	 */
 	public void emitContig(String contig, PrintStream out) throws IOException {
-		if (! contigMap.containsKey(contig)) {
-			throw new IllegalArgumentException("Reference does not have contig : " + contig);
-		}
 		Integer size = contigMap.get(contig);
 		emitWindow(contig, 1, size, out);
 	}
@@ -122,6 +133,16 @@ public class ReferenceBAMEmitter {
 	}
 	
 	public void emitWindow(String contig, int start, int end, PrintStream out) throws IOException {
+		if (! refReader.containsContig(contig)) {
+			//throw new IllegalArgumentException("Reference does not have contig : " + contig);
+			System.err.println("Warning, reference does not contain contig: " + contig + ".  Skipping it.");
+			return;
+		}
+		
+		if (! alnCol.containContig(contig)) {
+			System.err.println("Warning, alignment does not contain contig: " + contig + ".  Skipping it.");
+			return;
+		}
 		
 		try {
 			refReader.resetTo(contig, Math.max(1, start-refReader.windowSize/2));
@@ -131,8 +152,14 @@ public class ReferenceBAMEmitter {
 			while(curPos < end && alnCol.hasMoreReadsInCurrentContig()) {
 				emitLine(out);
 
-				if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2))
-					refReader.shift();
+				if (refReader.indexOfLeftEdge()<(alnCol.getCurrentPosition()-refReader.windowSize/2)) {
+					try {
+						refReader.shift();
+					}
+					catch(EndOfContigException ex) {
+						//don't worry about it
+					}
+				}
 				alnCol.advance(1);
 				curPos++;
 

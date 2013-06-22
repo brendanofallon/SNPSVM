@@ -23,7 +23,7 @@ import net.sf.samtools.SAMSequenceRecord;
  */
 public class BamWindow {
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = false; //Emit some debugging messages (yes, we should have better logging...)
 	
 	final File bamFile;
 	final SAMFileReader samReader; 
@@ -39,9 +39,9 @@ public class BamWindow {
 	public BamWindow(File bamFile) {
 		this.bamFile = bamFile;
 		
-		SAMFileReader.setDefaultValidationStringency(ValidationStringency.LENIENT);
+		SAMFileReader.setDefaultValidationStringency(ValidationStringency.SILENT);
 		samReader = new SAMFileReader(bamFile);
-		samReader.setValidationStringency(ValidationStringency.LENIENT);
+		samReader.setValidationStringency(ValidationStringency.SILENT);
 		SAMFileHeader header = samReader.getFileHeader();
 		sequenceDict = header.getSequenceDictionary();
 		contigMap = new HashMap<String, Integer>();
@@ -178,6 +178,15 @@ public class BamWindow {
 	}
 	
 	/**
+	 * True if this bam knows about the given contig. 
+	 * @param contig
+	 * @return
+	 */
+	public boolean containsContig(String contig) {
+		return contigMap.containsKey(contig);
+	}
+	
+	/**
 	 * If given contig equals the currentContig, do nothing. Else, clear records in queue and set
 	 * current position to zero, then search for given contig
 	 * @param contig
@@ -213,7 +222,8 @@ public class BamWindow {
 		if (nextRecord != null)
 			currentContig = contig;
 		else {
-			System.err.println("Could not find any reads that mapped to contig : " + contig);
+			if (DEBUG)
+				System.err.println("Could not find any reads that mapped to contig : " + contig);
 		}
 	}
 	

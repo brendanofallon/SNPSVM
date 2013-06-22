@@ -77,6 +77,10 @@ public class AlignmentColumn {
 		return false;
 	}
 	
+	public boolean containContig(String contig) {
+		return bam.containsContig(contig);
+	}
+	
 	/**
 	 * Counts the number of bases that differ from the given base at the current position
 	 * @param c
@@ -92,18 +96,18 @@ public class AlignmentColumn {
 		return count;
 	}
         
-        /**
-	 * Counts the number of bases that differ from the given base at the current position
+    /**
+	 * Returns true if there are at least x non-reference bases at this position
 	 * @param c
 	 * @return
 	 */
-	public boolean hasTwoDifferingBases(char refBase) {
+	public boolean hasXDifferingBases(char refBase, int x) {
 		byte[] bases = getBases();
 		int count = 0;
 		for(int i=0; i<getDepth(); i++) {
-			if (refBase != (char)bases[i])
+			if (refBase != (char)bases[i] && ( (char)bases[i] != 'N'))
 				count++;
-			if (count > 1)
+			if (count >= x)
 				return true;
 		}
 		return false;

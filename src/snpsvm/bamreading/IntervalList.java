@@ -94,7 +94,7 @@ public class IntervalList {
 					try {
 						int first = Integer.parseInt(toks[1]);
 						int last = Integer.parseInt(toks[2]);
-						Interval inter = new Interval(first, last);
+						Interval inter = new Interval(first, last+1);
 						addInterval(contig, inter);
 					}
 					catch (NumberFormatException nfe) {
@@ -113,12 +113,125 @@ public class IntervalList {
 		reader.close();
 	}
 	
+	/**
+	 * Returns biggest interval in list
+	 * @return
+	 */
+	public Interval biggestInterval() {
+		Interval biggest = null;
+		for(String contig : getContigs()) {
+			for(Interval inter : getIntervalsInContig(contig)) {
+				if (biggest == null || inter.getSize() > biggest.getSize()) {
+					biggest = inter;
+				}
+			}
+		}
+		return biggest;
+	}
+	
+	/**
+	 * Remove the given interval from this list
+	 * @param intToRemove
+	 * @return
+	 */
+	public boolean removeInterval(Interval intToRemove) {
+		for(String contig : getContigs()) {
+			List<Interval> list = getIntervalsInContig(contig);
+			if (list.contains(intToRemove)) {
+				list.remove(intToRemove);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns the contig that contains the given interval, or null
+	 * if the given interval is not in the contig
+	 * @param inter
+	 * @return
+	 */
+	public String contigOfInterval(Interval inter) {
+		for(String contig : getContigs()) {
+			List<Interval> list = getIntervalsInContig(contig);
+			if (list.contains(inter)) {
+				return contig;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Sort all intervals and merge all mergeable intervals in all contigs
+	 */
 	public void sortAllIntervals() {
 		if (intervals != null) {
 			for(String contig : intervals.keySet()) {
 				Collections.sort( intervals.get(contig) );
+				mergeIntervals(intervals.get(contig) );
 			}
 		}
+	}
+	
+	/**
+	 * Merges all mergeable intervals in the given list
+	 * @param inters
+	 */
+	private void mergeIntervals(List<Interval> inters) {
+		List<Interval> merged = new ArrayList<Interval>();
+		if (inters.size() == 0)
+			return;
+		
+		merged.add( inters.get(0));
+		inters.remove(0);
+		
+		for(Interval inter : inters) {
+			Interval last = merged.get( merged.size()-1);
+			if (inter.overlaps(last)) {
+				Interval newLast = inter.merge(last);
+				merged.remove(last);
+				merged.add(newLast);
+			}
+			else {
+				merged.add(inter);
+			}
+			
+		}
+		
+		inters.clear();
+		inters.addAll(merged);
+	}
+	
+	/**
+	 * Add an interval for each site in the vcf file
+	 * @param vcfFile
+	 * @throws IOException 
+	 */
+	public void addFromVCF(File vcfFile) throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(vcfFile));
+		String line = reader.readLine();
+		while(line != null && line.startsWith("#")) {
+			line = reader.readLine();
+		}
+		
+		while(line != null) {
+			if (line.trim().length() == 0) {
+				line = reader.readLine();
+				continue;
+			}
+			String[] toks = line.split("\t");
+			
+			String contig = toks[0];
+			Integer start = Integer.parseInt( toks[1] );
+			
+			int intStart = Math.max(1, start - 100);
+			int intEnd = intStart + 150;
+			
+			addInterval(contig, intStart, intEnd);
+			line = reader.readLine();
+		}
+		
+		reader.close();
 	}
 	
 	public String toString() {
@@ -178,8 +291,8 @@ public class IntervalList {
 	 * Returns the number of bases covered by all of the intervals
 	 * @return
 	 */
-	public int getExtent() {
-		int size = 0;
+	public long getExtent() {
+		long size = 0;
 		if (intervals == null) {
 			return 0;
 		}
@@ -256,6 +369,32 @@ public class IntervalList {
 		
 		public int compareTo(Interval inter) {
 			return this.firstPos - inter.firstPos;
+		}
+		
+		/**
+		 * Returns true if any site falls into both this and the other interval
+		 * @param other
+		 * @return
+		 */
+		public boolean overlaps(Interval other) {
+			if (other.lastPos <= firstPos ||
+					other.firstPos >= lastPos)
+				return false;
+			else
+				return true;
+		}
+		
+		/**
+		 * Merge two overlapping intervals into a single interval that includes all sites in both
+		 * @param other
+		 * @return
+		 */
+		public Interval merge(Interval other) {
+			if (! this.overlaps(other)) {
+				throw new IllegalArgumentException("Intervals must overlap to merge");
+			}
+			
+			return new Interval(Math.min(firstPos, other.firstPos), Math.max(lastPos, other.lastPos));
 		}
 	}
 

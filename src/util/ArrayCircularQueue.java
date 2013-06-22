@@ -89,38 +89,4 @@ public class ArrayCircularQueue {
 		return strB.toString();
 	}
 	
-//	public static void main(String[] args) {
-//		
-//		ArrayCircularQueue q = new ArrayCircularQueue(6);
-//		try {
-//			System.out.println(q);
-//			q.add('A');
-//			System.out.println(q);
-//			q.add('B');
-//			System.out.println(q);
-//			q.add('C');
-//			System.out.println(q);
-//			q.add('D');
-//			System.out.println(q);
-//			q.add('E');
-//			System.out.println(q);
-//			q.add('F');
-//			System.out.println(q);
-//			q.remove();
-//			q.remove();
-//			q.remove();
-//			q.remove();
-//			q.remove();
-//			q.remove();
-//			System.out.println(q);
-//		} catch (FullQueueException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (EmptyQueueException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//	}
-	
 }

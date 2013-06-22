@@ -40,12 +40,12 @@ public class MismatchComputer extends VarCountComputer {
 			while(it.hasNext()) {
 				MappedRead read = it.next();
 				if (read.hasBaseAtReferencePos(col.getCurrentPosition())) {
-					byte b = read.getBaseAtReferencePos(col.getCurrentPosition());
-					if (b == 'N') 
+					char b = (char)read.getBaseAtReferencePos(col.getCurrentPosition());
+					if (b == 'N' || refBase == 'N') 
 						continue;
 					
 					int q = read.getMismatchCount(window);
-					int index = 0;
+					int index = ref;
 					if ( b != refBase) {
 						index = alt;
 						altReads++;
@@ -54,8 +54,7 @@ public class MismatchComputer extends VarCountComputer {
 						refReads++;
 					}
 					
-					values[index] += q;
-										
+					values[index] += q;						
 				}
 			}
 		}
@@ -64,14 +63,20 @@ public class MismatchComputer extends VarCountComputer {
 		
 		if (altReads > 0)
 			values[alt] /= altReads;
+			
 		 
-		if(values[ref] > 50.0)
-			 values[ref] = 50.0;
-		if(values[alt] > 50.0)
-			 values[alt] = 50.0;
+		if(values[ref] > 20.0) {
+			//System.out.println("Crazy ref value: " + values[ref] + " at pos: " + col.getCurrentContig() + ":" + col.getCurrentPosition());
+			values[ref] = 20.0;
+		}
+		if(values[alt] > 20.0) {
+			//System.out.println("Crazy alt value: " + values[alt] + " at pos: " + col.getCurrentContig() + ":" + col.getCurrentPosition());
+			values[alt] = 20.0;
+		}
 		
-		values[alt] = values[alt] / 50.0 * 2.0 -1.0;
-		values[ref] = values[ref] / 50.0 * 2.0 -1.0;
+		values[alt] = values[alt]/20.0* 2.0 -1.0;		
+		values[ref] = values[ref]/20.0* 2.0 -1.0;
+
 		return values;
 	}
 
