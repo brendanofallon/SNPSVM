@@ -68,13 +68,16 @@ public class Predictor extends AbstractModule {
 		}
 		
 		boolean writeData = ! args.hasOption("-X");
+		if (!writeData) {
+			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
+		}
+		
+		
 		IntervalList intervals = getIntervals(args);
 		
 		Double qCutoff = getOptionalDoubleArg(args, "-q");
 		
-		if (!writeData) {
-			System.err.println("Skipping reading of BAM file... re-calling variants from existing output");
-		}
+		
 		
 		File inputBAM = new File(inputBAMPath);
 		File reference = new File(referencePath);
@@ -91,7 +94,7 @@ public class Predictor extends AbstractModule {
 	
 	/**
 	 * Create a new interval list with no intervals extending beyond the range given
-	 * in the refernece file
+	 * in the reference file
 	 * @param reference
 	 * @param intervals
 	 * @return
@@ -152,7 +155,7 @@ public class Predictor extends AbstractModule {
 					emitProgressString(caller, intervalExtent);
 				}
 			});
-			progressTimer.setDelay(500);
+			progressTimer.setDelay(387);
 			progressTimer.start();
 		}
 
