@@ -57,9 +57,10 @@ public class ReadPosCounter extends VarCountComputer {
 						values[ref]+=readPos;
 						counts[ref]++;
 					}
-					else
+					else {
 						values[alt]+=readPos;
 						counts[alt]++;
+					}
 				}
 			}
 		}
@@ -72,21 +73,21 @@ public class ReadPosCounter extends VarCountComputer {
 		if (counts[alt] > 0)
 			values[alt] /= counts[alt];
 		
-		values[ref] = values[ref] / 105.0 *2.0 - 1.0;
-		values[alt] = values[alt] / 105.0 *2.0 - 1.0;
+		values[ref] = (values[ref] / 105.0)*2.0 - 1.0;
+		values[alt] = (values[alt] / 105.0)*2.0 - 1.0;
 		
-		if (values[ref] < -1.0) {
-			System.out.println("huh?");
-		}
-		if (values[alt] < -1.0) {
-			System.out.println("huh?");
-		}
-		if (values[ref] > 1.0) {
-			System.out.println("huh?+");
-		}
-		if (values[alt] > 1.0) {
-			System.out.println("huh?+");
-		}
+//		if (values[ref] < -1.0) {
+//			System.out.println("huh?");
+//		}
+//		if (values[alt] < -1.0) {
+//			System.out.println("huh?");
+//		}
+
+
+		values[ref] = Math.min(1.0, values[ref]);
+		values[alt] = Math.min(1.0, values[alt]);
+//		
+		
 		return values;
 	}
 

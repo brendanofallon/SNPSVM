@@ -79,8 +79,8 @@ public class ReferenceBAMEmitter {
 				final double[] values = counter.computeValue(refBase, refReader, alnCol);
 				for(int i=0; i<values.length; i++) {
 					if (values[i] < -1.0 || values[i] > 1.0) {
-						final double x = values[i];
-						throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i]);
+						//final double x = values[i];
+						throw new IllegalArgumentException("Invalid value for counter: " + counter.getName() + " found value=" + values[i] + " chr: " + alnCol.getCurrentContig() + " pos:" + alnCol.getCurrentPosition());
 					}
 					if (Double.isInfinite(values[i]) || Double.isNaN(values[i])) {
 						throw new IllegalArgumentException("Non-regular value for counter: " + counter.getName() + " found value=" + values[i]);
