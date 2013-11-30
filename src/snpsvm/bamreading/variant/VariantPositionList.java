@@ -1,4 +1,4 @@
-package snpsvm.bamreading;
+package snpsvm.bamreading.variant;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -1,4 +1,4 @@
-package snpsvm.bamreading;
+package snpsvm.bamreading.snpCalling;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,10 +11,17 @@ import java.util.List;
 import libsvm.LIBSVMModel;
 import libsvm.LIBSVMPredictor;
 import libsvm.LIBSVMResult;
+import snpsvm.bamreading.BAMWindowStore;
+import snpsvm.bamreading.BamWindow;
+import snpsvm.bamreading.CallingOptions;
+import snpsvm.bamreading.FastaIndex;
+import snpsvm.bamreading.ReferenceBAMEmitter;
+import snpsvm.bamreading.ResultVariantConverter;
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.intervalProcessing.IntervalCaller;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
+import snpsvm.bamreading.variant.Variant;
 import snpsvm.counters.ColumnComputer;
 
 /**

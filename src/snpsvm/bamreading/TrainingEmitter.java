@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
+import snpsvm.bamreading.variant.VariantPositionList;
 import snpsvm.counters.ColumnComputer;
 
 

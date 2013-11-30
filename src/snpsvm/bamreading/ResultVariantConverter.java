@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import snpsvm.bamreading.variant.Variant;
+
 import libsvm.LIBSVMResult;
 
 /**

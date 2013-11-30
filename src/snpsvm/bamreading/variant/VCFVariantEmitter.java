@@ -1,10 +1,13 @@
-package snpsvm.bamreading;
+package snpsvm.bamreading.variant;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import snpsvm.bamreading.FastaIndex;
+import snpsvm.bamreading.FastaReader2;
 
 import libsvm.LIBSVMModel;
 

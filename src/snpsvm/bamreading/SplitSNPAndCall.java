@@ -9,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 
 import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
+import snpsvm.bamreading.snpCalling.SNPCaller;
+import snpsvm.bamreading.variant.Variant;
 import snpsvm.counters.CounterSource;
 
 /**

@@ -22,9 +22,10 @@ import snpsvm.bamreading.FastaReader2;
 import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
+import snpsvm.bamreading.snpCalling.IntervalSNPCaller;
+import snpsvm.bamreading.variant.VCFVariantEmitter;
+import snpsvm.bamreading.variant.Variant;
 import snpsvm.bamreading.SplitSNPAndCall;
-import snpsvm.bamreading.VCFVariantEmitter;
-import snpsvm.bamreading.Variant;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
 
@@ -202,8 +203,8 @@ public class Predictor extends AbstractModule {
 
 		ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
 
-		final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool, ops);
-
+		//final SplitSNPAndCall caller = new SplitSNPAndCall(ref, bamWindows, model, threadPool, ops);
+		final IntervalSNPCaller caller = new IntervalSNPCaller(threadPool, ops, ref, model, bamWindows);
 
 		//Submit multiple jobs to thread pool, returns immediately
 		caller.submitAll(intervals);
@@ -223,7 +224,7 @@ public class Predictor extends AbstractModule {
 		}
 
 		//Blocks until all variants are called
-		allVars = caller.getAllVariants();
+		allVars = caller.getResult();
 
 		//Emit one more progress message
 		if (emitProgress) {
