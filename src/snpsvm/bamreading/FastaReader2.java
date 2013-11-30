@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
+import snpsvm.bamreading.intervalProcessing.IntervalList;
 
 /**
  * A higher-performance version of a FastaReader, this uses FileChannels to memory map and seek 

@@ -3,7 +3,7 @@ package snpsvm.app;
 import java.io.File;
 import java.io.IOException;
 
-import snpsvm.bamreading.IntervalList;
+import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.counters.CounterSource;
 
 public abstract class AbstractModule implements Module {

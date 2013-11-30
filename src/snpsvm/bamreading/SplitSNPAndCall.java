@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import snpsvm.bamreading.IntervalList.Interval;
+import snpsvm.bamreading.intervalProcessing.IntervalList;
+import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
 import snpsvm.counters.CounterSource;
 
 /**
@@ -110,7 +111,7 @@ public class SplitSNPAndCall implements HasBaseProgress {
 		
 		List<Variant> vars = new ArrayList<Variant>();
 		for(SNPCaller caller : callers) {
-			List<Variant> subVars = caller.getVariantList();
+			List<Variant> subVars = caller.getResult();
 			if (subVars != null) {
 				//System.out.println("\nFound " + subVars.size()+ " variants in caller for intervals: " + caller.getIntervalList());
 				vars.addAll( subVars );

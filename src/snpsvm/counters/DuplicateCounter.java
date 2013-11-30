@@ -44,7 +44,7 @@ public class DuplicateCounter extends VarCountComputer {
 					byte b = read.getBaseAtReferencePos(col.getCurrentPosition());
 					if (b == 'N') 
 						continue;
-					Pair p = new Pair(read.getRecord().getAlignmentStart(), read.getRecord().getAlignmentStart());
+					Pair p = new Pair(read.getRecord().getAlignmentStart(), read.getRecord().getAlignmentEnd());
 					if (b == refBase) {
 						refPairs.add(p); // will clobber old one if it exists
 					}
@@ -78,4 +78,5 @@ public class DuplicateCounter extends VarCountComputer {
 			return p.start == this.start && p.end == this.end;
 		}
 	}
+	
 }

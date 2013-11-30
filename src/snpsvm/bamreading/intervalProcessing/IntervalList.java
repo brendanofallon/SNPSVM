@@ -1,4 +1,4 @@
-package snpsvm.bamreading;
+package snpsvm.bamreading.intervalProcessing;
 
 import java.io.BufferedReader;
 import java.io.File;

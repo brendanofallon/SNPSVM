@@ -12,7 +12,9 @@ import libsvm.LIBSVMModel;
 import libsvm.LIBSVMPredictor;
 import libsvm.LIBSVMResult;
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
-import snpsvm.bamreading.IntervalList.Interval;
+import snpsvm.bamreading.intervalProcessing.IntervalCaller;
+import snpsvm.bamreading.intervalProcessing.IntervalList;
+import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
 import snpsvm.counters.ColumnComputer;
 
 /**
@@ -21,7 +23,7 @@ import snpsvm.counters.ColumnComputer;
  * @author brendanofallon
  *
  */
-public class SNPCaller implements Runnable, HasBaseProgress {
+public class SNPCaller implements IntervalCaller<List<Variant>> {
 
 	protected static int instanceCount = 0;
 	protected int myNumber = instanceCount;
@@ -122,7 +124,7 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	 * A reference to a list containing all called variants in the
 	 * @return
 	 */
-	public List<Variant> getVariantList() {
+	public List<Variant> getResult() {
 		return variants;
 	}
 	
@@ -130,7 +132,7 @@ public class SNPCaller implements Runnable, HasBaseProgress {
 	 * Returns true if this worker has completed and a non-null variant list is present 
 	 * @return
 	 */
-	public boolean isVariantListCreated() {
+	public boolean isResultReady() {
 		return variants != null;
 	}
 	
