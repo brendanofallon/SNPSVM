@@ -251,63 +251,7 @@ public class Predictor extends AbstractModule {
 		writer.close();
 	}
 
-	protected void emitProgressString(HasBaseProgress caller, long intervalExtent) {
-		double basesCalled = 1.0 * caller.getBasesCalled();
-		double frac = basesCalled / intervalExtent;
-		if (startTime == null) {
-			startTime = System.currentTimeMillis();
-			System.out.println("   Elapsed       Bases      Bases / sec   % Complete     mem");
-		}
-		long elapsedTimeMS = System.currentTimeMillis() - startTime;
-		double elapsedSecs = elapsedTimeMS / 1000.0;
-		double basesPerSec = basesCalled / (double)elapsedSecs;
-		DecimalFormat formatter = new DecimalFormat("#0.00");
-		DecimalFormat intFormatter = new DecimalFormat("0");
-		for(int i=0; i<prevLength; i++) {
-			System.out.print('\b');
-		}
-		char cm = markers[charIndex % markers.length];
-                long usedBytes = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                
-                long usedMB = usedBytes / (1024*1024);
-                double usedGB = usedMB / 1024.00;
-                String memStr = usedMB + "MB";
-                if (usedMB > 1000)
-                    memStr = formatter.format(usedGB) + "GB";
-                
-		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "% " + padTo(memStr, 12);
-		System.out.print(msg);
-		prevLength = msg.length();
-		charIndex++;
-	}
-
-	protected String toUserTime(double secs) {
-		int minutes = (int)Math.floor(secs / 60.0);
-		int hours = (int)Math.floor(minutes / 60.0);
-		secs = secs % 60;
-		DecimalFormat formatter = new DecimalFormat("#0.00");
-		if (hours < 1) {
-			if (secs < 10)
-				return minutes + ":0" + formatter.format(secs);
-			else
-				return minutes + ":" + formatter.format(secs);
-			
-		}
-		else {
-			if (secs < 10)
-				return hours + ":" + minutes + ":0" + formatter.format(secs);
-			else 
-				return hours + ":" + minutes + ":" + formatter.format(secs);
-		}
-		
-	}
 	
-	private static String padTo(String str, int len) {
-		while(str.length() < len) {
-			str = " " + str;
-		}
-		return str;
-	}
 	@Override
 	public void emitUsage() {
 		System.out.println("Predictor (SNP caller) module");
@@ -322,8 +266,4 @@ public class Predictor extends AbstractModule {
 		System.out.println(" -quiet [false] do not emit progress to std. out");
 	}
 
-	private Long startTime = null;
-	private int prevLength = 0;
-	private int charIndex = 0;
-	private static final char[] markers = {'|', '/', '-', '\\', '|', '/', '-', '\\'};
 }

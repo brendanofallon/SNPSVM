@@ -34,8 +34,8 @@ public class CovCalculator implements IntervalCaller<List<IntervalCoverage>> {
 			for(Interval interval : intervals.getIntervalsInContig(contig)) {
 				IntervalCoverage coverageResult = computeCoverage(window, contig, interval);
 				allResults.add(coverageResult);
-				System.out.flush();
-				System.out.println(interval + " : " + coverageResult.basesActuallyExamined + " mean: " + (double)coverageResult.coverageSum / (double)coverageResult.basesActuallyExamined);
+				//System.out.flush();
+				//System.out.println(interval + " : " + coverageResult.basesActuallyExamined + " mean: " + (double)coverageResult.coverageSum / (double)coverageResult.basesActuallyExamined);
 				basesComputed += interval.getSize();
 			}
 		}
@@ -45,16 +45,6 @@ public class CovCalculator implements IntervalCaller<List<IntervalCoverage>> {
 		completed = true;
 	}
 	
-	//Combine results from two intervals into a single result
-//	private IntervalCoverage mergeResults(IntervalCoverage covA, IntervalCoverage covB) {
-//		IntervalCoverage result = new IntervalCoverage();
-//		result.basesActuallyExamined = covA.basesActuallyExamined + covB.basesActuallyExamined;
-//		result.coverageSum = covA.coverageSum + covB.coverageSum;
-//		//TODO: Merge results for bases covered by > X reads
-//		
-//		return result;
-//	}
-	
 	private static IntervalCoverage computeCoverage(BamWindow window, String contig, Interval interval) {
 		if (! window.containsContig(contig)) {
 			throw new IllegalArgumentException("Contig " + contig + " could not be found in the bam file.");
@@ -62,11 +52,18 @@ public class CovCalculator implements IntervalCaller<List<IntervalCoverage>> {
 		IntervalCoverage result = new IntervalCoverage();	
 		result.interval = interval;
 		result.contig = contig;
+		result.coverageAboveCutoff = new int[result.coverageCutoffs.length];
 		window.advanceTo(contig, interval.getFirstPos());
 		while(window.getCurrentPosition() < interval.getLastPos()) {
 			int size = window.size();
 			result.basesActuallyExamined++;
 			result.coverageSum += size;
+			for(int i=0; i<result.coverageCutoffs.length; i++) {
+				if (size > result.coverageCutoffs[i]) {
+					result.coverageAboveCutoff[i]++;
+				}
+				
+			}
 			window.advanceBy(STEP_SIZE);
 		}
 		

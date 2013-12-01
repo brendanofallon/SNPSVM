@@ -20,7 +20,7 @@ public class CommandLineApp {
 	public static void main(String[] args) throws IOException {
 
 		if (args.length == 0 || args[0].equals("help")) {
-			System.out.println("\n \tSNP-SVM v. 0.01");
+			System.out.println("\n \tSNP-SVM v. 0.02");
 			System.out.println("\tBrendan O'Fallon, ARUP Labs, Salt Lake City, Utah");
 			System.out.println("\tbrendan.d.ofallon@aruplab.com");
 			

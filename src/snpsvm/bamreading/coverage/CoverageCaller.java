@@ -32,8 +32,8 @@ public class CoverageCaller extends AbstractIntervalProcessor<List<IntervalCover
 	public List<IntervalCoverage> getResult() {
 		super.waitForCompletion();
 		List<IntervalCoverage> everyResult = new ArrayList<IntervalCoverage>(1024);
-		for(IntervalCaller caller : callers) {
-			everyResult.addAll( (List<IntervalCoverage>)caller.getResult());
+		for(IntervalCaller<List<IntervalCoverage>> caller : callers) {
+			everyResult.addAll( caller.getResult());
 		}
 		return everyResult;
 	}

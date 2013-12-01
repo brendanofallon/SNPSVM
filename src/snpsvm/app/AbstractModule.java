@@ -2,12 +2,20 @@ package snpsvm.app;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 
+import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.counters.CounterSource;
 
 public abstract class AbstractModule implements Module {
 
+	protected DecimalFormat formatter = new DecimalFormat("#0.00");
+	private Long startTime = null;
+	private int prevLength = 0;
+	private int charIndex = 0;
+	private static final char[] markers = {'|', '/', '-', '\\', '|', '/', '-', '\\'};
+	
 	/**
 	 * Return a string associated with the given arg key (i.e. return "str" from -x str) or throw
 	 * an error if -x was not given
@@ -146,5 +154,63 @@ public abstract class AbstractModule implements Module {
 		public MissingArgumentException(String message) {
 			super(message);
 		}
+	}
+	
+	protected void emitProgressString(HasBaseProgress caller, long intervalExtent) {
+		double basesCalled = 1.0 * caller.getBasesCalled();
+		double frac = basesCalled / intervalExtent;
+		if (startTime == null) {
+			startTime = System.currentTimeMillis();
+			System.out.println("   Elapsed       Bases      Bases / sec   % Complete     mem");
+		}
+		long elapsedTimeMS = System.currentTimeMillis() - startTime;
+		double elapsedSecs = elapsedTimeMS / 1000.0;
+		double basesPerSec = basesCalled / (double)elapsedSecs;
+		DecimalFormat formatter = new DecimalFormat("#0.00");
+		DecimalFormat intFormatter = new DecimalFormat("0");
+		for(int i=0; i<prevLength; i++) {
+			System.out.print('\b');
+		}
+		char cm = markers[charIndex % markers.length];
+                long usedBytes = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+                
+                long usedMB = usedBytes / (1024*1024);
+                double usedGB = usedMB / 1024.00;
+                String memStr = usedMB + "MB";
+                if (usedMB > 1000)
+                    memStr = formatter.format(usedGB) + "GB";
+                
+		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "% " + padTo(memStr, 12);
+		System.out.print(msg);
+		prevLength = msg.length();
+		charIndex++;
+	}
+
+	protected String toUserTime(double secs) {
+		int minutes = (int)Math.floor(secs / 60.0);
+		int hours = (int)Math.floor(minutes / 60.0);
+		secs = secs % 60;
+		DecimalFormat formatter = new DecimalFormat("#0.00");
+		if (hours < 1) {
+			if (secs < 10)
+				return minutes + ":0" + formatter.format(secs);
+			else
+				return minutes + ":" + formatter.format(secs);
+			
+		}
+		else {
+			if (secs < 10)
+				return hours + ":" + minutes + ":0" + formatter.format(secs);
+			else 
+				return hours + ":" + minutes + ":" + formatter.format(secs);
+		}
+		
+	}
+	
+	private static String padTo(String str, int len) {
+		while(str.length() < len) {
+			str = " " + str;
+		}
+		return str;
 	}
 }

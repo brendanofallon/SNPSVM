@@ -3,9 +3,9 @@ package snpsvm.app;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -13,22 +13,23 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.swing.Timer;
 
-import snpsvm.app.AbstractModule.MissingArgumentException;
 import snpsvm.bamreading.BAMWindowStore;
 import snpsvm.bamreading.CallingOptions;
-import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.coverage.CoverageCaller;
 import snpsvm.bamreading.coverage.IntervalCoverage;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
-import snpsvm.bamreading.snpCalling.IntervalSNPCaller;
-import snpsvm.bamreading.variant.Variant;
 
 public class CoverageModule extends AbstractModule {
-
+	
 	@Override
 	public void emitUsage() {
 		System.out.println("Coverage module: Computes coverage statistics over a list of intervals");
 		System.out.println(" coverage -B <input.bam> -L <intervals.bed>");
+		System.out.println("Optional arguments:");
+		System.out.println(" -C 0,15,74,100 Coverage thresholds to report");
+		System.out.println(" -quiet [false] do not emit progress to std. out");
+		System.out.println(" -noSummary [false] do not write final coverage summary");
+		System.out.println(" -noIntervals [false] do not write per interval summary");
 	}
 
 	@Override
@@ -39,10 +40,27 @@ public class CoverageModule extends AbstractModule {
 	@Override
 	public void performOperation(String name, ArgParser args) {
 		
+		boolean emitProgress = true;
+		boolean emitIntervalResults = true;
+		boolean emitSummary = true;
+		
 		String inputBAMPath = null;
 		File inputBAM = null;
 		try {
 			inputBAMPath = getRequiredStringArg(args, "-B", "Missing required argument for input BAM file, use -B");
+			emitProgress = ! args.hasOption("-quiet");
+			emitIntervalResults = ! args.hasOption("-noIntervals");
+			emitSummary = ! args.hasOption("-noSummary");
+			String cutoffsStr = getOptionalStringArg(args, "-C");
+			if (cutoffsStr != null) {
+				String[] toks  = cutoffsStr.split(",");
+				List<Integer> cuts = new ArrayList<Integer>();
+				for(int i=0; i<toks.length; i++) {
+					cuts.add( Integer.parseInt(toks[i].trim()));
+				}
+				
+				IntervalCoverage.setCutoffs( cuts.toArray(new Integer[]{}));
+			}
 		} catch (MissingArgumentException e1) {
 			System.err.println(e1.getMessage());
 			return;
@@ -60,7 +78,7 @@ public class CoverageModule extends AbstractModule {
 		int threads= CommandLineApp.configModule.getThreadCount();
 		//Initialize BAMWindow store
 		BAMWindowStore bamWindows = new BAMWindowStore(inputBAM, threads);
-		boolean emitProgress = true;
+		
 		
 		Timer progressTimer = null;
 
@@ -76,6 +94,7 @@ public class CoverageModule extends AbstractModule {
 		//Submit multiple jobs to thread pool, returns immediately
 		caller.submitAll(intervals);
 
+		//Start timer / progress emitter
 		if (emitProgress) {
 			System.out.println("Examining " + intervals.getExtent() + " bases with " + threads + " threads in " + caller.getCallerCount() + " chunks");
 
@@ -109,80 +128,53 @@ public class CoverageModule extends AbstractModule {
 		
 		System.out.flush();
 		System.out.println();
-		writeResults(allIntervals, System.out);
 		
-		//Write the variants to a file
-		//PrintStream writer = new PrintStream(new FileOutputStream(destination));
+		//results header:
+		PrintStream out = System.out;
+		
+		if (emitIntervalResults || emitSummary) {
+			out.print("\n Interval \t\t\tMean");
+			for(int i=0; i<IntervalCoverage.getCutoffCount(); i++) {
+				out.print("\t" + IntervalCoverage.getCutoffs()[i]);
+			}
+			out.println();
+		}
+		
+		if (emitIntervalResults) {
+			//Write results for each interval
+			writeResults(allIntervals, out);
+		}
+
+		if (emitSummary) {
+			//Compute overall result across all intervals
+			IntervalCoverage overall = new IntervalCoverage();
+			overall.coverageAboveCutoff = new int[IntervalCoverage.getCutoffCount()];
+			for (IntervalCoverage cov : allIntervals) {
+				overall.basesActuallyExamined += cov.basesActuallyExamined;
+				overall.coverageSum += cov.coverageSum;
+				for(int i=0; i<overall.coverageCutoffs.length; i++) {
+					overall.coverageAboveCutoff[i] += cov.coverageAboveCutoff[i];
+				}
+			}
+
+			out.print("All intervals " + "\t:\t" + formatter.format((double)overall.coverageSum / (double)overall.basesActuallyExamined));
+			for(int i=0; i<overall.coverageCutoffs.length; i++) {
+				out.print("\t" + formatter.format((double)overall.coverageAboveCutoff[i] / (double)overall.basesActuallyExamined));
+			}
+			out.println();
+		}
 		
 	}
 
-	protected void writeResults(List<IntervalCoverage> results, PrintStream out) {
-		DecimalFormat formatter = new DecimalFormat("#0.00");
+	protected void writeResults(List<IntervalCoverage> results, PrintStream out) {		
 		for (IntervalCoverage cov : results) {
-			out.println(cov.contig + " : " + cov.interval + "\t:\t" + formatter.format((double)cov.coverageSum / (double)cov.basesActuallyExamined));
+			out.print(cov.contig + " : " + cov.interval + "\t:\t" + formatter.format((double)cov.coverageSum / (double)cov.basesActuallyExamined));
+			for(int i=0; i<cov.coverageCutoffs.length; i++) {
+				out.print("\t" + formatter.format((double)cov.coverageAboveCutoff[i] / (double)cov.basesActuallyExamined));
+			}
+			out.println();
 		}	
 	}
 	
-	protected void emitProgressString(HasBaseProgress caller, long intervalExtent) {
-		double basesCalled = 1.0 * caller.getBasesCalled();
-		double frac = basesCalled / intervalExtent;
-		if (startTime == null) {
-			startTime = System.currentTimeMillis();
-			System.out.println("   Elapsed       Bases      Bases / sec   % Complete     mem");
-		}
-		long elapsedTimeMS = System.currentTimeMillis() - startTime;
-		double elapsedSecs = elapsedTimeMS / 1000.0;
-		double basesPerSec = basesCalled / (double)elapsedSecs;
-		DecimalFormat formatter = new DecimalFormat("#0.00");
-		DecimalFormat intFormatter = new DecimalFormat("0");
-		for(int i=0; i<prevLength; i++) {
-			System.out.print('\b');
-		}
-		char cm = markers[charIndex % markers.length];
-                long usedBytes = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                
-                long usedMB = usedBytes / (1024*1024);
-                double usedGB = usedMB / 1024.00;
-                String memStr = usedMB + "MB";
-                if (usedMB > 1000)
-                    memStr = formatter.format(usedGB) + "GB";
-                
-		String msg = cm + "  " + toUserTime(elapsedSecs) + " " + padTo("" + intFormatter.format(basesCalled), 12) + "  " + padTo("" + formatter.format(basesPerSec), 12) + "  " + padTo(formatter.format(100.0*frac), 8) + "% " + padTo(memStr, 12);
-		System.out.print(msg);
-		prevLength = msg.length();
-		charIndex++;
-	}
 
-	protected String toUserTime(double secs) {
-		int minutes = (int)Math.floor(secs / 60.0);
-		int hours = (int)Math.floor(minutes / 60.0);
-		secs = secs % 60;
-		DecimalFormat formatter = new DecimalFormat("#0.00");
-		if (hours < 1) {
-			if (secs < 10)
-				return minutes + ":0" + formatter.format(secs);
-			else
-				return minutes + ":" + formatter.format(secs);
-			
-		}
-		else {
-			if (secs < 10)
-				return hours + ":" + minutes + ":0" + formatter.format(secs);
-			else 
-				return hours + ":" + minutes + ":" + formatter.format(secs);
-		}
-		
-	}
-	
-	private static String padTo(String str, int len) {
-		while(str.length() < len) {
-			str = " " + str;
-		}
-		return str;
-	}
-	
-	private Long startTime = null;
-	private int prevLength = 0;
-	private int charIndex = 0;
-	private static final char[] markers = {'|', '/', '-', '\\', '|', '/', '-', '\\'};
 }
