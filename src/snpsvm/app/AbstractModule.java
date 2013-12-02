@@ -10,6 +10,7 @@ import snpsvm.counters.CounterSource;
 
 public abstract class AbstractModule implements Module {
 
+	protected DecimalFormat smallFormatter = new DecimalFormat("#0.000");
 	protected DecimalFormat formatter = new DecimalFormat("#0.00");
 	private Long startTime = null;
 	private int prevLength = 0;

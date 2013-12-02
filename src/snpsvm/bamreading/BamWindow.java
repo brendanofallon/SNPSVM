@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import net.sf.samtools.BrowseableBAMIndex;
 import net.sf.samtools.SAMFileHeader;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMFileReader.ValidationStringency;
@@ -88,6 +89,11 @@ public class BamWindow {
 	 */
 	public Iterator<MappedRead> getIterator() {
 		return records.iterator();
+	}
+	
+	public boolean hasReadsInRegion(String chr, int start, int end) {
+		//Would be pretty cool if we could do this quickly
+		return true;
 	}
 	
 	/**

@@ -30,6 +30,7 @@ public class CoverageModule extends AbstractModule {
 		System.out.println(" -quiet [false] do not emit progress to std. out");
 		System.out.println(" -noSummary [false] do not write final coverage summary");
 		System.out.println(" -noIntervals [false] do not write per interval summary");
+		System.out.println(" -z [false] emit depths as z-scores (subtract mean, divide by standard dev)");
 	}
 
 	@Override
@@ -43,6 +44,7 @@ public class CoverageModule extends AbstractModule {
 		boolean emitProgress = true;
 		boolean emitIntervalResults = true;
 		boolean emitSummary = true;
+		boolean emitZ = false;
 		
 		String inputBAMPath = null;
 		File inputBAM = null;
@@ -51,6 +53,7 @@ public class CoverageModule extends AbstractModule {
 			emitProgress = ! args.hasOption("-quiet");
 			emitIntervalResults = ! args.hasOption("-noIntervals");
 			emitSummary = ! args.hasOption("-noSummary");
+			emitZ = args.hasOption("-z");
 			String cutoffsStr = getOptionalStringArg(args, "-C");
 			if (cutoffsStr != null) {
 				String[] toks  = cutoffsStr.split(",");
@@ -124,8 +127,6 @@ public class CoverageModule extends AbstractModule {
 		
 		Collections.sort(allIntervals);
 		
-
-		
 		System.out.flush();
 		System.out.println();
 		
@@ -140,7 +141,37 @@ public class CoverageModule extends AbstractModule {
 			out.println();
 		}
 		
-		if (emitIntervalResults) {
+		if (emitZ) {
+			//First compute mean coverage
+			IntervalCoverage overall = new IntervalCoverage();
+			overall.coverageAboveCutoff = new int[IntervalCoverage.getCutoffCount()];
+			for (IntervalCoverage cov : allIntervals) {
+				overall.basesActuallyExamined += cov.basesActuallyExamined;
+				overall.coverageSum += cov.coverageSum;
+				for(int i=0; i<overall.coverageCutoffs.length; i++) {
+					overall.coverageAboveCutoff[i] += cov.coverageAboveCutoff[i];
+				}
+			}
+			
+			double meanCov = (double)overall.coverageSum / (double)overall.basesActuallyExamined;
+			
+			//do it again to compute stdev
+			double sumSquares = 0;
+			for (IntervalCoverage cov : allIntervals) {
+				double intervalMean = (double)cov.coverageSum / (double)cov.basesActuallyExamined;
+				sumSquares += (meanCov - intervalMean)*(meanCov-intervalMean);
+			}
+			double stdev = Math.sqrt(sumSquares / meanCov);
+			
+			//Now write depths transformed into z-scores
+			for (IntervalCoverage cov : allIntervals) {
+				out.print(cov.contig + " : " + cov.interval + "\t:\t" + smallFormatter.format( ((double)cov.coverageSum / (double)cov.basesActuallyExamined-meanCov)/stdev));
+				out.println();
+			}	
+		}
+		
+		
+		if (emitIntervalResults && (! emitZ)) {
 			//Write results for each interval
 			writeResults(allIntervals, out);
 		}
@@ -157,7 +188,7 @@ public class CoverageModule extends AbstractModule {
 				}
 			}
 
-			out.print("All intervals " + "\t:\t" + formatter.format((double)overall.coverageSum / (double)overall.basesActuallyExamined));
+			out.print("All intervals\t " + "\t:\t" + formatter.format((double)overall.coverageSum / (double)overall.basesActuallyExamined));
 			for(int i=0; i<overall.coverageCutoffs.length; i++) {
 				out.print("\t" + formatter.format((double)overall.coverageAboveCutoff[i] / (double)overall.basesActuallyExamined));
 			}

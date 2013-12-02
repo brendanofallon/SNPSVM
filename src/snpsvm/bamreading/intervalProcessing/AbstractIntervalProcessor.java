@@ -14,7 +14,7 @@ public abstract class AbstractIntervalProcessor<T> implements HasBaseProgress {
 
 	//Interval sets smaller than this size will be computed forthwith, otherwise
 	//they'll be split into approximate halves and each side will be processed separately
-	private long thresholdExtent = 1000000; 
+	private long thresholdExtent = 100000; 
 	
 	protected ThreadPoolExecutor pool;
 	protected IntervalSplitter splitter = new IntervalBisector();

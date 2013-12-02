@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import snpsvm.bamreading.BAMWindowStore;
+import snpsvm.bamreading.BamWindow;
 import snpsvm.bamreading.CallingOptions;
 import snpsvm.bamreading.intervalProcessing.AbstractIntervalProcessor;
 import snpsvm.bamreading.intervalProcessing.IntervalCaller;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
+import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
 
 public class CoverageCaller extends AbstractIntervalProcessor<List<IntervalCoverage>> {
 
@@ -25,7 +27,26 @@ public class CoverageCaller extends AbstractIntervalProcessor<List<IntervalCover
 
 	@Override
 	protected IntervalCaller<List<IntervalCoverage>> getIntervalCaller(IntervalList intervals) throws Exception {
-		return new CovCalculator(windows, intervals);
+		BamWindow bam = windows.getWindow();
+		boolean processIntervals = false;
+		for(String contig : intervals.getContigs()) {
+			for(Interval interval :intervals.getIntervalsInContig(contig)) {
+				if (bam.hasReadsInRegion(contig, interval.getFirstPos(), interval.getLastPos())) {
+					processIntervals = true;
+					break;
+				}
+			}
+			if (processIntervals) {
+				break;
+			}
+		}
+		windows.returnToStore(bam); //don't forget to check it back in
+		if (processIntervals) {
+			return new CovCalculator(windows, intervals);
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Override
