@@ -9,9 +9,9 @@ import java.util.List;
 import libsvm.LIBSVMModel;
 import libsvm.LIBSVMTrain;
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
+import snpsvm.bamreading.TrainingEmitter;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
-import snpsvm.bamreading.TrainingEmitter;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
 
@@ -37,6 +37,13 @@ public class ModelBuilder extends AbstractModule {
 		String falseTrainingPath;
 		String modelPath;
 		String inputBAMPath;
+		
+		if (CommandLineApp.configModule.getProperty("libsvm") == null) {
+			System.out.println("\n  To begin, you must install libsvm. It's freely available from : http://www.csie.ntu.edu.tw/~cjlin/libsvm/");
+			System.out.println("  Once you have downloaded and installed libsvm, tell SNPSVM where to find it, like this: ");
+			System.out.println("  java snpsvm.jar config -add libsvm=/path/to/libsvm/ ");
+			return;
+		}
 		
 		try {
 			referencePath = getRequiredStringArg(args, "-R", "Missing required argument for reference file, use -R");

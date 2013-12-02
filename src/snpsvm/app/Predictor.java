@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -19,13 +18,11 @@ import snpsvm.bamreading.BAMWindowStore;
 import snpsvm.bamreading.CallingOptions;
 import snpsvm.bamreading.FastaIndex.IndexNotFoundException;
 import snpsvm.bamreading.FastaReader2;
-import snpsvm.bamreading.HasBaseProgress;
 import snpsvm.bamreading.intervalProcessing.IntervalList;
 import snpsvm.bamreading.intervalProcessing.IntervalList.Interval;
 import snpsvm.bamreading.snpCalling.IntervalSNPCaller;
 import snpsvm.bamreading.variant.VCFVariantEmitter;
 import snpsvm.bamreading.variant.Variant;
-import snpsvm.bamreading.SplitSNPAndCall;
 import snpsvm.counters.ColumnComputer;
 import snpsvm.counters.CounterSource;
 
@@ -60,6 +57,12 @@ public class Predictor extends AbstractModule {
 			return;
 		}
 		
+		if (CommandLineApp.configModule.getProperty("libsvm") == null) {
+			System.out.println("\n  To begin, you must install libsvm. It's freely available from : http://www.csie.ntu.edu.tw/~cjlin/libsvm/");
+			System.out.println("  Once you have downloaded and installed libsvm, tell SNPSVM where to find it, like this: ");
+			System.out.println("  java snpsvm.jar config -add libsvm=/path/to/libsvm/ ");
+			return;
+		}
 		
 		String referencePath;
 		String inputBAMPath;

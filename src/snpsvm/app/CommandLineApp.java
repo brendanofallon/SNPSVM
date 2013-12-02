@@ -24,14 +24,9 @@ public class CommandLineApp {
 			System.out.println("\tBrendan O'Fallon, ARUP Labs, Salt Lake City, Utah");
 			System.out.println("\tbrendan.d.ofallon@aruplab.com");
 			
-			if (configModule.getProperty("libsvm") == null) {
-				System.out.println("\n  To begin, you must install libsvm. It's freely available from : http://www.csie.ntu.edu.tw/~cjlin/libsvm/");
-				System.out.println("  Once you have downloaded and installed libsvm, tell SNPSVM where to find it, like this: ");
-				System.out.println("  java snpsvm.jar config -add libsvm=/path/to/libsvm/ ");
-			}
-			else {
-				System.out.println("\n  To begin, enter the name of a module, for instance 'buildmodel' to train a new model or 'predict' to call snps.");
-			}
+			
+			System.out.println("\n  To begin, enter the name of a module, for instance 'buildmodel' to train a new model or 'predict' to call snps.");
+			
 			return;
 		}
 		
