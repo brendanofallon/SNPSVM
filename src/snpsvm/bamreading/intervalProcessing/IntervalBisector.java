@@ -26,8 +26,14 @@ public class IntervalBisector implements IntervalSplitter {
 			
 			Interval interval = intList.get(0);
 			int midPoint = (interval.getFirstPos() + interval.getLastPos())/2;
-			subIntervals[0].addInterval(contig, interval.getFirstPos(), midPoint);
-			subIntervals[1].addInterval(contig, midPoint, interval.getLastPos());
+			if (Math.random() < 0.5) {
+				subIntervals[0].addInterval(contig, interval.getFirstPos(), midPoint);
+				subIntervals[1].addInterval(contig, midPoint, interval.getLastPos());
+			}
+			else {
+				subIntervals[1].addInterval(contig, interval.getFirstPos(), midPoint);
+				subIntervals[0].addInterval(contig, midPoint, interval.getLastPos());
+			}
 			return subIntervals;
 		}
 		
@@ -40,11 +46,17 @@ public class IntervalBisector implements IntervalSplitter {
 			String contig0 = contigIt.next();
 			String contig1 = contigIt.next();
 			
-			Interval interval = intList.get(0);
-			subIntervals[0].addInterval(contig0, interval);
+			Interval interval1 = intList.get(0);
+			Interval interval2 = intList.get(1);
 			
-			interval = intList.get(1);
-			subIntervals[1].addInterval(contig1, interval);
+			if (Math.random() < 0.5) {
+				subIntervals[0].addInterval(contig0, interval1);
+				subIntervals[1].addInterval(contig1, interval2);
+			}
+			else {
+				subIntervals[1].addInterval(contig0, interval1);
+				subIntervals[0].addInterval(contig1, interval2);
+			}
 			return subIntervals;
 		}
 		
