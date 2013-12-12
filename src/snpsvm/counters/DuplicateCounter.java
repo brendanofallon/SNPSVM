@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.sf.samtools.SAMRecord;
+
 import snpsvm.bamreading.AlignmentColumn;
 import snpsvm.bamreading.FastaWindow;
 import snpsvm.bamreading.MappedRead;
@@ -42,9 +44,17 @@ public class DuplicateCounter extends VarCountComputer {
 				MappedRead read = it.next();
 				if (read.hasBaseAtReferencePos(col.getCurrentPosition())) {
 					byte b = read.getBaseAtReferencePos(col.getCurrentPosition());
-					if (b == 'N') 
+					if (b == 'N' 
+							|| (!read.getRecord().getProperPairFlag()) 
+							|| read.getRecord().getMateUnmappedFlag()) 
 						continue;
-					Pair p = new Pair(read.getRecord().getAlignmentStart(), read.getRecord().getAlignmentEnd());
+					
+					int mateStart = read.getRecord().getMateAlignmentStart();
+					int readStart = read.getRecord().getAlignmentStart();
+					
+					int first = Math.min(mateStart, readStart);
+					int end = Math.max(mateStart, readStart);
+					Pair p = new Pair(first, end);
 					if (b == refBase) {
 						refPairs.add(p); // will clobber old one if it exists
 					}
@@ -55,7 +65,7 @@ public class DuplicateCounter extends VarCountComputer {
 			}
 		}
 		
-		int grainSize = 100;
+		int grainSize = 1000;
 		values[ref] = Math.min(grainSize, refPairs.size());
 		values[alt] = Math.min(grainSize, altPairs.size());
 		

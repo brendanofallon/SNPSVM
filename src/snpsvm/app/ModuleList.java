@@ -35,6 +35,7 @@ public class ModuleList {
 		modules.add(new Predictor());
 		modules.add(new ConfigModule());
 		modules.add(new CoverageModule());
+		modules.add(new Emitter());
 		
 	}
 	
